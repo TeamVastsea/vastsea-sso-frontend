@@ -6,7 +6,8 @@ CREATE TABLE "Account" (
     "createAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updateAt" DATETIME NOT NULL,
     "salt" TEXT NOT NULL,
-    "iterations" INTEGER NOT NULL
+    "iterations" INTEGER NOT NULL,
+    "active" BOOLEAN NOT NULL DEFAULT true
 );
 
 -- CreateTable
