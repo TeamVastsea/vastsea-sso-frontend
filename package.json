@@ -21,14 +21,21 @@
   },
   "dependencies": {
     "@gaonengwww/jose": "^6.0.9",
+    "@liaoliaots/nestjs-redis": "9.0.0",
     "@nestjs/common": "^11.0.12",
     "@nestjs/core": "^11.0.12",
+    "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^11.0.12",
     "@prisma/client": "6.5.0",
+    "class-transformer": "^0.5.1",
     "globals": "^16.0.0",
+    "ioredis": "^5.6.0",
+    "nestjs-zod": "^4.3.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
-    "typescript-eslint": "^8.28.0"
+    "toml": "^3.0.0",
+    "typescript-eslint": "^8.28.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.5",
@@ -73,6 +80,10 @@
       "<rootDir>/**/*.(spec|test).ts"
     ],
     "moduleNameMapper": {
+      "^@app/config(|/.*)$": "<rootDir>/libs/config/src/$1",
+      "^@app/constant(|/.*)$": "<rootDir>/libs/constant/src/$1",
+      "^@app/decorator(|/.*)$": "<rootDir>/libs/decorator/src/$1",
+      "^@app/global-counter(|/.*)$": "<rootDir>/libs/global-counter/src/$1",
       "^@app/jwt(|/.*)$": "<rootDir>/libs/jwt/src/$1",
       "^@app/prisma(|/.*)$": "<rootDir>/libs/prisma/src/$1"
     }

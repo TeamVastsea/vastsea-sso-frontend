@@ -31,36 +31,40 @@ CREATE TABLE "Client" (
 
 -- CreateTable
 CREATE TABLE "Permission" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "desc" TEXT NOT NULL
+    "id" BIGINT NOT NULL PRIMARY KEY,
+    "name" TEXT NOT NULL,
+    "desc" TEXT NOT NULL,
+    "clientId" TEXT
 );
 
 -- CreateTable
 CREATE TABLE "Role" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "desc" TEXT NOT NULL
+    "id" BIGINT NOT NULL PRIMARY KEY,
+    "name" TEXT NOT NULL,
+    "desc" TEXT NOT NULL,
+    "clientId" TEXT
 );
 
 -- CreateTable
 CREATE TABLE "_AccountToRole" (
     "A" BIGINT NOT NULL,
-    "B" TEXT NOT NULL,
+    "B" BIGINT NOT NULL,
     CONSTRAINT "_AccountToRole_A_fkey" FOREIGN KEY ("A") REFERENCES "Account" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "_AccountToRole_B_fkey" FOREIGN KEY ("B") REFERENCES "Role" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "_PermissionToRole" (
-    "A" TEXT NOT NULL,
-    "B" TEXT NOT NULL,
+    "A" BIGINT NOT NULL,
+    "B" BIGINT NOT NULL,
     CONSTRAINT "_PermissionToRole_A_fkey" FOREIGN KEY ("A") REFERENCES "Permission" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "_PermissionToRole_B_fkey" FOREIGN KEY ("B") REFERENCES "Role" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "_roles" (
-    "A" TEXT NOT NULL,
-    "B" TEXT NOT NULL,
+    "A" BIGINT NOT NULL,
+    "B" BIGINT NOT NULL,
     CONSTRAINT "_roles_A_fkey" FOREIGN KEY ("A") REFERENCES "Role" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "_roles_B_fkey" FOREIGN KEY ("B") REFERENCES "Role" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
@@ -69,10 +73,13 @@ CREATE TABLE "_roles" (
 CREATE UNIQUE INDEX "Profile_accountid_key" ON "Profile"("accountid");
 
 -- CreateIndex
-CREATE INDEX "Permission_id_idx" ON "Permission"("id");
+CREATE INDEX "Client_name_clientId_idx" ON "Client"("name", "clientId");
 
 -- CreateIndex
-CREATE INDEX "Role_id_desc_idx" ON "Role"("id", "desc");
+CREATE INDEX "Permission_name_clientId_idx" ON "Permission"("name", "clientId");
+
+-- CreateIndex
+CREATE INDEX "Role_id_desc_clientId_idx" ON "Role"("id", "desc", "clientId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_AccountToRole_AB_unique" ON "_AccountToRole"("A", "B");

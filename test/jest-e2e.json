@@ -11,6 +11,14 @@
     "^.+\\.(t|j)s$": "ts-jest"
   },
   "moduleNameMapper": {
+    "@app/config": "<rootDir>/../libs/config/src",
+    "@app/config/(.*)": "<rootDir>/../libs/config/src/$1",
+    "@app/constant": "<rootDir>/../libs/constant/src",
+    "@app/constant/(.*)": "<rootDir>/../libs/constant/src/$1",
+    "@app/decorator": "<rootDir>/../libs/decorator/src",
+    "@app/decorator/(.*)": "<rootDir>/../libs/decorator/src/$1",
+    "@app/global-counter": "<rootDir>/../libs/global-counter/src",
+    "@app/global-counter/(.*)": "<rootDir>/../libs/global-counter/src/$1",
     "@app/jwt": "<rootDir>/../libs/jwt/src",
     "@app/jwt/(.*)": "<rootDir>/../libs/jwt/src/$1",
     "@app/prisma": "<rootDir>/../libs/prisma/src",

@@ -45,23 +45,28 @@ model Client {
   clientId      String
   clientSecret  String
   redirect      String
+
+  @@index([name,clientId])
 }
 
 model Permission {
-  id    String  @id
-  desc  String
-  role  Role[]
-  @@index([id])
+  id        BigInt  @id
+  name      String
+  desc      String
+  clientId  String?
+  role      Role[]
+  @@index([name, clientId])
 }
 
 model Role {
-  id    String  @id
-  desc  String
-  
-  parents  Role[] @relation("roles")
-  children Role[] @relation("roles")
-  account Account[]
-  permission  Permission[]
+  id         BigInt  @id
+  name       String
+  desc       String
+  clientId   String?
+  parents    Role[] @relation("roles")
+  children   Role[] @relation("roles")
+  account    Account[]
+  permission Permission[]
 
-  @@index([id, desc])
+  @@index([id, desc, clientId])
 }
