@@ -1,0 +1,4 @@
+[redis]
+[redis.standalone]
+host="localhost"
+port=6379

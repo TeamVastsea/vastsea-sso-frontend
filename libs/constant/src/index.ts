@@ -1,0 +1,4 @@
+export const ID_COUNTER = {
+  PERMISSION: 'PERMISSION-ID',
+  ACCOUNT: 'ACCOUNT-ID',
+};

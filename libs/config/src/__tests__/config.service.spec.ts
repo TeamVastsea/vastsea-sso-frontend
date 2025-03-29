@@ -1,4 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { ConfigService } from '../config.service';
 import { MODULE_OPTIONS_TOKEN } from '../config.option';
 
