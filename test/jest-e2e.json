@@ -1,9 +1,19 @@
 {
-  "moduleFileExtensions": ["js", "json", "ts"],
+  "moduleFileExtensions": [
+    "js",
+    "json",
+    "ts"
+  ],
   "rootDir": ".",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "@app/jwt": "<rootDir>/../libs/jwt/src",
+    "@app/jwt/(.*)": "<rootDir>/../libs/jwt/src/$1",
+    "@app/prisma": "<rootDir>/../libs/prisma/src",
+    "@app/prisma/(.*)": "<rootDir>/../libs/prisma/src/$1"
   }
 }
