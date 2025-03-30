@@ -16,6 +16,56 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@app/config": [
+        "libs/config/src"
+      ],
+      "@app/config/*": [
+        "libs/config/src/*"
+      ],
+      "@app/constant": [
+        "libs/constant/src"
+      ],
+      "@app/constant/*": [
+        "libs/constant/src/*"
+      ],
+      "@app/decorator": [
+        "libs/decorator/src"
+      ],
+      "@app/decorator/*": [
+        "libs/decorator/src/*"
+      ],
+      "@app/global-counter": [
+        "libs/global-counter/src"
+      ],
+      "@app/global-counter/*": [
+        "libs/global-counter/src/*"
+      ],
+      "@app/jwt": [
+        "libs/jwt/src"
+      ],
+      "@app/jwt/*": [
+        "libs/jwt/src/*"
+      ],
+      "@app/prisma": [
+        "libs/prisma/src"
+      ],
+      "@app/prisma-cache": [
+        "libs/prisma-cache/src"
+      ],
+      "@app/prisma-cache/*": [
+        "libs/prisma-cache/src/*"
+      ],
+      "@app/prisma/*": [
+        "libs/prisma/src/*"
+      ],
+      "@app/redis-cache": [
+        "libs/redis-cache/src"
+      ],
+      "@app/redis-cache/*": [
+        "libs/redis-cache/src/*"
+      ]
+    }
   }
 }

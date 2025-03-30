@@ -3,6 +3,72 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
-    "deleteOutDir": true
+    "deleteOutDir": true,
+    "webpack": true
+  },
+  "projects": {
+    "config": {
+      "type": "library",
+      "root": "libs/config",
+      "entryFile": "index",
+      "sourceRoot": "libs/config/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/config/tsconfig.lib.json"
+      }
+    },
+    "constant": {
+      "type": "library",
+      "root": "libs/constant",
+      "entryFile": "index",
+      "sourceRoot": "libs/constant/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/constant/tsconfig.lib.json"
+      }
+    },
+    "decorator": {
+      "type": "library",
+      "root": "libs/decorator",
+      "entryFile": "index",
+      "sourceRoot": "libs/decorator/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/decorator/tsconfig.lib.json"
+      }
+    },
+    "global-counter": {
+      "type": "library",
+      "root": "libs/global-counter",
+      "entryFile": "index",
+      "sourceRoot": "libs/global-counter/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/global-counter/tsconfig.lib.json"
+      }
+    },
+    "jwt": {
+      "type": "library",
+      "root": "libs/jwt",
+      "entryFile": "index",
+      "sourceRoot": "libs/jwt/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/jwt/tsconfig.lib.json"
+      }
+    },
+    "prisma": {
+      "type": "library",
+      "root": "libs/prisma",
+      "entryFile": "index",
+      "sourceRoot": "libs/prisma/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/prisma/tsconfig.lib.json"
+      }
+    },
+    "redis-cache": {
+      "type": "library",
+      "root": "libs/redis-cache",
+      "entryFile": "index",
+      "sourceRoot": "libs/redis-cache/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/redis-cache/tsconfig.lib.json"
+      }
+    }
   }
 }

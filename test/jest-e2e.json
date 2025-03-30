@@ -1,9 +1,31 @@
 {
-  "moduleFileExtensions": ["js", "json", "ts"],
+  "moduleFileExtensions": [
+    "js",
+    "json",
+    "ts"
+  ],
   "rootDir": ".",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "@app/config": "<rootDir>/../libs/config/src",
+    "@app/config/(.*)": "<rootDir>/../libs/config/src/$1",
+    "@app/constant": "<rootDir>/../libs/constant/src",
+    "@app/constant/(.*)": "<rootDir>/../libs/constant/src/$1",
+    "@app/decorator": "<rootDir>/../libs/decorator/src",
+    "@app/decorator/(.*)": "<rootDir>/../libs/decorator/src/$1",
+    "@app/global-counter": "<rootDir>/../libs/global-counter/src",
+    "@app/global-counter/(.*)": "<rootDir>/../libs/global-counter/src/$1",
+    "@app/jwt": "<rootDir>/../libs/jwt/src",
+    "@app/jwt/(.*)": "<rootDir>/../libs/jwt/src/$1",
+    "@app/prisma": "<rootDir>/../libs/prisma/src",
+    "@app/prisma-cache": "<rootDir>/../libs/prisma-cache/src",
+    "@app/prisma-cache/(.*)": "<rootDir>/../libs/prisma-cache/src/$1",
+    "@app/prisma/(.*)": "<rootDir>/../libs/prisma/src/$1",
+    "@app/redis-cache": "<rootDir>/../libs/redis-cache/src",
+    "@app/redis-cache/(.*)": "<rootDir>/../libs/redis-cache/src/$1"
   }
 }
