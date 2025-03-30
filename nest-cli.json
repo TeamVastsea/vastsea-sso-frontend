@@ -60,6 +60,15 @@
       "compilerOptions": {
         "tsConfigPath": "libs/prisma/tsconfig.lib.json"
       }
+    },
+    "redis-cache": {
+      "type": "library",
+      "root": "libs/redis-cache",
+      "entryFile": "index",
+      "sourceRoot": "libs/redis-cache/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/redis-cache/tsconfig.lib.json"
+      }
     }
   }
 }

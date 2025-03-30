@@ -22,6 +22,10 @@
     "@app/jwt": "<rootDir>/../libs/jwt/src",
     "@app/jwt/(.*)": "<rootDir>/../libs/jwt/src/$1",
     "@app/prisma": "<rootDir>/../libs/prisma/src",
-    "@app/prisma/(.*)": "<rootDir>/../libs/prisma/src/$1"
+    "@app/prisma-cache": "<rootDir>/../libs/prisma-cache/src",
+    "@app/prisma-cache/(.*)": "<rootDir>/../libs/prisma-cache/src/$1",
+    "@app/prisma/(.*)": "<rootDir>/../libs/prisma/src/$1",
+    "@app/redis-cache": "<rootDir>/../libs/redis-cache/src",
+    "@app/redis-cache/(.*)": "<rootDir>/../libs/redis-cache/src/$1"
   }
 }

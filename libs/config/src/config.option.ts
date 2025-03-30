@@ -9,6 +9,15 @@ export type Configure = {
     cluster?: ClusterClientOptions | ClusterClientOptions[];
     standalone?: RedisClientOptions | RedisClientOptions[];
   };
+  cache: {
+    ttl: {
+      role: {
+        list: number;
+        info: number;
+        tree: number;
+      };
+    };
+  };
 };
 
 type Keys<T> = keyof T;

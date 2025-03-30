@@ -7,6 +7,8 @@ import { ConfigModule, ConfigService, tomlLoader } from '@app/config';
 import { join } from 'path';
 import { GlobalCounterModule } from '@app/global-counter';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { RoleModule } from './role/role.module';
+import { RedisCacheModule } from '@app/redis-cache';
 
 @Module({
   imports: [
@@ -41,6 +43,8 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
           true,
         ),
     GlobalCounterModule.forRoot({ global: true }),
+    RedisCacheModule.forRoot({ global: true }),
+    RoleModule,
   ],
   providers: [
     {

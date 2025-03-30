@@ -51,8 +51,20 @@
       "@app/prisma": [
         "libs/prisma/src"
       ],
+      "@app/prisma-cache": [
+        "libs/prisma-cache/src"
+      ],
+      "@app/prisma-cache/*": [
+        "libs/prisma-cache/src/*"
+      ],
       "@app/prisma/*": [
         "libs/prisma/src/*"
+      ],
+      "@app/redis-cache": [
+        "libs/redis-cache/src"
+      ],
+      "@app/redis-cache/*": [
+        "libs/redis-cache/src/*"
       ]
     }
   }

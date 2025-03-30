@@ -67,6 +67,7 @@ model Role {
   children   Role[] @relation("roles")
   account    Account[]
   permission Permission[]
+  deleted    Boolean @default(false)
 
-  @@index([id, desc, clientId])
+  @@index([id, desc, clientId, deleted])
 }
