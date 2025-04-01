@@ -5,6 +5,7 @@ import {
   ID_COUNTER,
   OAUTH_CODE_ID_PAIR,
   TOKEN_PAIR,
+  TOKEN_PAIR_META,
 } from '@app/constant';
 import { AutoRedis } from '@app/decorator';
 import { JwtService } from '@app/jwt';
@@ -136,28 +137,75 @@ export class AuthService {
     const { access, refresh } = await this.generateTokenPair(
       oauthCodePair.accountId,
     );
-    await this.redis.set(TOKEN_PAIR(oauthCodePair.accountId, 'access'), access);
-    await this.redis.set(
-      TOKEN_PAIR(oauthCodePair.accountId, 'refresh'),
+    if (
+      (await this.redis.pttl(
+        TOKEN_PAIR(oauthCodePair.accountId, clientId, 'access'),
+      )) > 1000
+    ) {
+      const access_token = await this.redis.get(
+        TOKEN_PAIR(oauthCodePair.accountId, clientId, 'access'),
+      );
+      const refresh_token = await this.redis.get(
+        TOKEN_PAIR(oauthCodePair.accountId, clientId, 'refresh'),
+      );
+      const expire = {
+        access: await this.redis.pttl(
+          TOKEN_PAIR(oauthCodePair.accountId, clientId, 'access'),
+        ),
+        refresh: await this.redis.pttl(
+          TOKEN_PAIR(oauthCodePair.accountId, clientId, 'access'),
+        ),
+      };
+      const expireAt = {
+        access: `${Date.now() + expire.access}`,
+        refresh: `${Date.now() + expire.refresh}`,
+      };
+      return {
+        access_token,
+        refresh_token,
+        expire,
+        expireAt,
+      };
+    }
+    const multi = this.redis.multi();
+    multi.set(TOKEN_PAIR(oauthCodePair.accountId, clientId, 'access'), access);
+    multi.set(
+      TOKEN_PAIR(oauthCodePair.accountId, clientId, 'refresh'),
       refresh,
     );
 
-    await this.redis.expire(
-      TOKEN_PAIR(oauthCodePair.accountId, 'access'),
+    multi.expire(
+      TOKEN_PAIR(oauthCodePair.accountId, clientId, 'access'),
       this.config.get('cache.ttl.auth.token.access'),
     );
-    await this.redis.expire(
-      TOKEN_PAIR(oauthCodePair.accountId, 'refresh'),
+    multi.expire(
+      TOKEN_PAIR(oauthCodePair.accountId, clientId, 'refresh'),
       this.config.get('cache.ttl.auth.token.refresh'),
     );
+    multi.hset(TOKEN_PAIR_META(oauthCodePair.accountId, clientId), {
+      access: this.config.get('cache.ttl.auth.token.access'),
+      refresh: this.config.get('cache.ttl.auth.token.refresh'),
+    });
+    multi.hset(
+      TOKEN_PAIR_META(oauthCodePair.accountId, clientId),
+      this.config.get('cache.ttl.auth.token.access'),
+    );
+    await multi.exec();
+
+    const expire = {
+      access: this.config.get('cache.ttl.auth.token.access'),
+      refresh: this.config.get('cache.ttl.auth.token.refresh'),
+    };
+    const expireAt = {
+      access: `${Date.now() + expire.access}`,
+      refresh: `${Date.now() + expire.refresh}`,
+    };
 
     return {
       access_token: access,
       refresh_token: refresh,
-      expire: {
-        access: this.config.get('cache.ttl.auth.token.access'),
-        refresh: this.config.get('cache.ttl.auth.token.refresh'),
-      },
+      expire,
+      expireAt,
     };
   }
   async generateTokenPair(accountId: string | bigint) {
@@ -186,8 +234,8 @@ export class AuthService {
       throw new HttpException('client secret 错误', HttpStatus.BAD_REQUEST);
     }
     const tokenPair = {
-      access: TOKEN_PAIR(userId.toString(), 'access'),
-      refresh: TOKEN_PAIR(userId.toString(), 'refresh'),
+      access: TOKEN_PAIR(userId.toString(), clientId, 'access'),
+      refresh: TOKEN_PAIR(userId.toString(), clientId, 'refresh'),
     };
     const realRefreshToken = await this.redis.get(tokenPair.refresh);
     if (!realRefreshToken) {

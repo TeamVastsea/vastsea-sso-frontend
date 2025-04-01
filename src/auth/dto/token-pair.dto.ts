@@ -11,6 +11,17 @@ export class TokenExpire {
   refresh: number;
 }
 
+export class TokenExpireAt {
+  @ApiProperty({
+    description: '从颁发的那一刻起, Access Token 失效时间的时间戳',
+  })
+  access: string;
+  @ApiProperty({
+    description: '从颁发的那一刻起, Refresh Token 失效时间的时间戳',
+  })
+  refresh: string;
+}
+
 @ApiSchema()
 export class TokenPayload {
   @ApiProperty({
@@ -25,4 +36,6 @@ export class TokenPayload {
   refresh_token: string;
   @ApiProperty({ description: '过期时间' })
   expire: TokenExpire;
+  @ApiProperty({ description: '过期时间戳' })
+  expireAt: TokenExpireAt;
 }
