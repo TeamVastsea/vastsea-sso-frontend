@@ -22,6 +22,8 @@
   "dependencies": {
     "@gaonengwww/jose": "^6.0.9",
     "@liaoliaots/nestjs-redis": "9.0.0",
+    "@nanogiants/nestjs-swagger-api-exception-decorator": "^1.7.2",
+    "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/common": "^11.0.12",
     "@nestjs/core": "^11.0.12",
     "@nestjs/mapped-types": "*",
@@ -32,6 +34,7 @@
     "globals": "^16.0.0",
     "ioredis": "^5.6.0",
     "nestjs-zod": "^4.3.1",
+    "nodemailer": "^6.10.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "superjson": "^2.2.2",
@@ -52,6 +55,7 @@
     "eslint": "^9.23.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-prettier": "^5.2.5",
+    "express": "^4.21.2",
     "jest": "^29.7.0",
     "prettier": "^3.5.3",
     "prisma": "^6.5.0",
@@ -89,11 +93,7 @@
       "^@app/jwt(|/.*)$": "<rootDir>/libs/jwt/src/$1",
       "^@app/prisma(|/.*)$": "<rootDir>/libs/prisma/src/$1",
       "^@app/redis-cache(|/.*)$": "<rootDir>/libs/redis-cache/src/$1"
-    },
-    "roots": [
-      "<rootDir>/src/",
-      "<rootDir>/libs/"
-    ]
+    }
   },
   "packageManager": "pnpm@9.5.0+sha512.140036830124618d624a2187b50d04289d5a087f326c9edfc0ccd733d76c4f52c3a313d4fc148794a2a9d81553016004e6742e8cf850670268a7387fc220c903"
 }

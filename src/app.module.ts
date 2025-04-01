@@ -9,11 +9,18 @@ import { GlobalCounterModule } from '@app/global-counter';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { RoleModule } from './role/role.module';
 import { RedisCacheModule } from '@app/redis-cache';
+import { AuthModule } from './auth/auth.module';
+import { readFileSync } from 'fs';
 
 @Module({
   imports: [
     PrismaModule,
-    JwtModule.forRoot({ global: true }),
+    JwtModule.forRoot({
+      global: true,
+      priKey: readFileSync(join(__dirname, 'keys/pri.pkcs8')).toString(),
+      pubKey: readFileSync(join(__dirname, 'keys/pub.pem')).toString(),
+      keyPairType: 'RS256',
+    }),
     PermissionModule,
     ConfigModule.forRoot({
       loader: tomlLoader(join(__dirname, '../config.toml')),
@@ -45,6 +52,7 @@ import { RedisCacheModule } from '@app/redis-cache';
     GlobalCounterModule.forRoot({ global: true }),
     RedisCacheModule.forRoot({ global: true }),
     RoleModule,
+    AuthModule,
   ],
   providers: [
     {

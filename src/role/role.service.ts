@@ -1,22 +1,29 @@
+import { ConfigService } from '@app/config';
 import { CLIENT_ROLE_TOTAL, ID_COUNTER, ROLE_TOTAL } from '@app/constant';
 import { AutoRedis } from '@app/decorator';
 import { PrismaService } from '@app/prisma';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { RedisCacheService } from '@app/redis-cache';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { Permission, Prisma, Role } from '@prisma/client';
 import Redis, { Cluster } from 'ioredis';
 import { CreateRole } from './dto/create-role.dto';
 import { GlobalCounterService } from '@app/global-counter';
 import { UpdateRole } from './dto/update-role.dto';
 
-// TODO: Cache for all service
-
 @Injectable()
 export class RoleService {
+  private logger: Logger = new Logger(RoleService.name);
   constructor(
     private prisma: PrismaService,
+    private config: ConfigService,
+    private redisCache: RedisCacheService,
     private cnt: GlobalCounterService,
     @AutoRedis() private redis: Redis | Cluster,
   ) {}
 
+  /**
+   * @description 创建时写入缓存, permission, parents分开存id，避免产生大key
+   */
   async createRole(data: CreateRole) {
     const { name, desc, clientId, permissions } = data;
     const dbRole = await this.getRoleByName(name);
@@ -61,44 +68,6 @@ export class RoleService {
       where: { id },
       data: { deleted: true },
     });
-  }
-
-  async updateRole(id: bigint, clientId: string, body: UpdateRole) {
-    const oldRole = await this.getRoleInfo(id, clientId);
-    if (!oldRole) {
-      throw new HttpException('角色不存在', HttpStatus.NOT_FOUND);
-    }
-    return this.prisma.role.update({
-      where: {
-        id,
-        clientId,
-      },
-      data: {
-        name: body.name,
-        desc: body.desc,
-        parents: {
-          connect: body.parent.map((id) => ({ id })),
-        },
-        permission: {
-          connect: body.parent.map((id) => ({ id })),
-        },
-      },
-    });
-  }
-  async getRoleList(clientId: string, preId?: bigint, size?: number) {
-    const total = this.redis.get(CLIENT_ROLE_TOTAL(clientId));
-    const roles = this.prisma.role.findMany({
-      where: {
-        id: {
-          gt: preId,
-        },
-      },
-      take: size,
-    });
-    return {
-      data: await roles,
-      total: await total,
-    };
   }
   getRoleInfo(id: bigint, clientId: string) {
     return this.prisma.role.findFirst({

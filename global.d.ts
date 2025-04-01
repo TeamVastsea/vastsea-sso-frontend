@@ -5,5 +5,6 @@ declare namespace NodeJS {
     SWAGGER_TITLE?: string;
     SWAGGER_DESC?: string;
     VERSION?: string;
+    COMMON_ERROR_REDIRECT: string;
   }
 }

@@ -9,12 +9,34 @@ export type Configure = {
     cluster?: ClusterClientOptions | ClusterClientOptions[];
     standalone?: RedisClientOptions | RedisClientOptions[];
   };
+  email: {
+    email: string;
+    transport: {
+      host: string;
+      port: number;
+      auth: {
+        user: string;
+        pass: string;
+      };
+    };
+  };
   cache: {
     ttl: {
       role: {
         list: number;
         info: number;
         tree: number;
+      };
+      client: {
+        secret: number;
+      };
+      auth: {
+        code: number;
+        token: {
+          access: number;
+          refresh: number;
+        };
+        emailCode: number;
       };
     };
   };

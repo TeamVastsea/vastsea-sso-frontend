@@ -33,8 +33,8 @@ model Account {
 model Profile {
   id        String  @id @default(uuid())
   nick      String
-  desc      String
-  avatar    String
+  desc      String?
+  avatar    String?
   account   Account @relation(fields: [accountid], references: [id])
   accountid BigInt  @unique
 }
