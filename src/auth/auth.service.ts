@@ -77,7 +77,8 @@ export class AuthService {
         to: email,
         from: this.config.get('email.email'),
         subject: '欢迎注册',
-        text: `验证码: ${code}`,
+        text: `验证码: ${code}\n有效期 ${Math.floor(this.config.get('cache.ttl.auth.emailCode') / 60)} 分钟
+        `,
       })
       .then(() => setCodeHandle)
       .then(() =>
@@ -174,11 +175,11 @@ export class AuthService {
       refresh,
     );
 
-    multi.expire(
+    multi.pexpire(
       TOKEN_PAIR(oauthCodePair.accountId, clientId, 'access'),
       this.config.get('cache.ttl.auth.token.access'),
     );
-    multi.expire(
+    multi.pexpire(
       TOKEN_PAIR(oauthCodePair.accountId, clientId, 'refresh'),
       this.config.get('cache.ttl.auth.token.refresh'),
     );
@@ -186,7 +187,7 @@ export class AuthService {
       access: this.config.get('cache.ttl.auth.token.access'),
       refresh: this.config.get('cache.ttl.auth.token.refresh'),
     });
-    multi.hset(
+    multi.pexpire(
       TOKEN_PAIR_META(oauthCodePair.accountId, clientId),
       this.config.get('cache.ttl.auth.token.access'),
     );
