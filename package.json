@@ -17,7 +17,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "vitest --config ./vitest-e2e.config.ts"
   },
   "dependencies": {
     "@gaonengwww/jose": "^6.0.9",
@@ -49,12 +49,14 @@
     "@suites/di.nestjs": "^3.0.1",
     "@suites/doubles.jest": "^3.0.1",
     "@suites/unit": "^3.0.1",
+    "@swc/core": "^1.11.16",
     "@types/express": "^5.0.1",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.13.14",
     "@types/supertest": "^6.0.3",
     "@typescript-eslint/eslint-plugin": "^8.28.0",
     "@typescript-eslint/parser": "^8.28.0",
+    "@vitest/coverage-v8": "^3.1.1",
     "eslint": "^9.23.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-prettier": "^5.2.5",
@@ -68,7 +70,9 @@
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "unplugin-swc": "^1.5.1",
+    "vitest": "^3.1.1"
   },
   "jest": {
     "moduleFileExtensions": [

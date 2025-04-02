@@ -1,6 +1,8 @@
 import { Prisma, PrismaClient } from '@prisma/client';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 
-const execPromisify = util.promisify(exec);
+const execPromisify = promisify(exec);
 const prisma = new PrismaClient();
 
 const tables = Prisma.dmmf.datamodel.models
