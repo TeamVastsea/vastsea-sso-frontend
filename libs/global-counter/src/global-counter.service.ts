@@ -33,7 +33,8 @@ export class GlobalCounterService {
   async incr(name: string) {
     const counterExists = await this.redis.exists(name);
     if (!counterExists) {
-      throw new HttpException(`${name} 不存在`, HttpStatus.NOT_FOUND);
+      await this.redis.set(name, 0);
+      // throw new HttpException(`${name} 不存在`, HttpStatus.NOT_FOUND);
     }
     const step = Number.parseInt(
       await this.redis.hget(`${name}::meta`, 'step'),

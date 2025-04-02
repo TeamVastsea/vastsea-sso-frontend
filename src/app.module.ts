@@ -1,6 +1,6 @@
 import { JwtModule } from '@app/jwt';
 import { PrismaModule } from '@app/prisma';
-import { ClassSerializerInterceptor, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { PermissionModule } from './permission/permission.module';
 import { ClusterModule, RedisModule } from '@liaoliaots/nestjs-redis';
 import { ConfigModule, ConfigService, tomlLoader } from '@app/config';
@@ -11,6 +11,7 @@ import { RoleModule } from './role/role.module';
 import { RedisCacheModule } from '@app/redis-cache';
 import { AuthModule } from './auth/auth.module';
 import { readFileSync } from 'fs';
+import { SuperSerializerInterceptor } from './super_serializer/super_serializer.interceptor';
 
 @Module({
   imports: [
@@ -57,7 +58,7 @@ import { readFileSync } from 'fs';
   providers: [
     {
       provide: APP_INTERCEPTOR,
-      useClass: ClassSerializerInterceptor,
+      useClass: SuperSerializerInterceptor,
     },
   ],
 })

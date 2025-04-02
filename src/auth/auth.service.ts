@@ -44,6 +44,7 @@ export class AuthService {
     if (emailCode !== code) {
       throw new HttpException('验证码不正确', HttpStatus.BAD_REQUEST);
     }
+    await this.redis.del(AUTH_EMAIL_CODE(email));
     const salt = randomBytes(64).toString('hex');
     const iterations = 1000;
     const hashPwd = this.hashPwd(password, salt, iterations);
@@ -75,6 +76,12 @@ export class AuthService {
         '请不要重复发送验证码',
         HttpStatus.TOO_MANY_REQUESTS,
       );
+    }
+    const account = await this.prisma.account.findFirst({
+      where: { email },
+    });
+    if (account) {
+      throw new HttpException('用户已存在', HttpStatus.BAD_REQUEST);
     }
     const code = randomBytes(80).toString('hex').slice(0, 16);
     const setCodeHandle = this.redis.set(AUTH_EMAIL_CODE(email), code);
