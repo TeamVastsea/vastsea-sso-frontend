@@ -19,10 +19,10 @@ import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class AuthService {
-  private logger: Logger = new Logger(AuthService.name);
   constructor(
-    private prisma: PrismaService,
     @AutoRedis() private redis: Redis | Cluster,
+    private logger: Logger = new Logger(AuthService.name),
+    private prisma: PrismaService,
     private config: ConfigService,
     private jwt: JwtService,
     private cnt: GlobalCounterService,
@@ -253,6 +253,11 @@ export class AuthService {
     multi.set(tokenPair.refresh, refresh);
     multi.expire(tokenPair.access, accessExpire);
     multi.expire(tokenPair.refresh, refreshExpire);
+    const expireAt = {
+      access: `${Date.now() + accessExpire}`,
+      refresh: `${Date.now() + refreshExpire}`,
+    };
+    multi.hset(TOKEN_PAIR_META(userId.toString(), clientId), expireAt);
     await multi.exec();
     return {
       access_token: access,
@@ -261,6 +266,7 @@ export class AuthService {
         access: accessExpire,
         refresh: refreshExpire,
       },
+      expireAt,
     };
   }
 
