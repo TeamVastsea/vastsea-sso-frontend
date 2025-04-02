@@ -1,46 +1,4 @@
-import {
-  ClusterClientOptions,
-  RedisClientOptions,
-} from '@liaoliaots/nestjs-redis';
 import { ConfigurableModuleBuilder } from '@nestjs/common';
-
-export type Configure = {
-  redis: {
-    cluster?: ClusterClientOptions | ClusterClientOptions[];
-    standalone?: RedisClientOptions | RedisClientOptions[];
-  };
-  email: {
-    email: string;
-    transport: {
-      host: string;
-      port: number;
-      auth: {
-        user: string;
-        pass: string;
-      };
-    };
-  };
-  cache: {
-    ttl: {
-      role: {
-        list: number;
-        info: number;
-        tree: number;
-      };
-      client: {
-        secret: number;
-      };
-      auth: {
-        code: number;
-        token: {
-          access: number;
-          refresh: number;
-        };
-        emailCode: number;
-      };
-    };
-  };
-};
 
 type Keys<T> = keyof T;
 type Values<T> = T[Keys<T>];
