@@ -19,9 +19,9 @@ import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class AuthService {
+  private logger: Logger = new Logger(AuthService.name);
   constructor(
     @AutoRedis() private redis: Redis | Cluster,
-    private logger: Logger = new Logger(AuthService.name),
     private prisma: PrismaService,
     private config: ConfigService,
     private jwt: JwtService,

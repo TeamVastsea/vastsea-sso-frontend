@@ -7526,7 +7526,7 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.27.0
       chokidar: 3.6.0
-      glob: 10.3.12
+      glob: 10.4.5
       html-minifier: 4.0.0
       js-beautify: 1.15.4
       lodash: 4.17.21

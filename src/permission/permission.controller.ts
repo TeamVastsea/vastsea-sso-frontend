@@ -11,7 +11,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { PermissionService } from './permission.service';
-import { BigIntPipe } from '@app/decorator/bigint.pipe';
+import { BigIntPipe } from '@app/decorator';
 import { CreatePermission } from './dto/create-permission';
 import { UpdatePermission } from './dto/update-permission';
 import { Permission } from './dto/permission';
