@@ -78,11 +78,6 @@ export class AuthController {
     name: 'clientSecret',
     description: '注册时平台颁发的clientSecret',
   })
-  @ApiQuery({
-    name: 'scopes',
-    description:
-      '颁发的token允许访问的作用域, 使用空格分割. 授权服务器的作用于通常是 auth.xxx',
-  })
   @ApiOkResponse({
     type: TokenPayload,
     description:
@@ -99,8 +94,9 @@ export class AuthController {
 
   @Post('mail-code')
   async getMailCode(@Query('email') email: string) {
-    await this.authService.createEmailCode(email);
-    return;
+    return {
+      ttl: await this.authService.createEmailCode(email),
+    };
   }
 
   @ApiQuery({ name: 'clientId', description: '平台注册时颁发的clientId' })

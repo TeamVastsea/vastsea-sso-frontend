@@ -69,7 +69,13 @@ export class AuthService {
     return { id: account.id, email: account.email, profile: account.profile };
   }
 
-  createEmailCode(email: string) {
+  async createEmailCode(email: string) {
+    if (await this.redis.exists(AUTH_EMAIL_CODE(email))) {
+      throw new HttpException(
+        '请不要重复发送验证码',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
     const code = randomBytes(80).toString('hex').slice(0, 16);
     const setCodeHandle = this.redis.set(AUTH_EMAIL_CODE(email), code);
     return this.mail
@@ -87,7 +93,7 @@ export class AuthService {
           this.config.get('cache.ttl.auth.emailCode'),
         ),
       )
-      .then(() => true)
+      .then(() => this.config.get('cache.ttl.auth.emailCode'))
       .catch((err) => this.logger.error(err.message, err.stack));
   }
 
