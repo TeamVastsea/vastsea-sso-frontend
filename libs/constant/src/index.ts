@@ -4,6 +4,7 @@ export const ID_COUNTER = {
   ACCOUNT: 'ACCOUNT-ID',
   ROLE: 'ROLE-ID',
   PROFILE: 'PROFILE-ID',
+  CLIENT: 'CLIENT-ID'
 };
 
 export const PERMISSION_INFO_CACHE = (id: bigint) => `PERMISSION::${id}::INFO`;
