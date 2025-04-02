@@ -17,20 +17,24 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "vitest --config ./vitest-e2e.config.ts"
   },
   "dependencies": {
     "@gaonengwww/jose": "^6.0.9",
     "@liaoliaots/nestjs-redis": "9.0.0",
+    "@nanogiants/nestjs-swagger-api-exception-decorator": "^1.7.2",
+    "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/common": "^11.0.12",
     "@nestjs/core": "^11.0.12",
     "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^11.0.12",
+    "@nestjs/swagger": "^11.1.0",
     "@prisma/client": "6.5.0",
     "class-transformer": "^0.5.1",
     "globals": "^16.0.0",
     "ioredis": "^5.6.0",
     "nestjs-zod": "^4.3.1",
+    "nodemailer": "^6.10.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "superjson": "^2.2.2",
@@ -42,15 +46,21 @@
     "@nestjs/cli": "^11.0.5",
     "@nestjs/schematics": "^11.0.2",
     "@nestjs/testing": "^11.0.12",
+    "@suites/di.nestjs": "^3.0.1",
+    "@suites/doubles.jest": "^3.0.1",
+    "@suites/unit": "^3.0.1",
+    "@swc/core": "^1.11.16",
     "@types/express": "^5.0.1",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.13.14",
     "@types/supertest": "^6.0.3",
     "@typescript-eslint/eslint-plugin": "^8.28.0",
     "@typescript-eslint/parser": "^8.28.0",
+    "@vitest/coverage-v8": "^3.1.1",
     "eslint": "^9.23.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-prettier": "^5.2.5",
+    "express": "^4.21.2",
     "jest": "^29.7.0",
     "prettier": "^3.5.3",
     "prisma": "^6.5.0",
@@ -60,7 +70,9 @@
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "unplugin-swc": "^1.5.1",
+    "vitest": "^3.1.1"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -88,11 +100,7 @@
       "^@app/jwt(|/.*)$": "<rootDir>/libs/jwt/src/$1",
       "^@app/prisma(|/.*)$": "<rootDir>/libs/prisma/src/$1",
       "^@app/redis-cache(|/.*)$": "<rootDir>/libs/redis-cache/src/$1"
-    },
-    "roots": [
-      "<rootDir>/src/",
-      "<rootDir>/libs/"
-    ]
+    }
   },
   "packageManager": "pnpm@9.5.0+sha512.140036830124618d624a2187b50d04289d5a087f326c9edfc0ccd733d76c4f52c3a313d4fc148794a2a9d81553016004e6742e8cf850670268a7387fc220c903"
 }

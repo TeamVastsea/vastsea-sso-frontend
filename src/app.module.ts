@@ -1,6 +1,6 @@
 import { JwtModule } from '@app/jwt';
 import { PrismaModule } from '@app/prisma';
-import { ClassSerializerInterceptor, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { PermissionModule } from './permission/permission.module';
 import { ClusterModule, RedisModule } from '@liaoliaots/nestjs-redis';
 import { ConfigModule, ConfigService, tomlLoader } from '@app/config';
@@ -9,11 +9,19 @@ import { GlobalCounterModule } from '@app/global-counter';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { RoleModule } from './role/role.module';
 import { RedisCacheModule } from '@app/redis-cache';
+import { AuthModule } from './auth/auth.module';
+import { readFileSync } from 'fs';
+import { SuperSerializerInterceptor } from './super_serializer/super_serializer.interceptor';
 
 @Module({
   imports: [
     PrismaModule,
-    JwtModule.forRoot({ global: true }),
+    JwtModule.forRoot({
+      global: true,
+      priKey: readFileSync(join(__dirname, 'keys/pri.pkcs8')).toString(),
+      pubKey: readFileSync(join(__dirname, 'keys/pub.pem')).toString(),
+      keyPairType: 'RS256',
+    }),
     PermissionModule,
     ConfigModule.forRoot({
       loader: tomlLoader(join(__dirname, '../config.toml')),
@@ -45,11 +53,12 @@ import { RedisCacheModule } from '@app/redis-cache';
     GlobalCounterModule.forRoot({ global: true }),
     RedisCacheModule.forRoot({ global: true }),
     RoleModule,
+    AuthModule,
   ],
   providers: [
     {
       provide: APP_INTERCEPTOR,
-      useClass: ClassSerializerInterceptor,
+      useClass: SuperSerializerInterceptor,
     },
   ],
 })
