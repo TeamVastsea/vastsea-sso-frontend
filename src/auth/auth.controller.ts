@@ -15,7 +15,6 @@ import { TokenPayload } from './dto/token-pair.dto';
 import { RefreshToken } from './dto/refresh-token';
 import { JwtService } from '@app/jwt';
 import { ApiException } from '@nanogiants/nestjs-swagger-api-exception-decorator';
-import { Register } from './dto/register.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -67,11 +66,6 @@ export class AuthController {
     url.searchParams.append('code', code);
     res.redirect(url.toString());
   }
-
-  @Post('register')
-  async register(@Body() data: Register) {
-    return this.authService.createAccount(data);
-  }
   @ApiQuery({ name: 'code', description: '从 /login 获取到的授权码' })
   @ApiQuery({ name: 'clientId', description: '注册时平台颁发的clientId' })
   @ApiQuery({
@@ -90,13 +84,6 @@ export class AuthController {
     @Query('clientSecret') clientSecret: string,
   ): Promise<TokenPayload> {
     return this.authService.generateToken(code, clientId, clientSecret);
-  }
-
-  @Post('mail-code')
-  async getMailCode(@Query('email') email: string) {
-    return {
-      ttl: await this.authService.createEmailCode(email),
-    };
   }
 
   @ApiQuery({ name: 'clientId', description: '平台注册时颁发的clientId' })

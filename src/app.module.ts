@@ -13,6 +13,7 @@ import { AuthModule } from './auth/auth.module';
 import { readFileSync } from 'fs';
 import { SuperSerializerInterceptor } from './super_serializer/super_serializer.interceptor';
 import { AuthGuard } from '../libs/guard';
+import { AccountModule } from './account/account.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { AuthGuard } from '../libs/guard';
     RedisCacheModule.forRoot({ global: true }),
     RoleModule,
     AuthModule,
+    AccountModule,
   ],
   providers: [
     {
