@@ -1,7 +1,7 @@
 import { AUTH_EMAIL_CODE } from '@app/constant';
 import { INestApplication } from '@nestjs/common';
 import Redis from 'ioredis';
-import { Register } from '../../src/auth/dto/register.dto';
+import { CreateAccount } from '../../src/account/dto/create-account';
 import request from 'supertest';
 
 export const createUser = async (
@@ -10,14 +10,13 @@ export const createUser = async (
   email: string,
   password: string,
 ) => {
-  const { body } = await request(app.getHttpServer())
-    .post(`/auth/mail-code?email=${email}`)
+  await request(app.getHttpServer())
+    .post(`/account/mail-code?email=${email}`)
     .send();
-  expect(body.ttl).toBeGreaterThan(0);
   const code = await redis.get(AUTH_EMAIL_CODE(email));
   expect(code).toBeDefined();
   const { body: b2 } = await request(app.getHttpServer())
-    .post('/auth/register')
+    .post('/account')
     .send({
       code,
       email,
@@ -25,6 +24,6 @@ export const createUser = async (
       profile: {
         nick: email,
       },
-    } as Register);
+    } as CreateAccount);
   return b2;
 };

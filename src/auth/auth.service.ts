@@ -1,8 +1,6 @@
 import { ConfigService } from '@app/config';
 import {
-  AUTH_EMAIL_CODE,
   CLIENT_SECRET,
-  ID_COUNTER,
   OAUTH_CODE_ID_PAIR,
   TOKEN_PAIR,
   TOKEN_PAIR_META,
@@ -10,99 +8,18 @@ import {
 import { AutoRedis } from '@app/decorator';
 import { JwtService } from '@app/jwt';
 import { PrismaService } from '@app/prisma';
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { pbkdf2Sync, randomBytes } from 'crypto';
 import Redis, { Cluster } from 'ioredis';
-import { Register } from './dto/register.dto';
-import { GlobalCounterService } from '@app/global-counter';
-import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class AuthService {
-  private logger: Logger = new Logger(AuthService.name);
   constructor(
     @AutoRedis() private redis: Redis | Cluster,
     private prisma: PrismaService,
     private config: ConfigService,
     private jwt: JwtService,
-    private cnt: GlobalCounterService,
-    private mail: MailerService,
   ) {}
-
-  async createAccount(body: Register) {
-    const { email, password, code, profile } = body;
-    const dbAccount = await this.prisma.account.findFirst({
-      where: { email },
-    });
-    if (dbAccount) {
-      throw new HttpException(`邮箱已存在`, HttpStatus.BAD_REQUEST);
-    }
-    const emailCode = await this.redis.get(AUTH_EMAIL_CODE(email));
-    if (!emailCode) {
-      throw new HttpException('您需要先发送验证码', HttpStatus.BAD_REQUEST);
-    }
-    if (emailCode !== code) {
-      throw new HttpException('验证码不正确', HttpStatus.BAD_REQUEST);
-    }
-    await this.redis.del(AUTH_EMAIL_CODE(email));
-    const salt = randomBytes(64).toString('hex');
-    const iterations = 1000;
-    const hashPwd = this.hashPwd(password, salt, iterations);
-    const id = await this.cnt.incr(ID_COUNTER.ACCOUNT);
-    const account = await this.prisma.account.create({
-      data: {
-        id,
-        password: hashPwd,
-        email,
-        salt,
-        iterations: 1000,
-        profile: {
-          create: {
-            ...profile,
-            nick: profile.nick,
-          },
-        },
-      },
-      include: {
-        profile: true,
-      },
-    });
-    return { id: account.id, email: account.email, profile: account.profile };
-  }
-
-  async createEmailCode(email: string) {
-    if (await this.redis.exists(AUTH_EMAIL_CODE(email))) {
-      throw new HttpException(
-        '请不要重复发送验证码',
-        HttpStatus.TOO_MANY_REQUESTS,
-      );
-    }
-    const account = await this.prisma.account.findFirst({
-      where: { email },
-    });
-    if (account) {
-      throw new HttpException('用户已存在', HttpStatus.BAD_REQUEST);
-    }
-    const code = randomBytes(80).toString('hex').slice(0, 16);
-    const setCodeHandle = this.redis.set(AUTH_EMAIL_CODE(email), code);
-    return this.mail
-      .sendMail({
-        to: email,
-        from: this.config.get('email.email'),
-        subject: '欢迎注册',
-        text: `验证码: ${code}\n有效期 ${Math.floor(this.config.get('cache.ttl.auth.emailCode') / 60)} 分钟
-        `,
-      })
-      .then(() => setCodeHandle)
-      .then(() =>
-        this.redis.expire(
-          AUTH_EMAIL_CODE(email),
-          this.config.get('cache.ttl.auth.emailCode'),
-        ),
-      )
-      .then(() => this.config.get('cache.ttl.auth.emailCode'))
-      .catch((err) => this.logger.error(err.message, err.stack));
-  }
 
   async getClientSecret(clientId: string) {
     const clientSecret = await this.redis.get(CLIENT_SECRET(clientId));
