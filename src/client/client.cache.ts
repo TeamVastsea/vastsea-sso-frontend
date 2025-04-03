@@ -1,5 +1,10 @@
 import { ConfigService } from '@app/config';
-import { CLIENT_PK__ID, CLIENT_INFO, CLIENT_NAME__ID } from '@app/constant';
+import {
+  CLIENT_PK__ID,
+  CLIENT_INFO,
+  CLIENT_NAME__ID,
+  CLIENT_TOTAL,
+} from '@app/constant';
 import { AutoRedis } from '@app/decorator';
 import { Injectable } from '@nestjs/common';
 import { Client } from '@prisma/client';
@@ -58,5 +63,14 @@ export class ClientCache {
   }
   clientExsistByName(name: string) {
     return this.redis.exists(CLIENT_NAME__ID(name));
+  }
+  incrClientCount() {
+    return this.redis.incr(CLIENT_TOTAL());
+  }
+  decrClientCount() {
+    return this.redis.decr(CLIENT_TOTAL());
+  }
+  getClientCount() {
+    return this.redis.get(CLIENT_TOTAL()).then(Number.parseInt);
   }
 }

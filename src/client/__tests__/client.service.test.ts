@@ -169,7 +169,7 @@ describe('ClientService', () => {
       prisma.client.findMany.mockResolvedValue(mockClients);
 
       const result = await service.getClients(1n, 2);
-      expect(result).toEqual(mockClients);
+      expect(result.data).toEqual(mockClients);
       expect(prisma.client.findMany).toHaveBeenCalledWith({
         where: { id: { gt: 1n } },
         take: 2,

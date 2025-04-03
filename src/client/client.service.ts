@@ -6,7 +6,7 @@ import { ID_COUNTER } from '@app/constant';
 import { PrismaService } from '@app/prisma';
 import { createHash, randomBytes } from 'crypto';
 import { ClientCache } from './client.cache';
-import { Client } from '@prisma/client';
+import { UpdateClient } from './dto/update-client';
 
 @Injectable()
 export class ClientService {
@@ -37,6 +37,7 @@ export class ClientService {
         redirect,
       },
     });
+    await this.cache.incrClientCount();
     return this.cache.putClientCache(client).then(() => client);
   }
   async removeClient(id: bigint) {
@@ -59,7 +60,7 @@ export class ClientService {
       })
       .then(() => client);
   }
-  async updateClient(id: bigint, client: Client) {
+  async updateClient(id: bigint, client: UpdateClient) {
     return this.prisma.client
       .update({
         where: {
@@ -73,6 +74,7 @@ export class ClientService {
         return Promise.all([
           this.cache.removeClientInfo(client),
           this.cache.putClientCache(client),
+          this.cache.decrClientCount(),
         ]);
       });
   }
@@ -88,9 +90,10 @@ export class ClientService {
     });
     return this.cache.putClientCache(dbClient).then(() => dbClient);
   }
-  getClients(preId: bigint, size: number) {
+  async getClients(preId: bigint, size: number) {
     // TODO: cache me.
-    return this.prisma.client.findMany({
+    const total = await this.cache.getClientCount();
+    const data = await this.prisma.client.findMany({
       where: {
         id: {
           gt: preId,
@@ -98,6 +101,7 @@ export class ClientService {
       },
       take: size,
     });
+    return { total, data };
   }
 
   private sha256(value: string): string {
