@@ -346,4 +346,7 @@ export class AuthService {
   hashPwd(password: string, salt: string, iterations: number) {
     return pbkdf2Sync(password, salt, iterations, 64, 'sha512').toString('hex');
   }
+  active(userId: bigint, clientId: string) {
+    return this.redis.exists(TOKEN_PAIR(userId.toString(), clientId, 'access'));
+  }
 }

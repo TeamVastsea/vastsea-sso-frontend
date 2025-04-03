@@ -127,4 +127,30 @@ export class PermissionService {
       total: await total,
     };
   }
+  async getAccountPermission(account: bigint, clientId: string) {
+    // TODO: should add cache.
+    const roles = await this.prisma.account.findFirst({
+      where: { id: account },
+      select: {
+        role: {
+          where: {
+            clientId,
+          },
+          select: {
+            permission: true,
+          },
+        },
+      },
+    });
+    if (!roles) {
+      throw new HttpException(`用户不存在`, HttpStatus.BAD_REQUEST);
+    }
+    const { role } = roles;
+    if (!role.length) {
+      return [];
+    }
+    return role
+      .flatMap((role) => role.permission)
+      .flatMap((permission) => permission.name);
+  }
 }

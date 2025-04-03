@@ -13,6 +13,9 @@ export const CLIENT_PERMISSION_TOTAL = (clientId: string) =>
   `PERMISSION::${clientId}::TOTAL`;
 
 export const ROLE_TOTAL = `ROLE::TOTAL`;
+export const ROLE_INFO = (roleId: bigint) => `ROLE::${roleId}::INFO`;
+export const ACCOUNT_ROLE = (accountId: string | bigint, clientId: string) =>
+  `ACCOUNT::${accountId}::${clientId}::ROLE`;
 export const CLIENT_ROLE_TOTAL = (clientId: string) =>
   `ROLE::${clientId}::TOTAL`;
 

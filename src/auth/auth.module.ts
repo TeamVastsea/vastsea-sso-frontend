@@ -18,5 +18,6 @@ import { ConfigService } from '@app/config';
   ],
   controllers: [AuthController],
   providers: [AuthService, PrismaService],
+  exports: [AuthService],
 })
 export class AuthModule {}

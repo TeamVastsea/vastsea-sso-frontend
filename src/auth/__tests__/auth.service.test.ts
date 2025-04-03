@@ -104,7 +104,7 @@ describe('AuthService', () => {
         id: BigInt(0),
         name: '',
         redirect: '',
-      });
+      } as any);
       await expect(service.getClientSecret('456')).resolves.toBe('123');
       expect(prisma.client.findFirst).toHaveBeenCalledTimes(1);
       expect(redis.set).toHaveBeenCalled();

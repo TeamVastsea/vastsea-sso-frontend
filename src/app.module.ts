@@ -6,12 +6,13 @@ import { ClusterModule, RedisModule } from '@liaoliaots/nestjs-redis';
 import { ConfigModule, ConfigService, tomlLoader } from '@app/config';
 import { join } from 'path';
 import { GlobalCounterModule } from '@app/global-counter';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { RoleModule } from './role/role.module';
 import { RedisCacheModule } from '@app/redis-cache';
 import { AuthModule } from './auth/auth.module';
 import { readFileSync } from 'fs';
 import { SuperSerializerInterceptor } from './super_serializer/super_serializer.interceptor';
+import { AuthGuard } from '../libs/guard';
 
 @Module({
   imports: [
@@ -59,6 +60,10 @@ import { SuperSerializerInterceptor } from './super_serializer/super_serializer.
     {
       provide: APP_INTERCEPTOR,
       useClass: SuperSerializerInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
     },
   ],
 })
