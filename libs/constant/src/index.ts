@@ -38,5 +38,5 @@ export const CLIENT_NAME__ID = (clientName: string) =>
 
 export const CLIENT_INFO = (clientId: string) => `CLIENT::${clientId}::INFO`;
 export const CLIENT_PK__ID = (pk: bigint) => `CLIENT::${pk}::ID`;
-
+export const CLIENT_TOTAL = () => `CLIENT::TOTAL`;
 export const AUTH_EMAIL_CODE = (email: string) => `AUTH::${email}::CODE`;
