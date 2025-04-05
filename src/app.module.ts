@@ -116,8 +116,9 @@ export class AppModule implements OnModuleInit {
       );
       return;
     }
-    const password = randomBytes(128).toString('base64').slice(0, 16);
-    const email = 'admin@no-reply.com';
+    const password =
+      process.env.ADMIN_PWD ?? randomBytes(128).toString('base64').slice(0, 16);
+    const email = process.env.ADMIN_EMAIL ?? 'admin@no-reply.com';
     const dbAdmin = await this.prisma.account.findFirst({
       where: {
         email,
@@ -171,6 +172,9 @@ export class AppModule implements OnModuleInit {
     }
     await this.redis.set(`APP::CONFIG`, new Date().toLocaleDateString());
     this.logger.log(`${this.appName} init success`);
+    this.logger.log(`Welcome use ${this.appName}`);
+    this.logger.log(`Admin Email: ${email}`);
+    this.logger.log(`Admin Password: ${password}`);
   }
   cretePermission(name: string, desc: string) {
     return this.permission.createPermission({
