@@ -12,7 +12,7 @@ import { RedisCacheModule } from '@app/redis-cache';
 import { AuthModule } from './auth/auth.module';
 import { readFileSync } from 'fs';
 import { SuperSerializerInterceptor } from './super_serializer/super_serializer.interceptor';
-import { AuthGuard } from '../libs/guard';
+import { AuthGuard, PermissionGuard } from '../libs/guard';
 
 @Module({
   imports: [
@@ -64,6 +64,10 @@ import { AuthGuard } from '../libs/guard';
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: PermissionGuard,
     },
   ],
 })
