@@ -12,6 +12,7 @@ import { RedisCacheModule } from '@app/redis-cache';
 import { AuthModule } from './auth/auth.module';
 import { readFileSync } from 'fs';
 import { SuperSerializerInterceptor } from './super_serializer/super_serializer.interceptor';
+import { ClientModule } from './client/client.module';
 import { AuthGuard, PermissionGuard } from '../libs/guard';
 import { AccountModule } from './account/account.module';
 
@@ -57,6 +58,7 @@ import { AccountModule } from './account/account.module';
     RoleModule,
     AuthModule,
     AccountModule,
+    ClientModule,
   ],
   providers: [
     {

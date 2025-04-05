@@ -2,7 +2,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   ConfigOptions,
   ConfigTemplate,
-  Configure,
   GetTypeByTemplate,
   MODULE_OPTIONS_TOKEN,
 } from './config.option';
