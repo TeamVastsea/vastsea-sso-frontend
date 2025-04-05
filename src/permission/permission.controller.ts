@@ -14,6 +14,7 @@ import { PermissionService } from './permission.service';
 import { BigIntPipe } from '@app/decorator';
 import { CreatePermission } from './dto/create-permission';
 import { UpdatePermission } from './dto/update-permission';
+import { Permission as PermissionDTO } from '@prisma/client';
 
 @Controller('permission')
 export class PermissionController {
@@ -28,7 +29,9 @@ export class PermissionController {
     return this.permissionService.getPermissionList(id, clientId, size);
   }
   @Post('/')
-  async createPermission(@Body() body: CreatePermission): Promise<Permission> {
+  async createPermission(
+    @Body() body: CreatePermission,
+  ): Promise<PermissionDTO> {
     return this.permissionService.createPermission(body);
   }
 

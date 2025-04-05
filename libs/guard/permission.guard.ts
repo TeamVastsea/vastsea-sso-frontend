@@ -10,21 +10,6 @@ import {
 import { Reflector } from '@nestjs/core';
 import { PermissionService } from '../../src/permission/permission.service';
 
-export type PermissionNode =
-  | {
-      type: 'and' | 'or';
-      lhs: PermissionNode | string;
-      rhs: PermissionNode | string;
-    }
-  | {
-      type: 'not';
-      value: PermissionNode | string;
-    }
-  | {
-      type: 'group';
-      child: PermissionNode | string;
-    };
-
 export class PermissionGuard implements CanActivate {
   constructor(
     @Inject() private readonly reflector: Reflector,
@@ -50,6 +35,9 @@ export class PermissionGuard implements CanActivate {
       BigInt(id),
       process.env.CLIENT_ID,
     );
+    if (permissions.includes('*')) {
+      return true;
+    }
     if (
       Array.isArray(requiredPermissions) &&
       requiredPermissions.length > permissions.length

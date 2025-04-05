@@ -4,7 +4,6 @@ import { AutoRedis } from '@app/decorator';
 import { PrismaService } from '@app/prisma';
 import { RedisCacheService } from '@app/redis-cache';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { Permission, Prisma, Role } from '@prisma/client';
 import Redis, { Cluster } from 'ioredis';
 import { CreateRole } from './dto/create-role.dto';
 import { GlobalCounterService } from '@app/global-counter';
@@ -21,9 +20,6 @@ export class RoleService {
     @AutoRedis() private redis: Redis | Cluster,
   ) {}
 
-  /**
-   * @description 创建时写入缓存, permission, parents分开存id，避免产生大key
-   */
   async createRole(data: CreateRole) {
     const { name, desc, clientId, permissions } = data;
     const dbRole = await this.getRoleByName(name);
@@ -50,9 +46,42 @@ export class RoleService {
     await this.redis.incr(CLIENT_ROLE_TOTAL(clientId));
     return role;
   }
-  async removeRole(id: bigint, clientId: string) {
+
+  async updateRole(id: bigint, data: UpdateRole) {
+    const role = await this.prisma.role.findFirst({
+      where: {
+        id,
+      },
+      select: { id: true },
+    });
+    if (!role) {
+      throw new HttpException('资源不存在', HttpStatus.NOT_FOUND);
+    }
+    return this.prisma.role.update({
+      where: {
+        id,
+      },
+      data: {
+        clientId: data.clientId,
+        parents: data.parent
+          ? {
+              connect: data.parent.map((id) => ({ id })),
+            }
+          : undefined,
+        desc: data.desc,
+        name: data.name,
+        permission: data.permissions
+          ? {
+              connect: data.permissions.map((id) => ({ id })),
+            }
+          : undefined,
+      },
+    });
+  }
+
+  async removeRole(id: bigint) {
     const dbRole = await this.prisma.role.findFirst({
-      where: { id, clientId },
+      where: { id },
       select: { children: true, name: true, deleted: true },
     });
     if (!dbRole || dbRole.deleted) {
@@ -68,6 +97,7 @@ export class RoleService {
       where: { id },
       data: { deleted: true },
     });
+    return deletedRole;
   }
   getRoleInfo(id: bigint, clientId: string) {
     return this.prisma.role.findFirst({
@@ -76,6 +106,25 @@ export class RoleService {
         permission: true,
       },
     });
+  }
+  async getRoleList(preId?: bigint, size?: number, clientId?: string) {
+    const total = this.redis.get(
+      clientId ? CLIENT_ROLE_TOTAL(clientId) : ROLE_TOTAL,
+    );
+    const roles = this.prisma.role.findMany({
+      where: {
+        id: {
+          gt: preId,
+        },
+        clientId,
+      },
+      take: size,
+      include: {
+        parents: true,
+        permission: true,
+      },
+    });
+    return { data: await roles, total: await total };
   }
   private getRoleByName(name: string) {
     return this.prisma.role.findFirst({
