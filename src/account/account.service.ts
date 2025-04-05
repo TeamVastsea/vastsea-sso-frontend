@@ -20,21 +20,13 @@ export class AccountService {
     private config: ConfigService,
   ) {}
   async createAccount(body: CreateAccount) {
-    const { email, password, code, profile } = body;
+    const { email, password, profile } = body;
     const dbAccount = await this.prisma.account.findFirst({
       where: { email },
     });
     if (dbAccount) {
       throw new HttpException(`邮箱已存在`, HttpStatus.BAD_REQUEST);
     }
-    const emailCode = await this.redis.get(AUTH_EMAIL_CODE(email));
-    if (!emailCode) {
-      throw new HttpException('您需要先发送验证码', HttpStatus.BAD_REQUEST);
-    }
-    if (emailCode !== code) {
-      throw new HttpException('验证码不正确', HttpStatus.BAD_REQUEST);
-    }
-    await this.redis.del(AUTH_EMAIL_CODE(email));
     const salt = randomBytes(64).toString('hex');
     const iterations = 1000;
     const hashPwd = this.hashPwd(password, salt, iterations);
@@ -58,6 +50,19 @@ export class AccountService {
       },
     });
     return { id: account.id, email: account.email, profile: account.profile };
+  }
+  async getEmailCode(email: string) {
+    const emailCode = await this.redis.get(AUTH_EMAIL_CODE(email));
+    if (!emailCode) {
+      throw new HttpException('您需要先发送验证码', HttpStatus.BAD_REQUEST);
+    }
+    return emailCode;
+  }
+  async verifyCode(email: string, userCode: string, realCode: string) {
+    if (userCode !== realCode) {
+      throw new HttpException('验证码不正确', HttpStatus.BAD_REQUEST);
+    }
+    await this.redis.del(AUTH_EMAIL_CODE(email));
   }
 
   hashPwd(password: string, salt: string, iterations: number) {

@@ -20,7 +20,7 @@ export class ClientController {
   constructor(private readonly clientService: ClientService) {}
 
   @Auth()
-  @Permission('CLIENT::GET::LIST')
+  @Permission(['CLIENT::GET::LIST'])
   @Get('/')
   async getClientList(
     @Query('preId', new BigIntPipe({ optional: true })) preId: bigint,
@@ -30,28 +30,28 @@ export class ClientController {
   }
 
   @Auth()
-  @Permission('CLIENT::GET::INFO')
+  @Permission(['CLIENT::GET::INFO'])
   @Get('/:id')
   async getClientInfo(@Param('id', new BigIntPipe()) id: bigint) {
     return this.clientService.findClientById(id);
   }
 
   @Auth()
-  @Permission('CLIENT::CREATE')
+  @Permission(['CLIENT::CREATE'])
   @Post('/')
   async createClient(@Body() body: CreateClient) {
     return this.clientService.createClient(body);
   }
 
   @Auth()
-  @Permission('CLIENT::REMOVE')
+  @Permission(['CLIENT::REMOVE'])
   @Delete('/:id')
   async removeClient(@Param('id', BigIntPipe) id: bigint) {
     return this.clientService.removeClient(id);
   }
 
   @Auth()
-  @Permission('CLIENT::UPDATE')
+  @Permission(['CLIENT::UPDATE'])
   @Patch('/:id')
   async updateClient(
     @Param('id', BigIntPipe) id: bigint,

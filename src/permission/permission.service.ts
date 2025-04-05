@@ -24,13 +24,15 @@ export class PermissionService {
   ) {}
   async createPermission(body: CreatePermission) {
     const { name, desc, clientId } = body;
-    const id = BigInt(await this.redis.hget(PERMISSION_NAME_TO_ID, name));
+    const id = BigInt(
+      (await this.redis.hget(PERMISSION_NAME_TO_ID, name)) ?? 0,
+    );
     if (id) {
       const { name } = await this.getPermissionInfo(id, clientId);
       throw new HttpException(`${name} 已存在`, HttpStatus.BAD_REQUEST);
     }
     const dbId = await this.counter.incr(ID_COUNTER.PERMISSION);
-    const handle = this.prisma.permission.create({
+    const handle = await this.prisma.permission.create({
       data: {
         id: dbId,
         name,
@@ -39,13 +41,11 @@ export class PermissionService {
       },
     });
 
-    return handle.then((permission) => {
-      return this.redis
-        .incr(PERMISSION_TOTAL)
-        .then(() => this.redis.incr(CLIENT_PERMISSION_TOTAL(clientId)))
-        .then(() => this.updateCache(id, permission, 60))
-        .then(() => permission);
-    });
+    return this.redis
+      .incr(PERMISSION_TOTAL)
+      .then(() => this.redis.incr(CLIENT_PERMISSION_TOTAL(clientId)))
+      .then(() => this.updateCache(id, handle, 60))
+      .then(() => handle);
   }
   async removePermission(id: bigint, clientId: string) {
     const permission = await this.getPermissionInfo(id, clientId);

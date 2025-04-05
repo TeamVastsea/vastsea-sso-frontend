@@ -13,6 +13,8 @@ export class AccountController {
   }
   @Post('')
   async createAccount(@Body() body: CreateAccount) {
+    const emailCode = await this.accountService.getEmailCode(body.email);
+    await this.accountService.verifyCode(body.email, body.code, emailCode);
     return this.accountService.createAccount(body);
   }
 }
