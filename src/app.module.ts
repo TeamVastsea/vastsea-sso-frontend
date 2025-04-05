@@ -170,7 +170,7 @@ export class AppModule implements OnModuleInit {
       const res = await this.cretePermission(p, p);
       this.logger.log(`Create Permission ${res.name} Success`);
     }
-    await this.redis.set(`APP::CONFIG`, new Date().toLocaleDateString());
+    await this.redis.set(`APP::LOCK`, new Date().toLocaleDateString());
     this.logger.log(`${this.appName} init success`);
     this.logger.log(`Welcome use ${this.appName}`);
     this.logger.log(`Admin Email: ${email}`);
