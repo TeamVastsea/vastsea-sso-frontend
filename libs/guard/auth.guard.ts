@@ -52,6 +52,7 @@ export class AuthGuard implements CanActivate {
     if (!(await activeState)) {
       throw new HttpException('未登录', HttpStatus.BAD_REQUEST);
     }
+    req.user = { id };
     return true;
   }
   getToken(req: Request) {
