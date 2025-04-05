@@ -5,8 +5,6 @@ import Redis, { Cluster } from 'ioredis';
 import { PrismaService } from '@app/prisma';
 import { ConfigService } from '@app/config';
 import { JwtService } from '@app/jwt';
-import { GlobalCounterService } from '@app/global-counter';
-import { MailerService } from '@nestjs-modules/mailer';
 import type { Mocked } from '@suites/doubles.jest';
 import {
   DEFAULT_REDIS_NAMESPACE,
@@ -20,8 +18,6 @@ describe('AuthService', () => {
   let prisma: Mocked<PrismaService>;
   let config: Mocked<ConfigService>;
   let jwt: Mocked<JwtService>;
-  let cnt: Mocked<GlobalCounterService>;
-  let mail: Mocked<MailerService>;
   let redis: Mocked<Redis | Cluster>;
   beforeEach(async () => {
     const { unit, unitRef } = await TestBed.solitary(AuthService).compile();
@@ -29,10 +25,6 @@ describe('AuthService', () => {
     prisma = unitRef.get(PrismaService) as any as Mocked<PrismaService>;
     config = unitRef.get(ConfigService) as any as Mocked<ConfigService>;
     jwt = unitRef.get(JwtService) as any as Mocked<JwtService>;
-    cnt = unitRef.get(
-      GlobalCounterService,
-    ) as any as Mocked<GlobalCounterService>;
-    mail = unitRef.get(MailerService) as any as Mocked<MailerService>;
     redis = unitRef.get(
       getRedisToken(DEFAULT_REDIS_NAMESPACE),
     ) as any as Mocked<Redis | Cluster>;
@@ -40,56 +32,6 @@ describe('AuthService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
-  });
-
-  describe('CreateAccount', () => {
-    const mockDTO = {
-      email: 'no@reply.com',
-      code: 'code',
-      password: 'pwd',
-      profile: {
-        nick: 'test',
-      },
-    };
-    it('Fail, Email exist', async () => {
-      prisma.account.findFirst.mockResolvedValue({} as any);
-      expect(service.createAccount(mockDTO)).rejects.toThrow(HttpException);
-    });
-    it('Fail, Email code not exist', () => {
-      prisma.account.findFirst.mockResolvedValue(null as any);
-      redis.get.mockResolvedValue(null);
-      expect(service.createAccount(mockDTO)).rejects.toThrow(HttpException);
-    });
-    it('Fail, Email code not success', () => {
-      prisma.account.findFirst.mockReturnValueOnce(null as any);
-      redis.get.mockResolvedValue('code2');
-      expect(service.createAccount(mockDTO)).rejects.toThrow(
-        new HttpException('验证码不正确', HttpStatus.BAD_REQUEST),
-      );
-    });
-    it('Success', async () => {
-      prisma.account.findFirst.mockReturnValueOnce(null);
-      redis.get.mockResolvedValueOnce('code');
-      cnt.incr.mockResolvedValueOnce(BigInt(1));
-      prisma.account.create.mockResolvedValue({
-        id: BigInt(1),
-        email: 'no@reply.com',
-        profile: {
-          nick: '123',
-        } as any,
-      } as any);
-      await service.createAccount(mockDTO);
-      expect(prisma.account.findFirst).toHaveBeenCalled();
-      expect(redis.get).toHaveBeenCalled();
-      expect(cnt.incr).toHaveBeenCalled();
-      expect(prisma.account.create).toHaveBeenCalled();
-    });
-  });
-  it('Create Email Code success', async () => {
-    mail.sendMail.mockResolvedValue(null);
-    await expect(
-      service.createEmailCode('admin@no-reply.com'),
-    ).resolves.not.toThrow();
   });
   describe('Get Client Secret', () => {
     it('Cache Trigger', async () => {

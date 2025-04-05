@@ -1,7 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
-export const register = z.object({
+export const createAccount = z.object({
   email: z.string().describe('邮箱'),
   code: z.string().describe('邮箱验证码'),
   password: z.string().describe('登陆密码'),
@@ -12,4 +12,4 @@ export const register = z.object({
   }),
 });
 
-export class Register extends createZodDto(register) {}
+export class CreateAccount extends createZodDto(createAccount) {}
