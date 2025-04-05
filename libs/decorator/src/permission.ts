@@ -86,5 +86,5 @@ export type PermissionExpr =
   | boolean;
 export type PermissionArgs = string[] | PermissionExpr;
 
-export const Permission = (...permissions: [PermissionExpr] | string[]) =>
+export const Permission = (permissions: string[] | PermissionExpr) =>
   SetMetadata(PERMISSION_KEY, permissions);
