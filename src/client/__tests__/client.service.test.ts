@@ -176,8 +176,4 @@ describe('ClientService', () => {
       });
     });
   });
-  // it.todo('Remove Client');
-  // it.todo('Update Client');
-  // it.todo('Find Client By Id');
-  // it.todo('Get Clients');
 });
