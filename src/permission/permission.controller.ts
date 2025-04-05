@@ -14,6 +14,7 @@ import { PermissionService } from './permission.service';
 import { BigIntPipe } from '@app/decorator';
 import { CreatePermission } from './dto/create-permission';
 import { UpdatePermission } from './dto/update-permission';
+import { Permission } from '@prisma/client';
 
 @Controller('permission')
 export class PermissionController {
