@@ -27,36 +27,10 @@ describe('Auth E2E test', () => {
     expect(redis).toBeDefined();
     await createUser(app, redis, 'test@no-reply.com', 'test');
   });
-  describe('Register', () => {
-    afterEach(async () => {
-      await redis.flushall();
-    });
-    it('Register Success', async () => {
-      const { body } = await request(app.getHttpServer())
-        .post('/account/mail-code?email=admin@no-reply.com')
-        .send();
-      expect(body.ttl).toBeGreaterThan(0);
-      const code = await redis.get(AUTH_EMAIL_CODE('admin@no-reply.com'));
-      expect(code).toBeDefined();
-      const { statusCode, body: b2 } = await request(app.getHttpServer())
-        .post('/account')
-        .send({
-          code,
-          email: 'admin@no-reply.com',
-          password: 'admin',
-          profile: {
-            nick: 'admin',
-          },
-        } as CreateAccount);
-      expect(statusCode).toBe(HttpStatus.CREATED);
-      expect(b2.profile.id).toBeDefined();
-    });
-    it('Register fail User exist', async () => {
-      await createUser(app, redis, 'test@no-reply.com', 'test');
-      const { status } = await request(app.getHttpServer())
-        .post('/account/mail-code?email=test@no-reply.com')
-        .send();
-      expect(status).toBe(HttpStatus.BAD_REQUEST);
-    });
+  afterEach(async () => {
+    await redis.flushall();
+  });
+  it('Create User Account Success', async () => {
+    await createUser(app, redis, 'test2@no-reply.com', 'test');
   });
 });

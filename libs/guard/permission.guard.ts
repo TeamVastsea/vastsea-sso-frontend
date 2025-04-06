@@ -6,14 +6,16 @@ import {
   HttpException,
   HttpStatus,
   Inject,
+  Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PermissionService } from '../../src/permission/permission.service';
 
+@Injectable()
 export class PermissionGuard implements CanActivate {
   constructor(
-    @Inject() private readonly reflector: Reflector,
     private readonly permission: PermissionService,
+    private readonly reflector: Reflector,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const requiredPermissions: PermissionArgs =
