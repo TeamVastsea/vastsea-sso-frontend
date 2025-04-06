@@ -49,7 +49,7 @@ export class AuthService {
     const key = OAUTH_CODE_ID_PAIR(code);
     const miss = !(await this.redis.exists(key));
     if (miss) {
-      throw new HttpException('授权码过期', HttpStatus.UNAUTHORIZED);
+      throw new HttpException('授权码过期', HttpStatus.BAD_REQUEST);
     }
     const oauthCodePair = (await this.redis.hgetall(key)) as unknown as {
       clientId: string;

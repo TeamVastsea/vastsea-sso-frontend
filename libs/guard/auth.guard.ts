@@ -7,19 +7,19 @@ import {
   ExecutionContext,
   HttpException,
   HttpStatus,
+  Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import Redis, { Cluster } from 'ioredis';
 import { AuthService } from '../../src/auth/auth.service';
-import { PermissionService } from '../../src/permission/permission.service';
 
+@Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
     private jwt: JwtService,
     private auth: AuthService,
-    private permissions: PermissionService,
     @AutoRedis() private redis: Redis | Cluster,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {

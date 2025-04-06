@@ -42,8 +42,8 @@ model Profile {
 model Client {
   id            BigInt  @id 
   name          String
-  desc          String
-  avatar        String
+  desc          String?
+  avatar        String?
   clientId      String  @unique
   clientSecret  String
   redirect      String

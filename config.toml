@@ -21,8 +21,11 @@ info=10
 tree=10
 [cache.ttl.client]
 secret=10
+info=10
+list=10
 [cache.ttl.auth]
 emailCode=600
+code=600
 [cache.ttl.auth.token]
 access=86400000
 refresh=604800000

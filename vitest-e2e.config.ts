@@ -6,7 +6,7 @@ export default defineConfig({
   test: {
     include: ['**/*.e2e-spec.ts'],
     globals: true,
-    root: '.',
+    root: './',
     alias: {
       '@app/config': resolve(__dirname, './libs/config/src'),
       '@app/constant': resolve(__dirname, './libs/constant/src'),
@@ -20,6 +20,7 @@ export default defineConfig({
   plugins: [swc.vite()],
   define: {
     __dirname: JSON.stringify(`'${resolve('.')}'`),
+    __TEST__: true,
   },
   resolve: {
     alias: {

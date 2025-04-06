@@ -83,14 +83,17 @@ export class AccountService {
     }
     const code = randomBytes(80).toString('hex').slice(0, 16);
     const setCodeHandle = this.redis.set(AUTH_EMAIL_CODE(email), code);
-    return this.mail
-      .sendMail({
-        to: email,
-        from: this.config.get('email.email'),
-        subject: '欢迎注册',
-        text: `验证码: ${code}\n有效期 ${Math.floor(this.config.get('cache.ttl.auth.emailCode') / 60)} 分钟
+    return (
+      __TEST__
+        ? Promise.resolve()
+        : this.mail.sendMail({
+            to: email,
+            from: this.config.get('email.email'),
+            subject: '欢迎注册',
+            text: `验证码: ${code}\n有效期 ${Math.floor(this.config.get('cache.ttl.auth.emailCode') / 60)} 分钟
           `,
-      })
+          })
+    )
       .then(() => setCodeHandle)
       .then(() =>
         this.redis.expire(
