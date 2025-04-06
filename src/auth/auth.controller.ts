@@ -54,7 +54,9 @@ export class AuthController {
         clientId,
       );
     const url = new URL(
-      client.redirect ?? redirect ?? process.env.COMMON_ERROR_REDIRECT,
+      (client ? client.redirect : null) ??
+        redirect ??
+        process.env.COMMON_ERROR_REDIRECT,
     );
     if (!ok) {
       url.searchParams.append('ok', 'false');
