@@ -22,17 +22,23 @@ import {
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiParam,
   ApiQuery,
+  ApiTags,
 } from '@nestjs/swagger';
 import { ClientList, TClient } from './dto/client-list.dto';
 import { Client } from '@prisma/client';
 import { ApiException } from '@nanogiants/nestjs-swagger-api-exception-decorator';
 
+@ApiTags('客户端管理模块')
 @Controller('client')
 export class ClientController {
   constructor(private readonly clientService: ClientService) {}
 
+  @ApiOperation({
+    summary: '获取客户端列表',
+  })
   @ApiOkResponse({
     description: '获取Client列表',
     type: ClientList,
@@ -49,6 +55,9 @@ export class ClientController {
     return this.clientService.getClients(preId, size);
   }
 
+  @ApiOperation({
+    summary: '获取某个客户端信息',
+  })
   @ApiOkResponse({
     description: '获取某个客户端的详细信息',
     type: TClient,
@@ -71,6 +80,9 @@ export class ClientController {
     return this.clientService.findClientById(id);
   }
 
+  @ApiOperation({
+    summary: '创建一个客户端',
+  })
   @ApiCreatedResponse({
     type: TClient,
   })
@@ -81,6 +93,9 @@ export class ClientController {
     return this.clientService.createClient(body);
   }
 
+  @ApiOperation({
+    summary: '删除一个客户端',
+  })
   @ApiOkResponse({
     type: TClient,
   })
@@ -99,6 +114,9 @@ export class ClientController {
     return this.clientService.removeClient(id);
   }
 
+  @ApiOperation({
+    summary: '修改一个客户端',
+  })
   @ApiOkResponse({
     description: '返回一个修改结果',
     type: TClient,
