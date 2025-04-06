@@ -6,6 +6,8 @@ import {
   Query,
   Get,
   BadRequestException,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
@@ -15,6 +17,7 @@ import { TokenPayload } from './dto/token-pair.dto';
 import { RefreshToken } from './dto/refresh-token';
 import { JwtService } from '@app/jwt';
 import { ApiException } from '@nanogiants/nestjs-swagger-api-exception-decorator';
+import { errors } from '@gaonengwww/jose';
 
 @Controller('auth')
 export class AuthController {
@@ -103,16 +106,21 @@ export class AuthController {
     @Query('clientId') clientId: string,
     @Query('clientSecret') clientSecret: string,
   ) {
-    const {
-      refreshToken,
-      userId = this.jwtService.decode<{ id: string }>(body.refreshToken).id ??
-        '',
-    } = body;
-    return this.authService.refreshToken(
-      userId,
-      refreshToken,
-      clientId,
-      clientSecret,
-    );
+    const { refreshToken } = body;
+    try {
+      const userId = this.jwtService.decode<{ id: string }>(
+        body.refreshToken,
+      ).id;
+      return this.authService.refreshToken(
+        userId,
+        refreshToken,
+        clientId,
+        clientSecret,
+      );
+    } catch (e) {
+      if (e instanceof errors.JWTInvalid) {
+        throw new HttpException('刷新令牌不合法', HttpStatus.BAD_REQUEST);
+      }
+    }
   }
 }

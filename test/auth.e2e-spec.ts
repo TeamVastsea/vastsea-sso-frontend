@@ -13,6 +13,9 @@ import { createClient } from './utils/create-client';
 import { Client } from '@prisma/client';
 import request from 'supertest';
 import { LoginDto } from 'src/auth/dto/login.dto';
+import { getCode, getToken } from './utils/login';
+import { TokenPayload } from 'src/auth/dto/token-pair.dto';
+import { OAUTH_CODE_ID_PAIR } from '@app/constant';
 
 describe('Auth E2E test', () => {
   let app: INestApplication;
@@ -96,19 +99,174 @@ describe('Auth E2E test', () => {
     });
   });
   describe('GetToken', () => {
-    it.todo('should return tokenPair');
-    it.todo('should throw unauthorized error, becuase code expire');
-    it.todo('should return bad request,because client id invalid');
-    it.todo('should return bad request, because clientSecret invalid');
+    it('should return tokenPair', async () => {
+      const { code } = await getCode(
+        {
+          email: 'test@no-reply.com',
+          password: 'test',
+        },
+        clients[0].clientId,
+        app,
+      );
+      const { body, statusCode } = await request(app.getHttpServer())
+        .get('/auth/token')
+        .query({
+          code,
+          clientId: clients[0].clientId,
+          clientSecret: clients[0].clientSecret,
+        });
+      expect(statusCode).toBe(HttpStatus.OK);
+      const tokenPair = body as TokenPayload;
+      expect(tokenPair.access_token).toBeDefined();
+      expect(tokenPair.refresh_token).toBeDefined();
+      expect(tokenPair.expire).toBeDefined();
+      expect(tokenPair.expireAt).toBeDefined();
+    });
+    it('should throw unauthorized error, becuase code expire', async () => {
+      const { code } = await getCode(
+        { email: 'test@no-reply.com', password: 'test' },
+        clients[0].clientId,
+        app,
+      );
+      const key = OAUTH_CODE_ID_PAIR(code);
+      await redis.del(key);
+      const { statusCode } = await request(app.getHttpServer())
+        .get('/auth/token')
+        .query({
+          code,
+          clientId: clients[0].clientId,
+          clientSecret: clients[0].clientSecret,
+        });
+      expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
+    });
+    it('should return bad request, because client id invalid', async () => {
+      const { code } = await getCode(
+        { email: 'test@no-reply.com', password: 'test' },
+        clients[0].clientId,
+        app,
+      );
+      const key = OAUTH_CODE_ID_PAIR(code);
+      await redis.del(key);
+      const { statusCode } = await request(app.getHttpServer())
+        .get('/auth/token')
+        .query({
+          code,
+          clientId: 'clientId',
+          clientSecret: clients[0].clientSecret,
+        });
+      expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
+    });
+    it('should return bad request, because clientSecret invalid', async () => {
+      const { code } = await getCode(
+        { email: 'test@no-reply.com', password: 'test' },
+        clients[0].clientId,
+        app,
+      );
+      const key = OAUTH_CODE_ID_PAIR(code);
+      await redis.del(key);
+      const { statusCode } = await request(app.getHttpServer())
+        .get('/auth/token')
+        .query({
+          code,
+          clientId: clients[0].clientId,
+          clientSecret: 'client secret',
+        });
+      expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
+    });
   });
+  /**
+   * Ignore now
+   */
   describe('Get MailCode', () => {
     it.todo('Success');
     it.todo('Too Many Request');
   });
   describe('Refresh Token', () => {
-    it.todo('Invalid Refresh Token');
-    it.todo('Refresh Token Expire');
-    it.todo('Client secret invalid');
-    it.todo('Success');
+    it('Invalid Refresh Token', async () => {
+      const { statusCode } = await request(app.getHttpServer())
+        .post('/auth/refresh')
+        .send({
+          refreshToken: 'refresh_token',
+        })
+        .query({
+          clientId: clients[0].clientId,
+          clientSecret: clients[0].clientSecret,
+        });
+      expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
+    });
+    it('Refresh Token Expire', async () => {
+      const { code } = await getCode(
+        { email: 'test@no-reply.com', password: 'test' },
+        clients[0].clientId,
+        app,
+      );
+      expect(code).toBeDefined();
+      const { refresh_token } = await getToken(
+        code,
+        clients[0].clientId,
+        clients[0].clientSecret,
+        app,
+      );
+      await redis.del(await redis.keys(`TOKEN::*::refresh`));
+      const { body, statusCode } = await request(app.getHttpServer())
+        .post('/auth/refresh')
+        .send({
+          refreshToken: refresh_token,
+        })
+        .query({
+          clientId: clients[0].clientId,
+          clientSecret: clients[0].clientSecret,
+        });
+      expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
+    });
+    it('Client secret invalid', async () => {
+      const { code } = await getCode(
+        { email: 'test@no-reply.com', password: 'test' },
+        clients[0].clientId,
+        app,
+      );
+      expect(code).toBeDefined();
+      const { refresh_token } = await getToken(
+        code,
+        clients[0].clientId,
+        clients[0].clientSecret,
+        app,
+      );
+      const { statusCode } = await request(app.getHttpServer())
+        .post('/auth/refresh')
+        .send({
+          refreshToken: refresh_token,
+        })
+        .query({
+          clientId: clients[0].clientId,
+          clientSecret: 'clients[0].clientSecret',
+        });
+      expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
+    });
+    it('Success', async () => {
+      const { code } = await getCode(
+        { email: 'test@no-reply.com', password: 'test' },
+        clients[0].clientId,
+        app,
+      );
+      expect(code).toBeDefined();
+      const { access_token, refresh_token } = await getToken(
+        code,
+        clients[0].clientId,
+        clients[0].clientSecret,
+        app,
+      );
+      const { body, statusCode } = await request(app.getHttpServer())
+        .post('/auth/refresh')
+        .send({
+          refreshToken: refresh_token,
+        })
+        .query({
+          clientId: clients[0].clientId,
+          clientSecret: clients[0].clientSecret,
+        });
+      expect(statusCode).toBe(HttpStatus.CREATED);
+      expect(body.access_token).not.toBe(access_token);
+    });
   });
 });
