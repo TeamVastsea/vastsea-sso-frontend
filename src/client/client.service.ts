@@ -38,7 +38,8 @@ export class ClientService {
       },
     });
     await this.cache.incrClientCount();
-    return this.cache.putClientCache(client).then(() => client);
+    await this.cache.putClientCache(client);
+    return client;
   }
   async removeClient(id: bigint) {
     const client = (await this.cache.clientExistByPk(id))
@@ -88,6 +89,9 @@ export class ClientService {
         id,
       },
     });
+    if (!dbClient) {
+      throw new HttpException('客户端不存在', HttpStatus.NOT_FOUND);
+    }
     return this.cache.putClientCache(dbClient).then(() => dbClient);
   }
   async getClients(preId: bigint, size: number) {

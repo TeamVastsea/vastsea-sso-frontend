@@ -36,14 +36,14 @@ export class AuthGuard implements CanActivate {
     if (!token) {
       throw new HttpException('未登录', HttpStatus.UNAUTHORIZED);
     }
-    const msg = this.jwt.verify(token).catch((err) => {
-      if (err instanceof errors.JWTExpired) {
-        return 'Token过期';
+    try {
+      await this.jwt.verify(token);
+    } catch (e) {
+      let msg = 'Token不合法';
+      if (e instanceof errors.JWTExpired) {
+        msg = 'Token过期';
       }
-      return 'Token 不合法';
-    });
-    if (await msg) {
-      throw new HttpException(await msg, HttpStatus.UNAUTHORIZED);
+      throw new HttpException(msg, HttpStatus.UNAUTHORIZED);
     }
     const { id } = this.jwt.decode<AccessTokenPayload>(token);
     const activeState = this.auth

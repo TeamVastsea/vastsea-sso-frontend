@@ -29,3 +29,7 @@ code=600
 [cache.ttl.auth.token]
 access=86400000
 refresh=604800000
+
+[client]
+idLen=16
+secretLen=64

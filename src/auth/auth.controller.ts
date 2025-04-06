@@ -41,7 +41,7 @@ export class AuthController {
   @ApiQuery({
     name: 'clientId',
     description: '注册时, 平台颁发的clientId',
-    required: false,
+    required: true,
   })
   @Post('login')
   async login(
@@ -71,6 +71,12 @@ export class AuthController {
     url.searchParams.append('code', code);
     res.redirect(url.toString());
   }
+
+  @Get('/redirect')
+  redirect(@Query('code') code: string) {
+    return this.token(code, process.env.CLIENT_ID, process.env.CLIENT_SECRET);
+  }
+
   @ApiQuery({ name: 'code', description: '从 /login 获取到的授权码' })
   @ApiQuery({ name: 'clientId', description: '注册时平台颁发的clientId' })
   @ApiQuery({

@@ -3,6 +3,6 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 
 export const AuthKey = Symbol('Auth');
 export const Auth = () => {
-  SetMetadata(AuthKey, true);
-  return ApiBearerAuth();
+  ApiBearerAuth();
+  return SetMetadata(AuthKey, true);
 };
