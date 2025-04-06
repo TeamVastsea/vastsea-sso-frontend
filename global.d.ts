@@ -10,3 +10,5 @@ declare namespace NodeJS {
     APP_NAME: string;
   }
 }
+
+declare const __TEST__: boolean;

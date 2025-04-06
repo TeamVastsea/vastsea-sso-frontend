@@ -7,10 +7,7 @@ import {
   DEFAULT_REDIS_NAMESPACE,
   getRedisToken,
 } from '@liaoliaots/nestjs-redis';
-import request from 'supertest';
-import { AUTH_EMAIL_CODE } from '@app/constant';
 import { createUser } from './utils/create-user';
-import { CreateAccount } from '../src/account/dto/create-account';
 
 describe('Auth E2E test', () => {
   let app: INestApplication;

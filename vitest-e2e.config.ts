@@ -20,6 +20,7 @@ export default defineConfig({
   plugins: [swc.vite()],
   define: {
     __dirname: JSON.stringify(`'${resolve('.')}'`),
+    __TEST__: true,
   },
   resolve: {
     alias: {
