@@ -76,8 +76,9 @@ export class ClientService {
           this.cache.removeClientInfo(client),
           this.cache.putClientCache(client),
           this.cache.decrClientCount(),
-        ]);
-      });
+        ]).then(() => client);
+      })
+      .then((client) => client);
   }
   async findClientById(id: bigint) {
     const client = await this.cache.getClientInfoByPk(id);
