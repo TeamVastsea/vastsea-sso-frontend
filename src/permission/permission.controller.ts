@@ -11,7 +11,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { PermissionService } from './permission.service';
-import { BigIntPipe } from '@app/decorator';
+import { Auth, BigIntPipe, Permission } from '@app/decorator';
 import { CreatePermission } from './dto/create-permission';
 import { UpdatePermission } from './dto/update-permission';
 import { Permission as PermissionDTO } from '@prisma/client';
@@ -20,6 +20,8 @@ import { Permission as PermissionDTO } from '@prisma/client';
 export class PermissionController {
   constructor(private readonly permissionService: PermissionService) {}
 
+  @Auth()
+  @Permission(['PERMISSION::GET::LIST'])
   @Get('/')
   async getPermissionList(
     @Query('clientId') clientId: string,
@@ -28,6 +30,9 @@ export class PermissionController {
   ) {
     return this.permissionService.getPermissionList(id, clientId, size);
   }
+
+  @Auth()
+  @Permission(['PERMISSION::CREATE'])
   @Post('/')
   async createPermission(
     @Body() body: CreatePermission,
@@ -35,6 +40,8 @@ export class PermissionController {
     return this.permissionService.createPermission(body);
   }
 
+  @Auth()
+  @Permission(['PERMISSION::REMOVE'])
   @Delete('/:id')
   removePermission(
     @Param('id', BigIntPipe) id: bigint,
@@ -43,6 +50,8 @@ export class PermissionController {
     return this.permissionService.removePermission(id, clientId);
   }
 
+  @Auth()
+  @Permission(['PERMISSION::UPDATE'])
   @Patch('/:id')
   updatePermission(
     @Param('id', BigIntPipe) id: bigint,
@@ -52,6 +61,8 @@ export class PermissionController {
     return this.permissionService.updatePermission(id, clientId, body);
   }
 
+  @Auth()
+  @Permission(['PERMISSION::GET'])
   @Get('/:id')
   getPermissionInfo(
     @Param('id', BigIntPipe) id: bigint,

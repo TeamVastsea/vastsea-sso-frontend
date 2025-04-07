@@ -6,7 +6,7 @@ import { ClusterModule, RedisModule } from '@liaoliaots/nestjs-redis';
 import { ConfigModule, ConfigService, tomlLoader } from '@app/config';
 import { join } from 'path';
 import { GlobalCounterModule, GlobalCounterService } from '@app/global-counter';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { RoleModule } from './role/role.module';
 import { RedisCacheModule } from '@app/redis-cache';
 import { AuthModule } from './auth/auth.module';
@@ -23,6 +23,7 @@ import { Permission } from '@prisma/client';
 import { AutoRedis } from '@app/decorator';
 import Redis, { Cluster } from 'ioredis';
 import { ID_COUNTER } from '@app/constant';
+import { ZodValidationPipe } from 'nestjs-zod';
 
 const permissions = [
   'CLIENT::GET::LIST',
@@ -82,6 +83,10 @@ const permissions = [
     ClientModule,
   ],
   providers: [
+    {
+      provide: APP_PIPE,
+      useClass: ZodValidationPipe,
+    },
     {
       provide: APP_INTERCEPTOR,
       useClass: SuperSerializerInterceptor,

@@ -6,6 +6,7 @@ import { GlobalCounterService } from '@app/global-counter';
 import { CreatePermission } from './dto/create-permission';
 import { UpdatePermission } from './dto/update-permission';
 import {
+  CLIENT_NAME__ID,
   CLIENT_PERMISSION_TOTAL,
   ID_COUNTER,
   PERMISSION_INFO_CACHE,
@@ -24,11 +25,13 @@ export class PermissionService {
   ) {}
   async createPermission(body: CreatePermission) {
     const { name, desc, clientId } = body;
-    const id = BigInt(
-      (await this.redis.hget(PERMISSION_NAME_TO_ID, name)) ?? 0,
-    );
-    if (id) {
-      const { name } = await this.getPermissionInfo(id, clientId);
+    const dbPermission = await this.prisma.permission.findFirst({
+      where: {
+        name,
+        clientId,
+      },
+    });
+    if (dbPermission) {
       throw new HttpException(`${name} 已存在`, HttpStatus.BAD_REQUEST);
     }
     const dbId = await this.counter.incr(ID_COUNTER.PERMISSION);
@@ -44,7 +47,6 @@ export class PermissionService {
     return this.redis
       .incr(PERMISSION_TOTAL)
       .then(() => this.redis.incr(CLIENT_PERMISSION_TOTAL(clientId)))
-      .then(() => this.updateCache(id, handle, 60))
       .then(() => handle);
   }
   async removePermission(id: bigint, clientId: string) {

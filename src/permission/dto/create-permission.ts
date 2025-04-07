@@ -7,7 +7,7 @@ export const createPermission = z.object({
     .string()
     .describe('Permission description. Aka. Permission title')
     .min(1),
-  clientId: z.string().optional(),
+  clientId: z.string(),
 });
 
 export class CreatePermission extends createZodDto(createPermission) {}
