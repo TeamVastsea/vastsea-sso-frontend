@@ -5,7 +5,7 @@ import { PermissionModule } from './permission/permission.module';
 import { ClusterModule, RedisModule } from '@liaoliaots/nestjs-redis';
 import { ConfigModule, ConfigService, tomlLoader } from '@app/config';
 import { join } from 'path';
-import { GlobalCounterModule } from '@app/global-counter';
+import { GlobalCounterModule, GlobalCounterService } from '@app/global-counter';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { RoleModule } from './role/role.module';
 import { RedisCacheModule } from '@app/redis-cache';
@@ -22,6 +22,7 @@ import { randomBytes } from 'crypto';
 import { Permission } from '@prisma/client';
 import { AutoRedis } from '@app/decorator';
 import Redis, { Cluster } from 'ioredis';
+import { ID_COUNTER } from '@app/constant';
 
 const permissions = [
   'CLIENT::GET::LIST',
@@ -103,6 +104,7 @@ export class AppModule implements OnModuleInit {
     private role: RoleService,
     private account: AccountService,
     private prisma: PrismaService,
+    private cnt: GlobalCounterService,
     @AutoRedis() private redis: Redis | Cluster,
   ) {}
   async onModuleInit() {
@@ -116,8 +118,10 @@ export class AppModule implements OnModuleInit {
       );
       return;
     }
-    const password =
-      process.env.ADMIN_PWD ?? randomBytes(128).toString('base64').slice(0, 16);
+    const password = __TEST__
+      ? 'admin'
+      : (process.env.ADMIN_PWD ??
+        randomBytes(128).toString('base64').slice(0, 16));
     const email = process.env.ADMIN_EMAIL ?? 'admin@no-reply.com';
     const dbAdmin = await this.prisma.account.findFirst({
       where: {
@@ -170,6 +174,7 @@ export class AppModule implements OnModuleInit {
       const res = await this.cretePermission(p, p);
       this.logger.log(`Create Permission ${res.name} Success`);
     }
+    await this.initClient();
     await this.redis.set(`APP::LOCK`, new Date().toLocaleDateString());
     this.logger.log(`${this.appName} init success`);
     this.logger.log(`Welcome use ${this.appName}`);
@@ -189,6 +194,26 @@ export class AppModule implements OnModuleInit {
       desc: 'admin',
       clientId: process.env.CLIENT_ID,
       permissions: permission.map((permission) => permission.id),
+    });
+  }
+  async initClient() {
+    const client = await this.prisma.client.findFirst({
+      where: {
+        clientId: process.env.CLIENT_ID,
+        clientSecret: process.env.CLIENT_SECRET,
+      },
+    });
+    if (client) {
+      return client;
+    }
+    await this.prisma.client.create({
+      data: {
+        redirect: process.env.REDIRECT,
+        clientId: process.env.CLIENT_ID,
+        clientSecret: process.env.CLIENT_SECRET,
+        id: await this.cnt.incr(ID_COUNTER.CLIENT),
+        name: 'AuthServer',
+      },
     });
   }
 }

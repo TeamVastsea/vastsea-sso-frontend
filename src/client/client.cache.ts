@@ -37,15 +37,13 @@ export class ClientCache {
     ) as unknown as Promise<Client | null>;
   }
   getClientInfoByPk(pk: bigint): Promise<Client | null> {
-    return this.redis
-      .get(CLIENT_PK__ID(pk))
-      .then((clientID) =>
-        !clientID
-          ? null
-          : (this.redis.hgetall(
-              CLIENT_INFO(clientID),
-            ) as unknown as Promise<Client>),
-      );
+    return this.redis.get(CLIENT_PK__ID(pk)).then((clientID) => {
+      return !clientID
+        ? null
+        : (this.redis.hgetall(
+            CLIENT_INFO(clientID),
+          ) as unknown as Promise<Client>);
+    });
   }
 
   removeClientInfo(client: Client) {

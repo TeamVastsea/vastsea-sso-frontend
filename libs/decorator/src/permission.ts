@@ -1,5 +1,10 @@
 import { PERMISSION_KEY } from '@app/constant';
-import { SetMetadata } from '@nestjs/common';
+import { ApiException } from '@nanogiants/nestjs-swagger-api-exception-decorator';
+import {
+  applyDecorators,
+  ForbiddenException,
+  SetMetadata,
+} from '@nestjs/common';
 
 export enum Operator {
   /**
@@ -86,5 +91,32 @@ export type PermissionExpr =
   | boolean;
 export type PermissionArgs = string[] | PermissionExpr;
 
-export const Permission = (permissions: string[] | PermissionExpr) =>
-  SetMetadata(PERMISSION_KEY, permissions);
+const exprToString = (expr: PermissionExpr | string[]) => {
+  if (Array.isArray(expr)) {
+    return expr.join(', ');
+  }
+  if (typeof expr === 'boolean') {
+    return;
+  }
+  if (expr.op === Operator.AND || expr.op === Operator.OR) {
+    return `${exprToString(expr.lhs)} ${expr.op === Operator.AND ? 'and' : 'or'} ${exprToString(expr.rhs)}`;
+  }
+  if (expr.op === Operator.HAS) {
+    return `HAS(${expr.expr})`;
+  }
+  if (expr.op === Operator.EVERY) {
+    return `EVERY(${exprToString(expr.expr)})`;
+  }
+  if (expr.op === Operator.SOME) {
+    return `SOME(${exprToString(expr.expr)})`;
+  }
+};
+
+export const Permission = (permissions: string[] | PermissionExpr) => {
+  return applyDecorators(
+    ApiException(() => ForbiddenException, {
+      description: `当该不存在 ${exprToString(permissions)} 权限时, 接口会抛出403错误并在message字段中阐述错误原因`,
+    }),
+    SetMetadata(PERMISSION_KEY, permissions),
+  );
+};

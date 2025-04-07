@@ -114,7 +114,7 @@ describe('ClientService', () => {
       cache.putClientCache.mockResolvedValue(mockClient);
 
       const result = await service.updateClient(1n, mockClient);
-      expect(result).toEqual([mockClient, mockClient]);
+      expect(result).toEqual(mockClient);
       expect(prisma.client.update).toHaveBeenCalledWith({
         where: { id: 1n },
         data: { ...mockClient },
