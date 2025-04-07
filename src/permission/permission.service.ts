@@ -96,12 +96,16 @@ export class PermissionService {
     await this.redis.expire(PERMISSION_INFO_CACHE(id), expire);
   }
   async getPermissionInfo(id: bigint, clientId: string) {
-    return this.prisma.permission.findFirst({
+    const permission = await this.prisma.permission.findFirst({
       where: {
         clientId,
         id,
       },
     });
+    if (!permission) {
+      throw new HttpException('字段不存在', HttpStatus.NOT_FOUND);
+    }
+    return permission;
   }
   async getPermissionList(id?: bigint, clientId?: string, size?: number) {
     const permissions = this.prisma.permission.findMany({
@@ -117,7 +121,7 @@ export class PermissionService {
       ? this.redis.get(CLIENT_PERMISSION_TOTAL(clientId))
       : this.redis.get(PERMISSION_TOTAL);
     return {
-      permissions: await permissions,
+      data: await permissions,
       total: await total,
     };
   }

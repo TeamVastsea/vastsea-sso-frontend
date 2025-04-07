@@ -235,13 +235,68 @@ describe('Role And Permission end to end test', () => {
       });
     });
     describe('Get Permission Info', () => {
-      it.todo('Should succes');
-      it.todo('Should return 403');
-      it.todo('Should return 404, because permission not found');
+      it('Should succes', async () => {
+        const p = await createPermission('test', process.env.CLIENT_ID, app);
+        const { statusCode, body } = await request(app.getHttpServer())
+          .get(`/permission/${p.id}`)
+          .query({ clientId: process.env.CLIENT_ID })
+          .auth(tokenPair.admin.access, { type: 'bearer' });
+        expect(statusCode).toBe(HttpStatus.OK);
+        expect(body.id).toBe(p.id.toString());
+        expect(body.name).toBe(p.name);
+      });
+      it('Should return 403', async () => {
+        const p = await createPermission('test', process.env.CLIENT_ID, app);
+        const { statusCode } = await request(app.getHttpServer())
+          .get(`/permission/${p.id}`)
+          .query({ clientId: process.env.CLIENT_ID })
+          .auth(tokenPair.test.access, { type: 'bearer' });
+        expect(statusCode).toBe(HttpStatus.FORBIDDEN);
+      });
+      it('Should return 404, because permission not found', async () => {
+        const { statusCode, body } = await request(app.getHttpServer())
+          .get(`/permission/800`)
+          .query({ clientId: process.env.CLIENT_ID })
+          .auth(tokenPair.admin.access, { type: 'bearer' });
+        console.log(body);
+        expect(statusCode).toBe(HttpStatus.NOT_FOUND);
+      });
     });
     describe('Get Permission List', () => {
-      it.todo('Should succes');
-      it.todo('Should return 403');
+      beforeEach(async () => {
+        for (let i = 0; i < 20; i++) {
+          await createPermission(`permission-${i}`, process.env.CLIENT_ID, app);
+        }
+      });
+      it('Should succes', async () => {
+        const { statusCode, body } = await request(app.getHttpServer())
+          .get('/permission')
+          .query({
+            clientId: process.env.CLIENT_ID,
+          })
+          .auth(tokenPair.admin.access, { type: 'bearer' });
+        expect(statusCode).toBe(HttpStatus.OK);
+        expect(body.data).toHaveLength(10);
+        const { body: b2 } = await request(app.getHttpServer())
+          .get('/permission')
+          .query({
+            clientId: process.env.CLIENT_ID,
+            preId: body.data.at(-1).id,
+          })
+          .auth(tokenPair.admin.access, { type: 'bearer' });
+        const id1 = body.data.map((item) => item.id) as string[];
+        const id2 = b2.data.map((item) => item.id) as string[];
+        expect(id2.every((id) => id1.includes(id))).toBe(false);
+      });
+      it('Should return 403', async () => {
+        const { statusCode } = await request(app.getHttpServer())
+          .get('/permission')
+          .query({
+            clientId: process.env.CLIENT_ID,
+          })
+          .auth(tokenPair.test.access, { type: 'bearer' });
+        expect(statusCode).toBe(HttpStatus.FORBIDDEN);
+      });
     });
   });
   describe('Role', () => {

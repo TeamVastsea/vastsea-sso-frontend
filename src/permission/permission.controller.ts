@@ -26,7 +26,7 @@ export class PermissionController {
   async getPermissionList(
     @Query('clientId') clientId: string,
     @Query('size', new DefaultValuePipe(10), new ParseIntPipe({})) size: number,
-    @Query('id', new BigIntPipe({ optional: true })) id?: bigint,
+    @Query('preId', new BigIntPipe({ optional: true })) id?: bigint,
   ) {
     return this.permissionService.getPermissionList(id, clientId, size);
   }
