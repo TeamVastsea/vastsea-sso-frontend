@@ -2,7 +2,12 @@ import {
   getRedisToken,
   DEFAULT_REDIS_NAMESPACE,
 } from '@liaoliaots/nestjs-redis';
-import { HttpStatus, INestApplication, Logger } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  INestApplication,
+  Logger,
+} from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { clear } from './utils/setup';
 import Redis from 'ioredis';
@@ -14,6 +19,7 @@ import { login } from './utils/login';
 import request from 'supertest';
 import { CreatePermission } from 'src/permission/dto/create-permission';
 import { Permission } from '@prisma/client';
+import { createPermission } from './utils/create-permission';
 
 /**
  * @description Role 和 Permission 几乎不会独立出现. 这里直接混合测试了.
@@ -48,27 +54,27 @@ describe('Role And Permission end to end test', () => {
     await createUser(app, redis, 'test@no-reply.com', 'test');
   });
   describe('Permission', () => {
+    const tokenPair = {
+      admin: { access: '' },
+      test: { access: '' },
+    };
+    beforeEach(async () => {
+      const { access_token: admin } = await login(
+        'admin@no-reply.com',
+        'admin',
+        process.env.CLIENT_ID,
+        app,
+      );
+      const { access_token: test } = await login(
+        'test@no-reply.com',
+        'test',
+        process.env.CLIENT_ID,
+        app,
+      );
+      tokenPair.admin.access = admin;
+      tokenPair.test.access = test;
+    });
     describe('Create Permission', () => {
-      const tokenPair = {
-        admin: { access: '' },
-        test: { access: '' },
-      };
-      beforeEach(async () => {
-        const { access_token: admin } = await login(
-          'admin@no-reply.com',
-          'admin',
-          process.env.CLIENT_ID,
-          app,
-        );
-        const { access_token: test } = await login(
-          'test@no-reply.com',
-          'test',
-          process.env.CLIENT_ID,
-          app,
-        );
-        tokenPair.admin.access = admin;
-        tokenPair.test.access = test;
-      });
       it('Should success', async () => {
         const client = await createTestClient('test-a');
         const { statusCode, body } = await request(app.getHttpServer())
@@ -151,9 +157,40 @@ describe('Role And Permission end to end test', () => {
       });
     });
     describe('Remove Permission', () => {
-      it.todo('Should succes');
-      it.todo('Should return 403');
-      it.todo('Should return 404, because permission not found');
+      it('Should succes', async () => {
+        const client = await createTestClient('test-a');
+        const permission = await createPermission(
+          'test-permission',
+          client.clientId,
+          app,
+        );
+        const { statusCode, body } = await request(app.getHttpServer())
+          .del(`/permission/${permission.id}`)
+          .query({ clientId: client.clientId })
+          .auth(tokenPair.admin.access, { type: 'bearer' });
+        expect(statusCode).toBe(HttpStatus.OK);
+      });
+      it('Should return 403', async () => {
+        const client = await createTestClient('test-a');
+        const permission = await createPermission(
+          'test-permission',
+          client.clientId,
+          app,
+        );
+        const { statusCode } = await request(app.getHttpServer())
+          .del(`/permission/${permission.id}`)
+          .query({ clientId: client.clientId })
+          .auth(tokenPair.test.access, { type: 'bearer' });
+        expect(statusCode).toBe(HttpStatus.FORBIDDEN);
+      });
+      it('Should return 404, because permission not found', async () => {
+        const client = await createTestClient('test-a');
+        const { statusCode } = await request(app.getHttpServer())
+          .del(`/permission/114514`)
+          .query({ clientId: client.clientId })
+          .auth(tokenPair.admin.access, { type: 'bearer' });
+        expect(statusCode).toBe(HttpStatus.NOT_FOUND);
+      });
     });
     describe('Update Permission', () => {
       it.todo('Should succes');
