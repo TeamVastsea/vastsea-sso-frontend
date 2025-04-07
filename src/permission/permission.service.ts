@@ -83,6 +83,7 @@ export class PermissionService {
         ...body,
       },
     });
+    console.log(permission);
     await this.updateCache(id, permission, 60);
     return permission;
   }
