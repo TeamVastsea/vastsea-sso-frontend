@@ -6,11 +6,9 @@ import { GlobalCounterService } from '@app/global-counter';
 import { CreatePermission } from './dto/create-permission';
 import { UpdatePermission } from './dto/update-permission';
 import {
-  CLIENT_NAME__ID,
   CLIENT_PERMISSION_TOTAL,
   ID_COUNTER,
   PERMISSION_INFO_CACHE,
-  PERMISSION_NAME_TO_ID,
   PERMISSION_TOTAL,
 } from '@app/constant';
 import { Permission } from '@prisma/client';
@@ -118,11 +116,11 @@ export class PermissionService {
       take: size,
     });
     const total = clientId
-      ? this.redis.get(CLIENT_PERMISSION_TOTAL(clientId))
-      : this.redis.get(PERMISSION_TOTAL);
+      ? BigInt(await this.redis.get(CLIENT_PERMISSION_TOTAL(clientId)))
+      : BigInt(await this.redis.get(PERMISSION_TOTAL));
     return {
       data: await permissions,
-      total: await total,
+      total: total,
     };
   }
   async getAccountPermission(account: bigint, clientId: string) {
