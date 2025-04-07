@@ -21,8 +21,8 @@ export class RoleService {
   ) {}
 
   async createRole(data: CreateRole) {
-    const { name, desc, clientId, permissions } = data;
-    const dbRole = await this.getRoleByName(name);
+    const { name, desc, clientId, permissions, parent } = data;
+    const dbRole = await this.getRoleByName(name, clientId);
     if (dbRole) {
       throw new HttpException(`${name} 存在`, HttpStatus.BAD_REQUEST);
     }
@@ -33,9 +33,16 @@ export class RoleService {
         name,
         desc,
         clientId,
-        permission: {
-          connect: permissions.map((id) => ({ id })),
-        },
+        permission: permissions
+          ? {
+              connect: permissions.map((id) => ({ id })),
+            }
+          : undefined,
+        parents: parent
+          ? {
+              connect: parent.map((id) => ({ id })),
+            }
+          : undefined,
       },
       include: {
         parents: true,
@@ -51,6 +58,7 @@ export class RoleService {
     const role = await this.prisma.role.findFirst({
       where: {
         id,
+        deleted: false,
       },
       select: { id: true },
     });
@@ -87,7 +95,8 @@ export class RoleService {
     if (!dbRole || dbRole.deleted) {
       throw new HttpException(`${id} 不存在`, HttpStatus.NOT_FOUND);
     }
-    if (dbRole.children.length) {
+
+    if (dbRole.children.some((child) => !child.deleted)) {
       throw new HttpException(
         `${dbRole.name} 下存在子角色, 请先删除子角色`,
         HttpStatus.BAD_REQUEST,
@@ -102,8 +111,9 @@ export class RoleService {
   getRoleInfo(id: bigint, clientId: string) {
     return this.prisma.role.findFirst({
       where: { id, clientId },
-      select: {
+      include: {
         permission: true,
+        parents: true,
       },
     });
   }
@@ -126,9 +136,9 @@ export class RoleService {
     });
     return { data: await roles, total: await total };
   }
-  private getRoleByName(name: string) {
+  private getRoleByName(name: string, clientId: string) {
     return this.prisma.role.findFirst({
-      where: { name },
+      where: { name, clientId },
       select: { id: true },
     });
   }

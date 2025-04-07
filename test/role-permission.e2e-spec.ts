@@ -13,9 +13,12 @@ import { ClientService } from '../src/client/client.service';
 import { login } from './utils/login';
 import request from 'supertest';
 import { CreatePermission } from 'src/permission/dto/create-permission';
-import { Permission } from '@prisma/client';
+import { Client, Permission } from '@prisma/client';
 import { createPermission } from './utils/create-permission';
 import { UpdatePermission } from 'src/permission/dto/update-permission';
+import { CreateRole } from 'src/role/dto/create-role.dto';
+import { createRole } from './utils/create-role';
+import { RoleService } from '../src/role/role.service';
 
 /**
  * @description Role 和 Permission 几乎不会独立出现. 这里直接混合测试了.
@@ -300,21 +303,153 @@ describe('Role And Permission end to end test', () => {
     });
   });
   describe('Role', () => {
-    describe('Create Role', () => {
-      it.todo('Should Success');
-      it.todo('Should return 403');
-      it.todo('Should return 400, because role exists');
-      it.todo(
-        'Should success, even if role exist, they are not in the same client',
+    const tokenPair = {
+      admin: { access: '' },
+      test: { access: '' },
+    };
+    beforeEach(async () => {
+      const { access_token: admin } = await login(
+        'admin@no-reply.com',
+        'admin',
+        process.env.CLIENT_ID,
+        app,
       );
+      const { access_token: test } = await login(
+        'test@no-reply.com',
+        'test',
+        process.env.CLIENT_ID,
+        app,
+      );
+      tokenPair.admin.access = admin;
+      tokenPair.test.access = test;
+    });
+    describe('Create Role', () => {
+      let client: Client;
+      beforeEach(async () => {
+        client = await createTestClient('test-a');
+      });
+      it('Should Success', async () => {
+        const { statusCode } = await request(app.getHttpServer())
+          .post('/role')
+          .auth(tokenPair.admin.access, { type: 'bearer' })
+          .send({
+            name: 'test-role',
+            desc: 'TestRole',
+            clientId: client.clientId,
+          } as CreateRole);
+        expect(statusCode).toBe(HttpStatus.CREATED);
+      });
+      it('Should return 403', async () => {
+        const { statusCode } = await request(app.getHttpServer())
+          .post('/role')
+          .auth(tokenPair.test.access, { type: 'bearer' })
+          .send({
+            name: 'test-role',
+            desc: 'TestRole',
+            clientId: client.clientId,
+          } as CreateRole);
+        expect(statusCode).toBe(HttpStatus.FORBIDDEN);
+      });
+      it('Should return 400, because role exists', async () => {
+        const h1 = await request(app.getHttpServer())
+          .post('/role')
+          .auth(tokenPair.admin.access, { type: 'bearer' })
+          .send({
+            name: 'test-role',
+            desc: 'TestRole',
+            clientId: client.clientId,
+          } as CreateRole);
+        expect(h1.statusCode).toBe(HttpStatus.CREATED);
+        const h2 = await request(app.getHttpServer())
+          .post('/role')
+          .auth(tokenPair.admin.access, { type: 'bearer' })
+          .send({
+            name: 'test-role',
+            desc: 'TestRole',
+            clientId: client.clientId,
+          } as CreateRole);
+        expect(h2.statusCode).toBe(HttpStatus.BAD_REQUEST);
+      });
+      it('Should success, even if role exist, they are not in the same client', async () => {
+        const h1 = await request(app.getHttpServer())
+          .post('/role')
+          .auth(tokenPair.admin.access, { type: 'bearer' })
+          .send({
+            name: 'test-role',
+            desc: 'TestRole',
+            clientId: client.clientId,
+          } as CreateRole);
+        expect(h1.statusCode).toBe(HttpStatus.CREATED);
+        const h2 = await request(app.getHttpServer())
+          .post('/role')
+          .auth(tokenPair.admin.access, { type: 'bearer' })
+          .send({
+            name: 'test-role',
+            desc: 'TestRole',
+            clientId: process.env.CLIENT_ID,
+          } as CreateRole);
+        console.log(h2.body);
+        expect(h2.statusCode).toBe(HttpStatus.CREATED);
+      });
     });
     describe('Remove Role', () => {
-      it.todo('Should Success');
-      it.todo('Should return 403');
-      it.todo('Should return 404, because role not found');
-      it.todo(
-        'Should return 400, because The current role has been inherited by another role, and the child role needs to be deleted first',
-      );
+      it('Should Success', async () => {
+        const service = app.get(RoleService);
+        const role = await createRole(service, 'test', [], []);
+        const { statusCode } = await request(app.getHttpServer())
+          .del(`/role/${role.id}`)
+          .auth(tokenPair.admin.access, { type: 'bearer' });
+        expect(statusCode).toBe(HttpStatus.OK);
+
+        const { statusCode: s2, body } = await request(app.getHttpServer())
+          .get(`/role/${role.id}`)
+          .auth(tokenPair.admin.access, { type: 'bearer' });
+        expect(body.deleted).toBe(true);
+        expect(s2).toBe(HttpStatus.OK);
+      });
+      it('Should return 403', async () => {
+        const service = app.get(RoleService);
+        const role = await createRole(service, 'test', [], []);
+        const { statusCode } = await request(app.getHttpServer())
+          .del(`/role/${role.id}`)
+          .auth(tokenPair.test.access, { type: 'bearer' });
+        expect(statusCode).toBe(HttpStatus.FORBIDDEN);
+      });
+      it('Should return 404, because role not found', async () => {
+        const service = app.get(RoleService);
+        await createRole(service, 'test', [], []);
+        const { statusCode } = await request(app.getHttpServer())
+          .del(`/role/100`)
+          .auth(tokenPair.admin.access, { type: 'bearer' });
+        expect(statusCode).toBe(HttpStatus.NOT_FOUND);
+      });
+      it('Should return 400, because The current role has been inherited by another role, and the child role needs to be deleted first', async () => {
+        const s = app.get(RoleService);
+        const p = await createRole(s, 'p1', [], [], process.env.CLIENT_ID);
+        const p2 = await createRole(s, 'p2', [], []);
+        const c = await createRole(s, 'c', [p, p2], []);
+        const { statusCode } = await request(app.getHttpServer())
+          .del(`/role/${p.id}`)
+          .auth(tokenPair.admin.access, { type: 'bearer' });
+        expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
+        const { statusCode: s2 } = await request(app.getHttpServer())
+          .del(`/role/${p2.id}`)
+          .auth(tokenPair.admin.access, { type: 'bearer' });
+        expect(s2).toBe(HttpStatus.BAD_REQUEST);
+        await request(app.getHttpServer())
+          .del(`/role/${c.id}`)
+          .auth(tokenPair.admin.access, { type: 'bearer' });
+
+        const { statusCode: s3 } = await request(app.getHttpServer())
+          .del(`/role/${p2.id}`)
+          .auth(tokenPair.admin.access, { type: 'bearer' });
+        expect(s3).toBe(HttpStatus.OK);
+
+        const { statusCode: s4 } = await request(app.getHttpServer())
+          .del(`/role/${p.id}`)
+          .auth(tokenPair.admin.access, { type: 'bearer' });
+        expect(s4).toBe(HttpStatus.OK);
+      });
     });
     describe('Update Role', () => {
       it.todo('Should Success');

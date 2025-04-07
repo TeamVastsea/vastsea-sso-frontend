@@ -11,7 +11,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { RoleService } from './role.service';
-import { BigIntPipe, Permission } from '@app/decorator';
+import { Auth, BigIntPipe, Permission } from '@app/decorator';
 import { CreateRole } from './dto/create-role.dto';
 import { UpdateRole } from './dto/update-role.dto';
 
@@ -19,18 +19,21 @@ import { UpdateRole } from './dto/update-role.dto';
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
+  @Auth()
   @Permission(['ROLE::CREATE'])
   @Post('/')
-  async createRole(data: CreateRole) {
+  async createRole(@Body() data: CreateRole) {
     return this.roleService.createRole(data);
   }
 
+  @Auth()
   @Permission(['ROLE::REMOVE'])
   @Delete('/:id')
   async removeRole(@Param('id', BigIntPipe) id: bigint) {
     return this.roleService.removeRole(id);
   }
 
+  @Auth()
   @Permission(['ROLE::UPDATE'])
   @Patch('/:id')
   async updateRole(
@@ -40,6 +43,7 @@ export class RoleController {
     return this.roleService.updateRole(id, data);
   }
 
+  @Auth()
   @Permission(['ROLE::GET::INFO'])
   @Get('/:id')
   async getRole(
@@ -49,6 +53,7 @@ export class RoleController {
     return this.roleService.getRoleInfo(id, clientId);
   }
 
+  @Auth()
   @Permission(['ROLE::GET::LIST'])
   @Get('/')
   async getRoleList(

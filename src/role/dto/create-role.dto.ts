@@ -6,10 +6,11 @@ export const createRole = z.object({
   parent: z
     .array(z.bigint({ coerce: true }))
     .max(10)
+    .default([])
     .optional(),
   desc: z.string(),
   name: z.string(),
-  permissions: z.array(z.bigint({ coerce: true })),
+  permissions: z.array(z.bigint({ coerce: true })).default([]),
 });
 
 export class CreateRole extends createZodDto(createRole) {}
