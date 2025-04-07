@@ -8,6 +8,7 @@ import Redis, { Cluster } from 'ioredis';
 import { CreateRole } from './dto/create-role.dto';
 import { GlobalCounterService } from '@app/global-counter';
 import { UpdateRole } from './dto/update-role.dto';
+import { isNil } from 'ramda';
 
 @Injectable()
 export class RoleService {
@@ -58,14 +59,29 @@ export class RoleService {
     const role = await this.prisma.role.findFirst({
       where: {
         id,
-        deleted: false,
       },
-      select: { id: true },
+      select: { id: true, parents: true, name: true },
     });
+    for (const id of data.parent ?? []) {
+      const role = await this.prisma.role.findFirst({ where: { id: id } });
+      if (!role) {
+        throw new HttpException(`${id} 不存在`, HttpStatus.NOT_FOUND);
+      }
+    }
     if (!role) {
       throw new HttpException('资源不存在', HttpStatus.NOT_FOUND);
     }
-    return this.prisma.role.update({
+    if (!isNil(data.active)) {
+      const deletedParent = role.parents.filter((parent) => parent.deleted);
+      const names = deletedParent.map((role) => role.name);
+      if (names.length) {
+        throw new HttpException(
+          `${names.join(',')} 作为 ${role.name} 的父级. 如果要重新启用角色 ${role.name} 那么要将 ${role.name} 的所有父级启用`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
+    const updatedRole = await this.prisma.role.update({
       where: {
         id,
       },
@@ -78,13 +94,20 @@ export class RoleService {
           : undefined,
         desc: data.desc,
         name: data.name,
+        deleted: !data.active,
         permission: data.permissions
           ? {
               connect: data.permissions.map((id) => ({ id })),
             }
           : undefined,
       },
+      include: {
+        parents: true,
+      },
     });
+    if (isNil(data.active)) {
+      return updatedRole;
+    }
   }
 
   async removeRole(id: bigint) {
@@ -108,14 +131,18 @@ export class RoleService {
     });
     return deletedRole;
   }
-  getRoleInfo(id: bigint, clientId: string) {
-    return this.prisma.role.findFirst({
+  async getRoleInfo(id: bigint, clientId: string) {
+    const role = await this.prisma.role.findFirst({
       where: { id, clientId },
       include: {
         permission: true,
         parents: true,
       },
     });
+    if (!role) {
+      throw new HttpException('资源不存在', HttpStatus.NOT_FOUND);
+    }
+    return role;
   }
   async getRoleList(preId?: bigint, size?: number, clientId?: string) {
     const total = this.redis.get(

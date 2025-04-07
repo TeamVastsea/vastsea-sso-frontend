@@ -19,6 +19,9 @@ import { UpdatePermission } from 'src/permission/dto/update-permission';
 import { CreateRole } from 'src/role/dto/create-role.dto';
 import { createRole } from './utils/create-role';
 import { RoleService } from '../src/role/role.service';
+import { UpdateRole } from 'src/role/dto/update-role.dto';
+import { removeClient } from './utils/remove-client';
+import SuperJSON from 'superjson';
 
 /**
  * @description Role 和 Permission 几乎不会独立出现. 这里直接混合测试了.
@@ -26,6 +29,7 @@ import { RoleService } from '../src/role/role.service';
 describe('Role And Permission end to end test', () => {
   let app: INestApplication;
   let redis: Redis;
+  let service: RoleService;
   const createTestClient = async (name: string) => {
     const client = await createClient(
       {
@@ -44,8 +48,8 @@ describe('Role And Permission end to end test', () => {
       .setLogger(new Logger())
       .compile();
     app = moduleFixture.createNestApplication();
-
     redis = app.get(getRedisToken(DEFAULT_REDIS_NAMESPACE));
+    service = app.get(RoleService);
     await clear('sqlite');
     await redis.flushdb();
     await app.init();
@@ -452,28 +456,197 @@ describe('Role And Permission end to end test', () => {
       });
     });
     describe('Update Role', () => {
-      it.todo('Should Success');
-      it.todo('Should return 403');
-      it.todo('Should return 404, current role not found');
+      it('Should Success', async () => {
+        const role = await createRole(service, 'test-a', [], []);
+        const { body } = await request(app.getHttpServer())
+          .patch(`/role/${role.id}`)
+          .auth(tokenPair.admin.access, { type: 'bearer' })
+          .send({
+            name: 'test-b',
+          } as UpdateRole);
+        expect(body.name).not.toBe(role.name);
+      });
+      it('Should return 403', async () => {
+        const role = await createRole(service, 'test-a', [], []);
+        const { statusCode } = await request(app.getHttpServer())
+          .patch(`/role/${role.id}`)
+          .auth(tokenPair.test.access, { type: 'bearer' })
+          .send({
+            name: 'test-b',
+          } as UpdateRole);
+        expect(statusCode).toBe(HttpStatus.FORBIDDEN);
+      });
+      it('Should return 404, current role not found', async () => {
+        const { status } = await request(app.getHttpServer())
+          .patch(`/role/456`)
+          .auth(tokenPair.admin.access, { type: 'bearer' })
+          .send({
+            name: 'test-b',
+          } as UpdateRole);
+        expect(status).toBe(HttpStatus.NOT_FOUND);
+      });
       describe('Inheritance Role', () => {
         describe('Single inheritance', () => {
-          it.todo('Should success. Get Role Info can get parent role info');
-          it.todo('Should return 404, because parent is not found');
+          it('Should success. Get Role Info can get parent role info', async () => {
+            const r1 = await createRole(service, 'r1', [], []);
+            const r2 = await createRole(service, 'r2', [r1], []);
+            const r3 = await createRole(service, 'r3', [r2], []);
+            const { body } = await request(app.getHttpServer())
+              .get(`/role/${r3.id}`)
+              .auth(tokenPair.admin.access, { type: 'bearer' });
+            expect(body.parents[0].id).toBe(r2.id.toString());
+          });
+          it('update children deleted to false fail, because parent is deleted', async () => {
+            const r1 = await createRole(service, 'r1', [], []);
+            const r2 = await createRole(service, 'r2', [r1], []);
+            const r3 = await createRole(service, 'r3', [r2], []);
+            await removeClient(service, r3.id);
+            await removeClient(service, r2.id);
+            const { statusCode } = await request(app.getHttpServer())
+              .patch(`/role/${r3.id}`)
+              .auth(tokenPair.admin.access, { type: 'bearer' })
+              .send({
+                active: true,
+              } as UpdateRole);
+            expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
+          });
+          it('update children deleted to true success, because parent is not deleted', async () => {
+            const r1 = await createRole(service, 'r1', [], []);
+            const r2 = await createRole(service, 'r2', [r1], []);
+            const r3 = await createRole(service, 'r3', [r2], []);
+            await removeClient(service, r3.id);
+            const { statusCode, body } = await request(app.getHttpServer())
+              .patch(`/role/${r3.id}`)
+              .auth(tokenPair.admin.access, { type: 'bearer' })
+              .send({
+                active: true,
+              } as UpdateRole);
+            console.log(body);
+            expect(statusCode).toBe(HttpStatus.OK);
+          });
+          it('Should return 404, because parent is not found', async () => {
+            const r1 = await createRole(service, 'r1', [], []);
+            const r2 = await createRole(service, 'r2', [r1], []);
+            const r3 = await createRole(service, 'r3', [r2], []);
+            await removeClient(service, r3.id);
+            const { statusCode } = await request(app.getHttpServer())
+              .patch(`/role/${r3.id}`)
+              .auth(tokenPair.admin.access, { type: 'bearer' })
+              .send({
+                active: true,
+                parent: ['123'] as any,
+              } as UpdateRole);
+            expect(statusCode).toBe(HttpStatus.NOT_FOUND);
+          });
         });
         describe('Multiple Inheritance', () => {
-          it.todo('Should success. Get Role Info can get parent roles info');
-          it.todo('Should return 404, because parent is not found');
+          it('Should success. Get Role Info can get parent roles info', async () => {
+            const r1 = await createRole(service, 'r1', [], []);
+            const r2 = await createRole(service, 'r2', [], []);
+            const r3 = await createRole(service, 'r3', [r1, r2], []);
+            const { body } = await request(app.getHttpServer())
+              .get(`/role/${r3.id}`)
+              .auth(tokenPair.admin.access, { type: 'bearer' });
+            expect(body.parents[0].id).toBe(r1.id.toString());
+            expect(body.parents[1].id).toBe(r2.id.toString());
+          });
+          it('Should return 404, because parent is not found', async () => {
+            const r1 = await createRole(service, 'r1', [], []);
+            await createRole(service, 'r2', [], []);
+            const r3 = await createRole(service, 'r3', [], []);
+            await removeClient(service, r3.id);
+            const { statusCode } = await request(app.getHttpServer())
+              .patch(`/role/${r3.id}`)
+              .auth(tokenPair.admin.access, { type: 'bearer' })
+              .send({
+                active: true,
+                parent: [r1.id.toString(), '456'] as any,
+              } as UpdateRole);
+            expect(statusCode).toBe(HttpStatus.NOT_FOUND);
+          });
+          it('update children deleted to false fail, because parent is deleted', async () => {
+            const r1 = await createRole(service, 'r1', [], []);
+            const r2 = await createRole(service, 'r2', [], []);
+            const r3 = await createRole(service, 'r3', [r1, r2], []);
+            await removeClient(service, r3.id);
+            await removeClient(service, r1.id);
+            await removeClient(service, r2.id);
+            const { statusCode } = await request(app.getHttpServer())
+              .patch(`/role/${r3.id}`)
+              .auth(tokenPair.admin.access, { type: 'bearer' })
+              .send({
+                active: true,
+              } as UpdateRole);
+            expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
+          });
+          it('update children deleted to false success, because parent is not deleted', async () => {
+            const r1 = await createRole(service, 'r1', [], []);
+            const r2 = await createRole(service, 'r2', [], []);
+            const r3 = await createRole(service, 'r3', [r1, r2], []);
+            await removeClient(service, r3.id);
+            const { statusCode } = await request(app.getHttpServer())
+              .patch(`/role/${r3.id}`)
+              .auth(tokenPair.admin.access, { type: 'bearer' })
+              .send({
+                active: true,
+              } as UpdateRole);
+            expect(statusCode).toBe(HttpStatus.OK);
+          });
         });
       });
     });
     describe('Get Role Info', () => {
-      it.todo('Should Success');
-      it.todo('Should return 403');
-      it.todo('Should return 404, role not found');
+      it('Should Success', async () => {
+        const role = await createRole(service, 'test-role', [], []);
+        const { body } = await request(app.getHttpServer())
+          .get(`/role/${role.id}`)
+          .auth(tokenPair.admin.access, { type: 'bearer' });
+        expect(SuperJSON.serialize(body).json).toEqual(
+          SuperJSON.serialize(role).json,
+        );
+      });
+      it('Should return 403', async () => {
+        const role = await createRole(service, 'test-role', [], []);
+        const { statusCode } = await request(app.getHttpServer())
+          .get(`/role/${role.id}`)
+          .auth(tokenPair.test.access, { type: 'bearer' });
+        expect(statusCode).toBe(HttpStatus.FORBIDDEN);
+      });
+      it('Should return 404, role not found', async () => {
+        const { statusCode } = await request(app.getHttpServer())
+          .get(`/role/100`)
+          .auth(tokenPair.admin.access, { type: 'bearer' });
+        expect(statusCode).toBe(HttpStatus.NOT_FOUND);
+      });
     });
     describe('Get Role List', () => {
-      it.todo('Should Success');
-      it.todo('Should return 403');
+      it('Should Success', async () => {
+        const roles = [];
+        for (let i = 0; i < 20; i++) {
+          const role = await createRole(service, `role-${i}`, [], []);
+          roles.push(role);
+        }
+        const { body } = await request(app.getHttpServer())
+          .get('/role')
+          .auth(tokenPair.admin.access, { type: 'bearer' })
+          .query({ size: 10 });
+        expect(body.data).toHaveLength(10);
+        const { body: b2 } = await request(app.getHttpServer())
+          .get('/role')
+          .auth(tokenPair.admin.access, { type: 'bearer' })
+          .query({ size: 10, preId: body.data.at(-1).id });
+        expect(b2.data).toHaveLength(10);
+        const a: string[] = body.data.map((item) => item.id);
+        const b: string[] = b2.data.map((item) => item.id);
+        expect(b.every((id) => a.includes(id))).toBe(false);
+      });
+      it('Should return 403', async () => {
+        const { statusCode } = await request(app.getHttpServer())
+          .get('/role')
+          .auth(tokenPair.test.access, { type: 'bearer' })
+          .query({ size: 10 });
+        expect(statusCode).toBe(HttpStatus.FORBIDDEN);
+      });
     });
   });
 });
