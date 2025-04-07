@@ -138,3 +138,5 @@ dist
 
 src/keys
 keys
+
+prisma/*.db
