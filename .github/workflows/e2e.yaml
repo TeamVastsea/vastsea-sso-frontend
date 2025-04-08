@@ -1,11 +1,11 @@
-name: Build Dry Run
+name: End to End test
 
 on:
   pull_request:
   workflow_dispatch:
 
 jobs:
-  Build:
+  Test:
     runs-on: ubuntu-latest
     container: node:20-bookworm-slim
 
@@ -43,6 +43,6 @@ jobs:
           CLIENT_SECRET: pRVkhH5Ce3kezJknvjAQ
           REDIRECT: http://localhost:3000/auth/redirect
         run: pnpm prisma migrate deploy    && pnpm test:e2e account &&
-             pnpm prisma migrate reset -F  && pnpm test:e2e auth    &&
-             pnpm prisma migrate reset -F  && pnpm test:e2e client  &&
-             pnpm prisma migrate reset -F  && pnpm test:e2e role
+             pnpm prisma migrate reset -f  && pnpm test:e2e auth    &&
+             pnpm prisma migrate reset -f  && pnpm test:e2e client  &&
+             pnpm prisma migrate reset -f  && pnpm test:e2e role
