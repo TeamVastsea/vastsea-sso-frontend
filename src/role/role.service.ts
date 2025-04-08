@@ -8,6 +8,7 @@ import Redis, { Cluster } from 'ioredis';
 import { CreateRole } from './dto/create-role.dto';
 import { GlobalCounterService } from '@app/global-counter';
 import { UpdateRole } from './dto/update-role.dto';
+import { isNil } from 'ramda';
 
 @Injectable()
 export class RoleService {
@@ -21,8 +22,8 @@ export class RoleService {
   ) {}
 
   async createRole(data: CreateRole) {
-    const { name, desc, clientId, permissions } = data;
-    const dbRole = await this.getRoleByName(name);
+    const { name, desc, clientId, permissions, parent } = data;
+    const dbRole = await this.getRoleByName(name, clientId);
     if (dbRole) {
       throw new HttpException(`${name} 存在`, HttpStatus.BAD_REQUEST);
     }
@@ -33,9 +34,16 @@ export class RoleService {
         name,
         desc,
         clientId,
-        permission: {
-          connect: permissions.map((id) => ({ id })),
-        },
+        permission: permissions
+          ? {
+              connect: permissions.map((id) => ({ id })),
+            }
+          : undefined,
+        parents: parent
+          ? {
+              connect: parent.map((id) => ({ id })),
+            }
+          : undefined,
       },
       include: {
         parents: true,
@@ -52,12 +60,28 @@ export class RoleService {
       where: {
         id,
       },
-      select: { id: true },
+      select: { id: true, parents: true, name: true },
     });
+    for (const id of data.parent ?? []) {
+      const role = await this.prisma.role.findFirst({ where: { id: id } });
+      if (!role) {
+        throw new HttpException(`${id} 不存在`, HttpStatus.NOT_FOUND);
+      }
+    }
     if (!role) {
       throw new HttpException('资源不存在', HttpStatus.NOT_FOUND);
     }
-    return this.prisma.role.update({
+    if (!isNil(data.active)) {
+      const deletedParent = role.parents.filter((parent) => parent.deleted);
+      const names = deletedParent.map((role) => role.name);
+      if (names.length) {
+        throw new HttpException(
+          `${names.join(',')} 作为 ${role.name} 的父级. 如果要重新启用角色 ${role.name} 那么要将 ${role.name} 的所有父级启用`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
+    const updatedRole = await this.prisma.role.update({
       where: {
         id,
       },
@@ -70,13 +94,18 @@ export class RoleService {
           : undefined,
         desc: data.desc,
         name: data.name,
+        deleted: !data.active,
         permission: data.permissions
           ? {
               connect: data.permissions.map((id) => ({ id })),
             }
           : undefined,
       },
+      include: {
+        parents: true,
+      },
     });
+    return updatedRole;
   }
 
   async removeRole(id: bigint) {
@@ -87,7 +116,8 @@ export class RoleService {
     if (!dbRole || dbRole.deleted) {
       throw new HttpException(`${id} 不存在`, HttpStatus.NOT_FOUND);
     }
-    if (dbRole.children.length) {
+
+    if (dbRole.children.some((child) => !child.deleted)) {
       throw new HttpException(
         `${dbRole.name} 下存在子角色, 请先删除子角色`,
         HttpStatus.BAD_REQUEST,
@@ -99,13 +129,18 @@ export class RoleService {
     });
     return deletedRole;
   }
-  getRoleInfo(id: bigint, clientId: string) {
-    return this.prisma.role.findFirst({
+  async getRoleInfo(id: bigint, clientId: string) {
+    const role = await this.prisma.role.findFirst({
       where: { id, clientId },
-      select: {
+      include: {
         permission: true,
+        parents: true,
       },
     });
+    if (!role) {
+      throw new HttpException('资源不存在', HttpStatus.NOT_FOUND);
+    }
+    return role;
   }
   async getRoleList(preId?: bigint, size?: number, clientId?: string) {
     const total = this.redis.get(
@@ -124,11 +159,11 @@ export class RoleService {
         permission: true,
       },
     });
-    return { data: await roles, total: await total };
+    return { data: await roles, total: BigInt(await total) };
   }
-  private getRoleByName(name: string) {
+  private getRoleByName(name: string, clientId: string) {
     return this.prisma.role.findFirst({
-      where: { name },
+      where: { name, clientId },
       select: { id: true },
     });
   }

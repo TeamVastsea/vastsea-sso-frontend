@@ -9,7 +9,6 @@ import {
   CLIENT_PERMISSION_TOTAL,
   ID_COUNTER,
   PERMISSION_INFO_CACHE,
-  PERMISSION_NAME_TO_ID,
   PERMISSION_TOTAL,
 } from '@app/constant';
 import { Permission } from '@prisma/client';
@@ -24,12 +23,14 @@ export class PermissionService {
   ) {}
   async createPermission(body: CreatePermission) {
     const { name, desc, clientId } = body;
-    const id = BigInt(
-      (await this.redis.hget(PERMISSION_NAME_TO_ID, name)) ?? 0,
-    );
-    if (id) {
-      const { name } = await this.getPermissionInfo(id, clientId);
-      throw new HttpException(`${name} 已存在`, HttpStatus.BAD_REQUEST);
+    const dbPermission = await this.prisma.permission.findFirst({
+      where: {
+        name,
+        clientId,
+      },
+    });
+    if (dbPermission) {
+      throw new HttpException(`权限 ${name} 已存在`, HttpStatus.BAD_REQUEST);
     }
     const dbId = await this.counter.incr(ID_COUNTER.PERMISSION);
     const handle = await this.prisma.permission.create({
@@ -44,16 +45,12 @@ export class PermissionService {
     return this.redis
       .incr(PERMISSION_TOTAL)
       .then(() => this.redis.incr(CLIENT_PERMISSION_TOTAL(clientId)))
-      .then(() => this.updateCache(id, handle, 60))
       .then(() => handle);
   }
   async removePermission(id: bigint, clientId: string) {
     const permission = await this.getPermissionInfo(id, clientId);
-    if (permission) {
-      throw new HttpException(
-        `${permission.name} 已存在`,
-        HttpStatus.BAD_REQUEST,
-      );
+    if (!permission) {
+      throw new HttpException(`${id} 不存在`, HttpStatus.NOT_FOUND);
     }
     const handle = this.prisma.permission.delete({
       where: {
@@ -84,6 +81,7 @@ export class PermissionService {
         ...body,
       },
     });
+    console.log(permission);
     await this.updateCache(id, permission, 60);
     return permission;
   }
@@ -96,18 +94,16 @@ export class PermissionService {
     await this.redis.expire(PERMISSION_INFO_CACHE(id), expire);
   }
   async getPermissionInfo(id: bigint, clientId: string) {
-    let info: Permission | null = (await this.redis.hgetall(
-      PERMISSION_INFO_CACHE(id),
-    )) as unknown as Permission | null;
-    if (!info) {
-      info = await this.prisma.permission.findFirst({
-        where: {
-          clientId,
-          id,
-        },
-      });
+    const permission = await this.prisma.permission.findFirst({
+      where: {
+        clientId,
+        id,
+      },
+    });
+    if (!permission) {
+      throw new HttpException('字段不存在', HttpStatus.NOT_FOUND);
     }
-    return info;
+    return permission;
   }
   async getPermissionList(id?: bigint, clientId?: string, size?: number) {
     const permissions = this.prisma.permission.findMany({
@@ -120,11 +116,11 @@ export class PermissionService {
       take: size,
     });
     const total = clientId
-      ? this.redis.get(CLIENT_PERMISSION_TOTAL(clientId))
-      : this.redis.get(PERMISSION_TOTAL);
+      ? BigInt(await this.redis.get(CLIENT_PERMISSION_TOTAL(clientId)))
+      : BigInt(await this.redis.get(PERMISSION_TOTAL));
     return {
-      permissions: await permissions,
-      total: await total,
+      data: await permissions,
+      total: total,
     };
   }
   async getAccountPermission(account: bigint, clientId: string) {
