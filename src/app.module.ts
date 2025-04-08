@@ -52,9 +52,7 @@ const permissions = [
       loader: tomlLoader(
         join(
           __dirname,
-          process.env.MODE === 'GH_CI'
-            ? '../config.test.toml'
-            : '../config.toml',
+          process.env.CI ? '../config.test.toml' : '../config.toml',
         ),
       ),
       global: true,
