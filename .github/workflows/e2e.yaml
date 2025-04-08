@@ -31,11 +31,6 @@ jobs:
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm i
-      - name: Key Generate
-        run: mkdir src/keys && 
-             openssl genrsa -out src/keys/id_rsa_private 2048 && 
-             openssl pkcs8 -topk8 -inform PEM -in src/keys/id_rsa_private -outform pem -nocrypt -out src/keys/pri.pkcs8 && 
-             openssl rsa -in src/keys/id_rsa_private -pubout -out src/keys/pub.pem
       - name: e2e testing
         env:
           DATABASE_URL: file:dev.db
