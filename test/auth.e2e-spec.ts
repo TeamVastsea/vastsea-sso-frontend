@@ -1,4 +1,4 @@
-import { HttpStatus, INestApplication } from '@nestjs/common';
+import { HttpStatus, INestApplication, Logger } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
 import { clear } from './utils/setup';
@@ -25,13 +25,16 @@ describe('Auth E2E test', () => {
   beforeEach(async () => {
     const moduleFixture = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .setLogger(new Logger())
+      .compile();
     app = moduleFixture.createNestApplication();
 
     redis = app.get(getRedisToken(DEFAULT_REDIS_NAMESPACE));
     clientService = app.get(ClientService);
-    await clear('sqlite');
     await app.init();
+    await clear('sqlite');
+    await redis.flushdb();
     expect(redis).toBeDefined();
     await createUser(app, redis, 'test@no-reply.com', 'test');
     const client = await createClient(
@@ -42,9 +45,6 @@ describe('Auth E2E test', () => {
       clientService,
     );
     clients.push(client);
-  });
-  afterAll(async () => {
-    await redis.flushdb();
   });
 
   describe('Login', () => {

@@ -1,0 +1,36 @@
+name: Build Dry Run
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    container: node:20-bookworm-slim
+
+    services:
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run-install: false
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 23
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm i
+      - name: e2e testing
+        run: pnpm prisma migrate deploy && \
+             pnpm test:e2e role &&
