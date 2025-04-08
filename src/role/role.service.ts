@@ -105,9 +105,7 @@ export class RoleService {
         parents: true,
       },
     });
-    if (isNil(data.active)) {
-      return updatedRole;
-    }
+    return updatedRole;
   }
 
   async removeRole(id: bigint) {
@@ -161,7 +159,7 @@ export class RoleService {
         permission: true,
       },
     });
-    return { data: await roles, total: await total };
+    return { data: await roles, total: BigInt(await total) };
   }
   private getRoleByName(name: string, clientId: string) {
     return this.prisma.role.findFirst({
