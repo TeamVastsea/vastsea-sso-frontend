@@ -42,4 +42,7 @@ jobs:
           CLIENT_ID: AuthServer
           CLIENT_SECRET: pRVkhH5Ce3kezJknvjAQ
           REDIRECT: http://localhost:3000/auth/redirect
-        run: pnpm prisma migrate deploy && pnpm test:e2e account && pnpm test:e2e auth && pnpm test:e2e client && pnpm test:e2e role
+        run: pnpm prisma migrate deploy    && pnpm test:e2e account &&
+             pnpm prisma migrate reset -F  && pnpm test:e2e auth    &&
+             pnpm prisma migrate reset -F  && pnpm test:e2e client  &&
+             pnpm prisma migrate reset -F  && pnpm test:e2e role
