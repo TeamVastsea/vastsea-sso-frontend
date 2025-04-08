@@ -32,9 +32,9 @@ describe('Auth E2E test', () => {
 
     redis = app.get(getRedisToken(DEFAULT_REDIS_NAMESPACE));
     clientService = app.get(ClientService);
-    await app.init();
     await clear('sqlite');
     await redis.flushdb();
+    await app.init();
     expect(redis).toBeDefined();
     await createUser(app, redis, 'test@no-reply.com', 'test');
     const client = await createClient(
@@ -44,7 +44,7 @@ describe('Auth E2E test', () => {
       },
       clientService,
     );
-    clients.push(client);
+    clients.unshift(client);
   });
 
   describe('Login', () => {
