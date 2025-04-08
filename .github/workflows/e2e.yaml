@@ -7,6 +7,16 @@ on:
 jobs:
   Build:
     runs-on: ubuntu-latest
+    container: node:20-bookworm-slim
+
+    services:
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,5 +31,6 @@ jobs:
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm i
-      - name: Build
-        run: pnpm build
+      - name: e2e testing
+        run: pnpm prisma migrate deploy && \
+             pnpm test:e2e role &&
