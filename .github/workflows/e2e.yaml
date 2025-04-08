@@ -33,6 +33,7 @@ jobs:
         run: pnpm i
       - name: e2e testing
         env:
+          TEST: true
           DATABASE_URL: file:dev.db
           SWAGGER_TITLE: Vastsea Token
           SWAGGER_DESC: 一站式认证、鉴权服务

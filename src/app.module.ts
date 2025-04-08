@@ -49,7 +49,12 @@ const permissions = [
     }),
     PermissionModule,
     ConfigModule.forRoot({
-      loader: tomlLoader(join(__dirname, '../config.toml')),
+      loader: tomlLoader(
+        join(
+          __dirname,
+          process.env.TEST ? '../config.test.toml' : '../config.toml',
+        ),
+      ),
       global: true,
     }),
     process.env.REDIS_CLUSTER
