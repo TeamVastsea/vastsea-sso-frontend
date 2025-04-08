@@ -9,7 +9,7 @@ async function bootstrap() {
   const swaggerConfig = new DocumentBuilder()
     .setTitle(process.env.SWAGGER_TITLE)
     .setDescription(process.env.SWAGGER_DESC)
-    .setVersion(process.env.ERSION)
+    .setVersion(process.env.VERSION)
     .build();
   const factory = () => SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('/swagger', app, factory);
