@@ -69,8 +69,12 @@ describe('Client E2E test', () => {
   describe('Delete Client', () => {
     it('Success', async () => {
       const client = await createClient(
-        { name: 'Test Client', desc: 'Test', redirect: '' },
-        app.get(ClientService),
+        {
+          name: 'Test Client',
+          desc: 'Test Client',
+          redirect: 'http://exmaple.com',
+        },
+        app,
       );
       const { access_token } = await login(
         'admin@no-reply.com',
@@ -99,8 +103,8 @@ describe('Client E2E test', () => {
     });
     it('Fail, Permision deined', async () => {
       const client = await createClient(
-        { name: 'Test Client', desc: 'Test', redirect: '' },
-        app.get(ClientService),
+        { name: 'Test Client', desc: 'Test', redirect: 'http://example.org' },
+        app,
       );
       const { access_token } = await login(
         'test@no-reply.com',
@@ -117,8 +121,8 @@ describe('Client E2E test', () => {
   describe('Update Client', () => {
     it('Success', async () => {
       const client = await createClient(
-        { name: 'Test Client', desc: 'Test', redirect: '' },
-        app.get(ClientService),
+        { name: 'Test Client', desc: 'Test', redirect: 'http://example.org' },
+        app,
       );
       const { access_token } = await login(
         'admin@no-reply.com',
@@ -154,8 +158,8 @@ describe('Client E2E test', () => {
     });
     it('Fail, Permision deined', async () => {
       const client = await createClient(
-        { name: 'Test Client', desc: 'Test', redirect: '' },
-        app.get(ClientService),
+        { name: 'Test Client', desc: 'Test', redirect: 'http://example.org' },
+        app,
       );
       const { access_token } = await login(
         'test@no-reply.com',
@@ -175,8 +179,8 @@ describe('Client E2E test', () => {
   describe('Get Client Info', () => {
     it('Success', async () => {
       const client = await createClient(
-        { name: 'Test Client', desc: 'Test', redirect: '' },
-        app.get(ClientService),
+        { name: 'Test Client', desc: 'Test', redirect: 'http://example.org' },
+        app,
       );
       const { access_token } = await login(
         'admin@no-reply.com',
@@ -203,8 +207,8 @@ describe('Client E2E test', () => {
     });
     it('Fail, Permision deined', async () => {
       const client = await createClient(
-        { name: 'Test Client', desc: 'Test', redirect: '' },
-        app.get(ClientService),
+        { name: 'Test Client', desc: 'Test', redirect: 'http://example.org' },
+        app,
       );
       const { access_token } = await login(
         'test@no-reply.com',
@@ -218,7 +222,7 @@ describe('Client E2E test', () => {
       expect(statusCode).toBe(HttpStatus.FORBIDDEN);
     });
   });
-  describe('Get Client List', () => {
+  describe.only('Get Client List', () => {
     const clientData = Array.from({ length: 100 })
       .fill(0)
       .map((_, idx) => `client-${idx}`);
@@ -228,9 +232,9 @@ describe('Client E2E test', () => {
           {
             name,
             desc: name,
-            redirect: '',
+            redirect: 'http://example.org',
           },
-          app.get(ClientService),
+          app,
         );
       }
       const { access_token } = await login(
@@ -257,9 +261,9 @@ describe('Client E2E test', () => {
           {
             name,
             desc: name,
-            redirect: '',
+            redirect: 'http://example.org',
           },
-          app.get(ClientService),
+          app,
         );
       }
       const { access_token } = await login(

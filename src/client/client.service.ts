@@ -1,150 +1,189 @@
 import { ConfigService } from '@app/config';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { CreateClient } from './dto/create-client';
 import { GlobalCounterService } from '@app/global-counter';
-import { ID_COUNTER } from '@app/constant';
+import {
+  ACCOUNT_ASSIGN_CLIENT_TOTAL,
+  ACCOUNT_MANAGE_CLIENT_TOTAL,
+  CLIENT_TOTAL,
+  ID_COUNTER,
+} from '@app/constant';
 import { PrismaService } from '@app/prisma';
 import { createHash, randomBytes } from 'crypto';
 import { ClientCache } from './client.cache';
 import { UpdateClient } from './dto/update-client';
+import { isEmpty, isNil } from 'ramda';
+import { AutoRedis } from '@app/decorator';
+import Redis, { Cluster } from 'ioredis';
 
 @Injectable()
 export class ClientService {
+  private logger: Logger = new Logger(ClientService.name);
   constructor(
     private config: ConfigService,
     private cnt: GlobalCounterService,
     private prisma: PrismaService,
     private cache: ClientCache,
+    @AutoRedis() private redis: Redis | Cluster,
   ) {}
 
   async createClient(data: CreateClient) {
-    const { name, desc, avatar, redirect } = data;
-    const clientExist = await this.clientExistByName(name);
-    if (clientExist) {
-      throw new HttpException(`${name} 存在`, HttpStatus.CONFLICT);
+    const accountList = await this.getValidManager(data.manager);
+    const client = await this.findClient({ name: data.name });
+    if (client) {
+      throw new HttpException('客户端已存在', HttpStatus.CONFLICT);
     }
     const id = await this.cnt.incr(ID_COUNTER.CLIENT);
-
-    const { clientId, clientSecret } = this.generateClientIdAndSecret(name);
-    const client = await this.prisma.client.create({
-      data: {
-        name,
-        desc,
-        avatar,
-        id,
-        clientId,
-        clientSecret,
-        redirect,
-      },
-    });
-    await this.cache.incrClientCount();
-    await this.cache.putClientCache(client);
-    return client;
-  }
-  async removeClient(id: bigint) {
-    const client = (await this.cache.clientExistByPk(id))
-      ? await this.cache.getClientInfoByPk(id)
-      : await this.prisma.client.findFirst({
-          where: { id },
-        });
-    if (!client) {
-      throw new HttpException(`客户端不存在`, HttpStatus.NOT_FOUND);
-    }
+    const { clientId, clientSecret } = this.getClientPair();
     return this.prisma.client
-      .delete({
-        where: {
-          id,
-        },
-      })
-      .then(() => {
-        return this.cache.removeClientInfo(client);
-      })
-      .then(() => client);
-  }
-  async updateClient(id: bigint, client: UpdateClient) {
-    return this.prisma.client
-      .update({
-        where: {
-          id,
-        },
+      .create({
         data: {
-          ...client,
+          id,
+          name: data.name,
+          desc: data.desc,
+          clientId,
+          clientSecret,
+          manager: {
+            connect: accountList,
+          },
+          active: true,
+          avatar: data.avatar,
+          redirect: data.redirect,
         },
       })
       .then((client) => {
-        return Promise.all([
-          this.cache.removeClientInfo(client),
-          this.cache.putClientCache(client),
-          this.cache.decrClientCount(),
-        ]).then(() => client);
+        return this.redis.incr(CLIENT_TOTAL()).then(() => client);
       })
-      .then((client) => client);
+      .then((client) => {
+        return this.incrManagerClientTotal(
+          accountList.map(({ id }) => id),
+        ).then(() => client);
+      });
   }
-  async findClientById(id: bigint) {
-    const client = await this.cache.getClientInfoByPk(id);
-    if (client) {
-      return client;
+  async removeClient(id: bigint) {
+    const client = await this.findClient({ id });
+    if (!client) {
+      throw new HttpException('资源不存在', HttpStatus.NOT_FOUND);
     }
-    const dbClient = await this.prisma.client.findFirst({
+    if (client.manager.every((client) => client.id !== id)) {
+      throw new HttpException(
+        '你不是该客户端的管理员, 所以你不能停用这个客户端',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    return this.prisma.client.update({
       where: {
         id,
       },
+      data: {
+        active: false,
+      },
     });
+  }
+  async updateClient(id: bigint, data: UpdateClient, actor: bigint) {
+    const dbClient = await this.findClient({ id });
     if (!dbClient) {
       throw new HttpException('客户端不存在', HttpStatus.NOT_FOUND);
     }
-    return this.cache.putClientCache(dbClient).then(() => dbClient);
+    if (dbClient.manager.every((client) => client.id !== actor)) {
+      throw new HttpException(
+        '你不是该客户端的管理员, 所以你不能修改这个客户端',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    const accounts = data.manager
+      ? this.getValidManager(data.manager)
+      : undefined;
+    return this.prisma.client.update({
+      where: {
+        id,
+      },
+      data: {
+        ...data,
+        manager: {
+          connect: await accounts,
+        },
+      },
+    });
   }
-  async getClients(preId: bigint, size: number) {
-    // TODO: cache me.
-    const total = await this.cache.getClientCount();
-    const data = await this.prisma.client.findMany({
+  findClient({
+    name,
+    id,
+    active,
+    clientId,
+  }: {
+    name?: string;
+    id?: bigint;
+    active?: boolean;
+    clientId?: string;
+  }) {
+    if (isNil(name) && isNil(id)) {
+      throw new HttpException('参数错误', HttpStatus.BAD_REQUEST);
+    }
+    return this.prisma.client
+      .findFirst({
+        where: {
+          OR: [{ name }, { id }, { clientId }],
+          active: active,
+        },
+        include: {
+          manager: { select: { id: true, email: true, profile: true } },
+        },
+      })
+      .then((client) => (isEmpty(client) ? null : client));
+  }
+  incrManagerClientTotal(managerIds: bigint[]) {
+    return Promise.all(
+      managerIds.map((id) => this.redis.incr(ACCOUNT_ASSIGN_CLIENT_TOTAL(id))),
+    );
+  }
+  async findClientList(size: number = 20, preId?: bigint, accountId?: bigint) {
+    const total = accountId
+      ? this.redis.get(ACCOUNT_ASSIGN_CLIENT_TOTAL(accountId)).then(BigInt)
+      : this.redis.get(CLIENT_TOTAL()).then(BigInt);
+    const datas = this.prisma.client.findMany({
       where: {
         id: {
           gt: preId,
         },
       },
       take: size,
-    });
-    return { total, data };
-  }
-  async findClientByClientId(clientId: string) {
-    return this.prisma.client.findFirst({
-      where: {
-        clientId,
+      include: {
+        manager: {
+          select: {
+            id: true,
+            profile: {
+              select: {
+                nick: true,
+                desc: true,
+                avatar: true,
+              },
+            },
+          },
+        },
       },
     });
+    return { total: await total, data: await datas };
   }
-  private sha256(value: string): string {
-    return createHash('sha256').update(value).digest('hex');
+  getValidManager(idList: bigint[]) {
+    return this.prisma.account.findMany({
+      where: {
+        OR: idList.map((id) => ({ id })),
+      },
+      select: { id: true },
+    });
   }
-  private generateClientIdAndSecret(clientName: string) {
-    const randomClientIdSalt = this.sha256(randomBytes(32).toString());
-    const clientIdSha256 = this.sha256(clientName);
-    const randomClientSecretSalt = this.sha256(randomBytes(64).toString());
-    const clientSecretSha256 = this.sha256(randomBytes(128).toString());
-    const clientId = this.sha256(
-      `${clientIdSha256}${randomClientIdSalt}`,
-    ).slice(0, this.config.get('client.idLen'));
-    const clientSecret = this.sha256(
-      `${clientSecretSha256}${randomClientSecretSalt}`,
-    ).slice(0, this.config.get('client.secretLen'));
-    return {
-      clientId,
-      clientSecret,
-    };
-  }
-  private async clientExistByName(name: string) {
-    const cache = await this.cache.clientExists(name);
-    if (cache) {
-      return true;
-    }
-    return this.prisma.client
-      .findFirst({
-        where: {
-          name,
-        },
-      })
-      .then((client) => client !== null);
+  getClientPair() {
+    const rawClientId = `${Date.now()}::${randomBytes(256).toString('base64')}::clientId`;
+    const rawClientSecret = `${Date.now()}::${randomBytes(512).toString('base64')}::clientSecret`;
+    const clientId = createHash('sha512')
+      .update(rawClientId)
+      .digest('base64')
+      .slice(0, 32);
+    const clientSecret = createHash('sha512')
+      .update(rawClientSecret)
+      .digest('base64')
+      .slice(0, 32);
+    return { clientId, clientSecret };
   }
 }

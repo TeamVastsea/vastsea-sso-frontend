@@ -27,6 +27,8 @@ model Account {
 
   profile Profile?
   role    Role[]
+
+  client Client[]
 }
 
 
@@ -35,8 +37,8 @@ model Profile {
   nick      String
   desc      String?
   avatar    String?
-  account   Account @relation(fields: [accountid], references: [id])
-  accountid BigInt  @unique
+  account   Account @relation(fields: [accountId], references: [id])
+  accountId BigInt  @unique @map("accountid")
 }
 
 model Client {
@@ -47,8 +49,10 @@ model Client {
   clientId      String  @unique
   clientSecret  String
   redirect      String
+  manager       Account[]
+  active        Boolean @default(true)
 
-  @@index([name,clientId])
+  @@index([name,clientId,active])
 }
 
 model Permission {
