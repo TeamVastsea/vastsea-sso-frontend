@@ -29,6 +29,7 @@ import {
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
 } from '@nestjs/swagger';
 import { Client, ClientInfo, ClientList } from './entries/clientInfo';
@@ -43,8 +44,8 @@ export class ClientController {
     description: '如果第三方客户端重名, 则会抛出一个Conflict的异常',
   })
   @ApiOperation({
-    description: '创建一个第三方客户端.',
-    summary: '创建一个第三方客户端',
+    description: '创建一个客户端, 如果重名则获抛出一个ConflictException.',
+    summary: '创建客户端接口.',
   })
   @ApiCreatedResponse({ type: Client, description: '创建好的第三方客户端.' })
   @Auth()
@@ -60,9 +61,18 @@ export class ClientController {
     });
   }
 
+  @ApiOperation({
+    description: `
+    停用一个客户端, 如果该客户端不存在会抛出NotFound错误.
+    如果该接口不是用户所管理, 则会抛出一个Forbidden错误.
+    如果用户拥有 * 或 CLIENT::REMOVE::* 权限, 那么无论这个客户端是否属于用户, 都会被停用
+    `,
+    summary: '停用客户端接口.',
+  })
   @ApiOkResponse({ type: Client, description: '停用后的客户端状态' })
   @ApiException(() => ForbiddenException, {
-    description: '如果用户尝试停用一个不属于他的客户端, 将会抛出403错误',
+    description:
+      '如果用户尝试停用一个不属于他的客户端, 将会抛出403错误. 如果用户拥有 * 或 CILENT::REMOVE::* 权限, 那么无论这个客户端是否属于用户, 都会被停用',
   })
   @Auth()
   @Delete('/:id')
@@ -83,9 +93,18 @@ export class ClientController {
     );
   }
 
+  @ApiOperation({
+    description: `
+    修改客户端, 如果该客户端不存在会抛出NotFound错误.
+    如果该接口不是用户所管理, 则会抛出一个Forbidden错误.
+    如果用户拥有 * 或 CLIENT::UPDATE::* 权限, 那么无论这个客户端是否属于用户, 都会被修改
+    `,
+    summary: '修改客户端接口.',
+  })
   @ApiOkResponse({ type: Client, description: '修改完成的第三方客户端' })
   @ApiException(() => ForbiddenException, {
-    description: '如果用户尝试修改一个不属于他的客户端, 将会抛出403错误',
+    description:
+      '如果用户尝试修改一个不属于他的客户端, 将会抛出403错误. 如果用户存在 * 或 CLIENT::UPDATE::* 权限, 那么无论这个客户端是否归属该用户管理, 都会被修改',
   })
   @Auth()
   @Patch('/:id')
@@ -108,10 +127,21 @@ export class ClientController {
     );
   }
 
+  @ApiOperation({
+    description: `
+    获取客户端详细信息, 如果该客户端不存在会抛出NotFound错误.
+    如果该接口不是用户所管理, 则会抛出一个Forbidden错误.
+    如果用户拥有 * 或 CLIENT::INFO::* 权限, 那么无论这个客户端是否属于用户, 都会被修改.
+    `,
+    summary: '获取客户端详细信息接口.',
+  })
   @ApiOkResponse({ type: ClientInfo, description: '客户端详细信息.' })
   @ApiException(() => NotFoundException, {
+    description: '如果这个客户端不在数据库内, 会抛出404错误',
+  })
+  @ApiException(() => NotFoundException, {
     description:
-      '如果用户企图获取不属于他管理的客户端的详细信息,那么会抛出一个404错误',
+      '如果用户企图获取不属于他管理的客户端的详细信息,那么会抛出一个404错误. 如果用户存在 * 或 CLIENT::QUERY::INFO::* 权限. 那么不会抛出404错误',
   })
   @Auth()
   @Get(':id')
@@ -139,10 +169,16 @@ export class ClientController {
     return client;
   }
 
+  @ApiQuery({
+    name: 'preId',
+    description:
+      '客户端列表前一页的最后一个Id, 这么做主要是为了规避深分页导致的性能力劣化. 如果不穿, 则默认从第一条数据开始',
+  })
+  @ApiQuery({ name: 'size', description: '页大小' })
   @ApiOperation({
-    description: '获取客户端列表',
-    summary:
-      '如果操作角色拥有 CLIENT::QUERY::LIST::* | * 权限, 那么可以获取所有客户端列表',
+    description:
+      '如果操作角色拥有 CLIENT::QUERY::LIST::* 或 * 权限, 那么可以获取所有客户端列表',
+    summary: '获取客户端列表',
   })
   @ApiResponse({
     type: ClientList,

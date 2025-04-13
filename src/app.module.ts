@@ -44,8 +44,8 @@ const permissions = [
     PrismaModule,
     JwtModule.forRoot({
       global: true,
-      priKey: readFileSync(join(__dirname, 'keys/pri.pkcs8')).toString(),
-      pubKey: readFileSync(join(__dirname, 'keys/pub.pem')).toString(),
+      priKey: readFileSync(join(__dirname, '../keys/pri.pkcs8')).toString(),
+      pubKey: readFileSync(join(__dirname, '../keys/pub.pem')).toString(),
       keyPairType: 'RS256',
     }),
     PermissionModule,
