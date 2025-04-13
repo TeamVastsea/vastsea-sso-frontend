@@ -4,7 +4,7 @@ export const ID_COUNTER = {
   ACCOUNT: 'ACCOUNT-ID',
   ROLE: 'ROLE-ID',
   PROFILE: 'PROFILE-ID',
-  CLIENT: 'CLIENT-ID'
+  CLIENT: 'CLIENT-ID',
 };
 
 export const PERMISSION_INFO_CACHE = (id: bigint) => `PERMISSION::${id}::INFO`;
@@ -40,3 +40,6 @@ export const CLIENT_INFO = (clientId: string) => `CLIENT::${clientId}::INFO`;
 export const CLIENT_PK__ID = (pk: bigint) => `CLIENT::${pk}::ID`;
 export const CLIENT_TOTAL = () => `CLIENT::TOTAL`;
 export const AUTH_EMAIL_CODE = (email: string) => `AUTH::${email}::CODE`;
+
+export const ACCOUNT_ASSIGN_CLIENT_TOTAL = (managerId: bigint) =>
+  `ACCOUNT::${managerId}::CLIENT::TOTAL`;

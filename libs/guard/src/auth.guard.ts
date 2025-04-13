@@ -12,7 +12,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import Redis, { Cluster } from 'ioredis';
-import { AuthService } from '../../src/auth/auth.service';
+import { AuthService } from '../../../src/auth/auth.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -31,7 +31,7 @@ export class AuthGuard implements CanActivate {
       return true;
     }
     const http = context.switchToHttp();
-    const req = http.getRequest();
+    const req: AuthReq = http.getRequest();
     const token = this.getToken(req);
     if (!token) {
       throw new HttpException('未登录', HttpStatus.UNAUTHORIZED);
@@ -52,7 +52,7 @@ export class AuthGuard implements CanActivate {
     if (!(await activeState)) {
       throw new HttpException('未登录', HttpStatus.BAD_REQUEST);
     }
-    req.user = { id };
+    req.user = { id, permissions: [], super: false };
     return true;
   }
   getToken(req: Request) {

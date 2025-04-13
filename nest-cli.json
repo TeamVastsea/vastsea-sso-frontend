@@ -25,6 +25,15 @@
         "tsConfigPath": "libs/constant/tsconfig.lib.json"
       }
     },
+    "guard": {
+      "type": "library",
+      "root": "libs/guard",
+      "entryFile": "index",
+      "sourceRoot": "libs/guard/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/guard/tsconfig.lib.json"
+      }
+    },
     "decorator": {
       "type": "library",
       "root": "libs/decorator",

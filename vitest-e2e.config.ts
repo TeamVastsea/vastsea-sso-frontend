@@ -15,6 +15,7 @@ export default defineConfig({
       '@app/prisma': resolve(__dirname, './libs/prisma/src'),
       '@app/redis-cache': resolve(__dirname, './libs/redis-cache/src'),
       '@app/global-counter': resolve(__dirname, './libs/global-counter/src'),
+      '@app/guard': resolve(__dirname, './libs/guard/src'),
     },
   },
   plugins: [swc.vite()],
@@ -31,6 +32,7 @@ export default defineConfig({
       '@app/prisma': resolve(__dirname, './libs/prisma/src'),
       '@app/redis-cache': resolve(__dirname, './libs/redis-cache/src'),
       '@app/global-counter': resolve(__dirname, './libs/global-counter/src'),
+      '@app/guard': resolve(__dirname, './libs/guard/src'),
     },
   },
 });

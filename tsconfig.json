@@ -65,6 +65,12 @@
       ],
       "@app/redis-cache/*": [
         "libs/redis-cache/src/*"
+      ],
+      "@app/guard": [
+        "libs/guard/src"
+      ],
+      "@app/guard/*":[
+        "libs/guard/src/*"
       ]
     }
   }

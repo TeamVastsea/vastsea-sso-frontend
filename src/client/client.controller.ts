@@ -1,10 +1,11 @@
 import {
   Body,
+  ConflictException,
   Controller,
   DefaultValuePipe,
   Delete,
+  ForbiddenException,
   Get,
-  HttpCode,
   HttpException,
   HttpStatus,
   NotFoundException,
@@ -15,120 +16,193 @@ import {
   Query,
 } from '@nestjs/common';
 import { ClientService } from './client.service';
-import { Auth, BigIntPipe, Permission } from '@app/decorator';
 import { CreateClient } from './dto/create-client';
+import {
+  Account,
+  Auth,
+  BigIntPipe,
+  Operator,
+  Permission,
+} from '@app/decorator';
 import { UpdateClient } from './dto/update-client';
 import {
   ApiCreatedResponse,
-  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
-  ApiParam,
   ApiQuery,
-  ApiTags,
+  ApiResponse,
 } from '@nestjs/swagger';
-import { ClientList, TClient } from './dto/client-list.dto';
-import { Client } from '@prisma/client';
+import { Client, ClientInfo, ClientList } from './entries/clientInfo';
 import { ApiException } from '@nanogiants/nestjs-swagger-api-exception-decorator';
+import { permissionJudge } from '@app/guard';
 
-@ApiTags('客户端管理模块')
 @Controller('client')
 export class ClientController {
   constructor(private readonly clientService: ClientService) {}
 
+  @ApiException(() => ConflictException, {
+    description: '如果第三方客户端重名, 则会抛出一个Conflict的异常',
+  })
   @ApiOperation({
-    summary: '获取客户端列表',
+    description: '创建一个客户端, 如果重名则获抛出一个ConflictException.',
+    summary: '创建客户端接口.',
   })
-  @ApiOkResponse({
-    description: '获取Client列表',
-    type: ClientList,
-  })
-  @ApiQuery({ name: 'preId', description: '前一个client id' })
-  @ApiQuery({ name: 'size', description: '获取多少客户端' })
+  @ApiCreatedResponse({ type: Client, description: '创建好的第三方客户端.' })
   @Auth()
-  @Permission(['CLIENT::GET::LIST'])
-  @Get('/')
-  async getClientList(
-    @Query('preId', new BigIntPipe({ optional: true })) preId: bigint,
-    @Query('size', new DefaultValuePipe(20), ParseIntPipe) size: number,
-  ): Promise<ClientList> {
-    return this.clientService.getClients(preId, size);
-  }
-
-  @ApiOperation({
-    summary: '获取某个客户端信息',
-  })
-  @ApiOkResponse({
-    description: '获取某个客户端的详细信息',
-    type: TClient,
-  })
-  @ApiParam({ name: 'id', description: '客户端的数据库主键' })
-  @ApiOkResponse({
-    description: '返回客户端信息, 包含clientSecret',
-  })
-  @ApiNotFoundResponse({
-    type: HttpException,
-    description:
-      '当客户端不存在时, 将会抛出404错误, message字段是一个自然语言, 用于阐述错误原因.',
-  })
-  @Auth()
-  @Permission(['CLIENT::GET::INFO'])
-  @Get('/:id')
-  async getClientInfo(
-    @Param('id', new BigIntPipe()) id: bigint,
-  ): Promise<Client> {
-    return this.clientService.findClientById(id);
-  }
-
-  @ApiOperation({
-    summary: '创建一个客户端',
-  })
-  @ApiCreatedResponse({
-    type: TClient,
-  })
-  @Auth()
-  @Permission(['CLIENT::CREATE'])
   @Post('/')
-  async createClient(@Body() body: CreateClient) {
-    return this.clientService.createClient(body);
+  @Permission(['CLIENT::CREATE'])
+  createClient(
+    @Body() createDto: CreateClient,
+    @Account('id') accountId: string,
+  ) {
+    return this.clientService.createClient({
+      ...createDto,
+      manager: createDto.manager ? createDto.manager : [BigInt(accountId)],
+    });
   }
 
   @ApiOperation({
-    summary: '删除一个客户端',
+    description: `
+    停用一个客户端, 如果该客户端不存在会抛出NotFound错误.
+    如果该接口不是用户所管理, 则会抛出一个Forbidden错误.
+    如果用户拥有 * 或 CLIENT::REMOVE::* 权限, 那么无论这个客户端是否属于用户, 都会被停用
+    `,
+    summary: '停用客户端接口.',
   })
-  @ApiOkResponse({
-    type: TClient,
+  @ApiOkResponse({ type: Client, description: '停用后的客户端状态' })
+  @ApiException(() => ForbiddenException, {
+    description:
+      '如果用户尝试停用一个不属于他的客户端, 将会抛出403错误. 如果用户拥有 * 或 CILENT::REMOVE::* 权限, 那么无论这个客户端是否属于用户, 都会被停用',
   })
-  @ApiParam({
-    name: 'id',
-    description: '客户端数据库主键, 非client-id.',
+  @Auth()
+  @Delete('/:id')
+  @Permission(['CLIENT::REMOVE'])
+  removeClient(
+    @Param('id', BigIntPipe) id: bigint,
+    @Account('id') accountId: string,
+    @Account('permissions') permissions: string[],
+  ) {
+    return this.clientService.removeClient(
+      id,
+      BigInt(accountId),
+      permissionJudge(permissions, {
+        lhs: { op: Operator.HAS, expr: '*' },
+        op: Operator.OR,
+        rhs: { op: Operator.HAS, expr: 'CLIENT::REMOVE::*' },
+      }),
+    );
+  }
+
+  @ApiOperation({
+    description: `
+    修改客户端, 如果该客户端不存在会抛出NotFound错误.
+    如果该接口不是用户所管理, 则会抛出一个Forbidden错误.
+    如果用户拥有 * 或 CLIENT::UPDATE::* 权限, 那么无论这个客户端是否属于用户, 都会被修改
+    `,
+    summary: '修改客户端接口.',
+  })
+  @ApiOkResponse({ type: Client, description: '修改完成的第三方客户端' })
+  @ApiException(() => ForbiddenException, {
+    description:
+      '如果用户尝试修改一个不属于他的客户端, 将会抛出403错误. 如果用户存在 * 或 CLIENT::UPDATE::* 权限, 那么无论这个客户端是否归属该用户管理, 都会被修改',
+  })
+  @Auth()
+  @Patch('/:id')
+  @Permission(['CLIENT::UPDATE'])
+  updateClient(
+    @Param('id', BigIntPipe) id: bigint,
+    @Body() updateDto: UpdateClient,
+    @Account('id') accountId: string,
+    @Account('permissions') permissions: string[],
+  ) {
+    return this.clientService.updateClient(
+      id,
+      updateDto,
+      BigInt(accountId),
+      permissionJudge(permissions, {
+        lhs: { op: Operator.HAS, expr: '*' },
+        op: Operator.OR,
+        rhs: { op: Operator.HAS, expr: 'CLIENT::UPDATE::*' },
+      }),
+    );
+  }
+
+  @ApiOperation({
+    description: `
+    获取客户端详细信息, 如果该客户端不存在会抛出NotFound错误.
+    如果该接口不是用户所管理, 则会抛出一个Forbidden错误.
+    如果用户拥有 * 或 CLIENT::INFO::* 权限, 那么无论这个客户端是否属于用户, 都会被修改.
+    `,
+    summary: '获取客户端详细信息接口.',
+  })
+  @ApiOkResponse({ type: ClientInfo, description: '客户端详细信息.' })
+  @ApiException(() => NotFoundException, {
+    description: '如果这个客户端不在数据库内, 会抛出404错误',
   })
   @ApiException(() => NotFoundException, {
     description:
-      '当需要删除的客户端不存在, 接口会抛出404异常. message字段用于阐述错误原因',
+      '如果用户企图获取不属于他管理的客户端的详细信息,那么会抛出一个404错误. 如果用户存在 * 或 CLIENT::QUERY::INFO::* 权限. 那么不会抛出404错误',
   })
   @Auth()
-  @Permission(['CLIENT::REMOVE'])
-  @Delete('/:id')
-  async removeClient(@Param('id', BigIntPipe) id: bigint) {
-    return this.clientService.removeClient(id);
+  @Get(':id')
+  @Permission(['CLIENT::QUERY::INFO'])
+  async getClientInfo(
+    @Param('id', BigIntPipe) id: bigint,
+    @Account('id') accountId: string,
+    @Account('permissions') permissions: string[],
+  ) {
+    const client = await this.clientService.findClient({ id });
+    if (!client) {
+      throw new HttpException('资源不存在', HttpStatus.NOT_FOUND);
+    }
+    const _accountId = BigInt(accountId);
+    if (
+      client.manager.every((manager) => manager.id !== _accountId) &&
+      !permissionJudge(permissions, {
+        lhs: { op: Operator.HAS, expr: '*' },
+        op: Operator.OR,
+        rhs: { op: Operator.HAS, expr: 'CLIENT::QUERY::INFO::*' },
+      })
+    ) {
+      throw new HttpException('资源不存在', HttpStatus.NOT_FOUND);
+    }
+    return client;
   }
 
-  @ApiOperation({
-    summary: '修改一个客户端',
+  @ApiQuery({
+    name: 'preId',
+    description:
+      '客户端列表前一页的最后一个Id, 这么做主要是为了规避深分页导致的性能力劣化. 如果不穿, 则默认从第一条数据开始',
   })
-  @ApiOkResponse({
-    description: '返回一个修改结果',
-    type: TClient,
+  @ApiQuery({ name: 'size', description: '页大小' })
+  @ApiOperation({
+    description:
+      '如果操作角色拥有 CLIENT::QUERY::LIST::* 或 * 权限, 那么可以获取所有客户端列表',
+    summary: '获取客户端列表',
+  })
+  @ApiResponse({
+    type: ClientList,
+    status: HttpStatus.OK,
+    description: '获取所有属于自己管理的客户端列表. 不在乎是否停用',
   })
   @Auth()
-  @Permission(['CLIENT::UPDATE'])
-  @Patch('/:id')
-  @HttpCode(HttpStatus.OK)
-  async updateClient(
-    @Param('id', BigIntPipe) id: bigint,
-    @Body() body: UpdateClient,
+  @Get('/')
+  @Permission(['CLIENT::QUERY::LIST'])
+  getClientList(
+    @Query('preId', new BigIntPipe({ optional: true })) preId: bigint,
+    @Query('size', new DefaultValuePipe(20), ParseIntPipe) size: number,
+    @Account('id') accountId: string,
+    @Account('permissions') permissions: string[],
   ) {
-    return this.clientService.updateClient(id, body);
+    return this.clientService.findClientList(
+      size,
+      preId,
+      BigInt(accountId),
+      permissionJudge(permissions, {
+        lhs: { op: Operator.HAS, expr: '*' },
+        op: Operator.OR,
+        rhs: { op: Operator.HAS, expr: 'CLIENT::QUERY::LIST::*' },
+      }),
+    );
   }
 }

@@ -6,7 +6,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { ClientService } from '../../src/client/client.service';
+import { ClientService } from '../../../src/client/client.service';
 import { Request } from 'express';
 import { RequiredClientPairKey } from '@app/decorator';
 

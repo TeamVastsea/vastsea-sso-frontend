@@ -7,6 +7,6 @@ declare global {
     id: string;
   };
   type AuthReq = {
-    user: { id: string };
+    user: { id: string; permissions: string[]; super: boolean };
   } & Request;
 }
