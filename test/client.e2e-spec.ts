@@ -222,7 +222,7 @@ describe('Client E2E test', () => {
       expect(statusCode).toBe(HttpStatus.FORBIDDEN);
     });
   });
-  describe.only('Get Client List', () => {
+  describe('Get Client List', () => {
     const clientData = Array.from({ length: 100 })
       .fill(0)
       .map((_, idx) => `client-${idx}`);
