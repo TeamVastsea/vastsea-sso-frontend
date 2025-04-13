@@ -60,8 +60,11 @@ export class ClientController {
   @Auth()
   @Delete('/:id')
   @Permission(['CLIENT::REMOVE'])
-  removeClient(@Param('id', BigIntPipe) id: bigint) {
-    return this.clientService.removeClient(id);
+  removeClient(
+    @Param('id', BigIntPipe) id: bigint,
+    @Account('id') accountId: string,
+  ) {
+    return this.clientService.removeClient(id, BigInt(accountId));
   }
 
   @ApiOkResponse({ type: Client, description: '修改完成的第三方客户端' })

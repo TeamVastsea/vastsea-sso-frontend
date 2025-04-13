@@ -37,6 +37,11 @@ export class PermissionGuard implements CanActivate {
       BigInt(id),
       process.env.CLIENT_ID,
     );
+    req.user = {
+      ...req.user,
+      permissions,
+      super: permissions.includes('*'),
+    };
     if (permissions.includes('*')) {
       return true;
     }

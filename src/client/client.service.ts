@@ -60,12 +60,12 @@ export class ClientService {
         ).then(() => client);
       });
   }
-  async removeClient(id: bigint) {
+  async removeClient(id: bigint, actor: bigint) {
     const client = await this.findClient({ id });
     if (!client) {
       throw new HttpException('资源不存在', HttpStatus.NOT_FOUND);
     }
-    if (client.manager.every((client) => client.id !== id)) {
+    if (client.manager.every((client) => client.id !== actor)) {
       throw new HttpException(
         '你不是该客户端的管理员, 所以你不能停用这个客户端',
         HttpStatus.FORBIDDEN,
