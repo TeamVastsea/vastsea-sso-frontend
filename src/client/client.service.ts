@@ -60,12 +60,12 @@ export class ClientService {
         ).then(() => client);
       });
   }
-  async removeClient(id: bigint, actor: bigint) {
+  async removeClient(id: bigint, actor: bigint, isSuper: boolean) {
     const client = await this.findClient({ id });
     if (!client) {
       throw new HttpException('资源不存在', HttpStatus.NOT_FOUND);
     }
-    if (client.manager.every((client) => client.id !== actor)) {
+    if (client.manager.every((client) => client.id !== actor) && !isSuper) {
       throw new HttpException(
         '你不是该客户端的管理员, 所以你不能停用这个客户端',
         HttpStatus.FORBIDDEN,
@@ -80,12 +80,17 @@ export class ClientService {
       },
     });
   }
-  async updateClient(id: bigint, data: UpdateClient, actor: bigint) {
+  async updateClient(
+    id: bigint,
+    data: UpdateClient,
+    actor: bigint,
+    isSuper: boolean,
+  ) {
     const dbClient = await this.findClient({ id });
     if (!dbClient) {
       throw new HttpException('客户端不存在', HttpStatus.NOT_FOUND);
     }
-    if (dbClient.manager.every((client) => client.id !== actor)) {
+    if (dbClient.manager.every((client) => client.id !== actor) && !isSuper) {
       throw new HttpException(
         '你不是该客户端的管理员, 所以你不能修改这个客户端',
         HttpStatus.FORBIDDEN,
@@ -137,8 +142,13 @@ export class ClientService {
       managerIds.map((id) => this.redis.incr(ACCOUNT_ASSIGN_CLIENT_TOTAL(id))),
     );
   }
-  async findClientList(size: number = 20, preId?: bigint, accountId?: bigint) {
-    const total = accountId
+  async findClientList(
+    size: number = 20,
+    preId?: bigint,
+    accountId?: bigint,
+    queryAll?: boolean,
+  ) {
+    const total = !queryAll
       ? this.redis.get(ACCOUNT_ASSIGN_CLIENT_TOTAL(accountId)).then(BigInt)
       : this.redis.get(CLIENT_TOTAL()).then(BigInt);
     const datas = this.prisma.client.findMany({
@@ -146,6 +156,13 @@ export class ClientService {
         id: {
           gt: preId,
         },
+        manager: !queryAll
+          ? {
+              some: {
+                id: accountId,
+              },
+            }
+          : undefined,
       },
       take: size,
       include: {

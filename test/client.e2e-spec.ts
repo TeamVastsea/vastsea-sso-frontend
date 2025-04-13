@@ -82,7 +82,7 @@ describe('Client E2E test', () => {
         process.env.CLIENT_ID,
         app,
       );
-      const { statusCode, body } = await request(app.getHttpServer())
+      const { statusCode } = await request(app.getHttpServer())
         .delete(`/client/${client.id}`)
         .auth(access_token, { type: 'bearer' });
       expect(statusCode).toBe(HttpStatus.OK);

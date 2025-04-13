@@ -13,7 +13,7 @@ import { AuthModule } from './auth/auth.module';
 import { readFileSync } from 'fs';
 import { SuperSerializerInterceptor } from './super_serializer/super_serializer.interceptor';
 import { ClientModule } from './client/client.module';
-import { AuthGuard, PermissionGuard } from '../libs/guard';
+import { AuthGuard, PermissionGuard } from '@app/guard';
 import { AccountModule } from './account/account.module';
 import { PermissionService } from './permission/permission.service';
 import { RoleService } from './role/role.service';
@@ -24,7 +24,7 @@ import { AutoRedis } from '@app/decorator';
 import Redis, { Cluster } from 'ioredis';
 import { ID_COUNTER } from '@app/constant';
 import { ZodValidationPipe } from 'nestjs-zod';
-import { RequireClientPairGuard } from '../libs/guard/require-client-pair';
+import { RequireClientPairGuard } from '@app/guard';
 
 const permissions = [
   'CLIENT::GET::LIST',

@@ -17,7 +17,13 @@ import {
 } from '@nestjs/common';
 import { ClientService } from './client.service';
 import { CreateClient } from './dto/create-client';
-import { Account, Auth, BigIntPipe, Permission } from '@app/decorator';
+import {
+  Account,
+  Auth,
+  BigIntPipe,
+  Operator,
+  Permission,
+} from '@app/decorator';
 import { UpdateClient } from './dto/update-client';
 import {
   ApiCreatedResponse,
@@ -27,7 +33,8 @@ import {
 } from '@nestjs/swagger';
 import { Client, ClientInfo, ClientList } from './entries/clientInfo';
 import { ApiException } from '@nanogiants/nestjs-swagger-api-exception-decorator';
-import { NotFoundError } from 'rxjs';
+import { permissionJudge } from '@app/guard';
+
 @Controller('client')
 export class ClientController {
   constructor(private readonly clientService: ClientService) {}
@@ -63,8 +70,17 @@ export class ClientController {
   removeClient(
     @Param('id', BigIntPipe) id: bigint,
     @Account('id') accountId: string,
+    @Account('permissions') permissions: string[],
   ) {
-    return this.clientService.removeClient(id, BigInt(accountId));
+    return this.clientService.removeClient(
+      id,
+      BigInt(accountId),
+      permissionJudge(permissions, {
+        lhs: { op: Operator.HAS, expr: '*' },
+        op: Operator.OR,
+        rhs: { op: Operator.HAS, expr: 'CLIENT::REMOVE::*' },
+      }),
+    );
   }
 
   @ApiOkResponse({ type: Client, description: '修改完成的第三方客户端' })
@@ -78,8 +94,18 @@ export class ClientController {
     @Param('id', BigIntPipe) id: bigint,
     @Body() updateDto: UpdateClient,
     @Account('id') accountId: string,
+    @Account('permissions') permissions: string[],
   ) {
-    return this.clientService.updateClient(id, updateDto, BigInt(accountId));
+    return this.clientService.updateClient(
+      id,
+      updateDto,
+      BigInt(accountId),
+      permissionJudge(permissions, {
+        lhs: { op: Operator.HAS, expr: '*' },
+        op: Operator.OR,
+        rhs: { op: Operator.HAS, expr: 'CLIENT::UPDATE::*' },
+      }),
+    );
   }
 
   @ApiOkResponse({ type: ClientInfo, description: '客户端详细信息.' })
@@ -93,18 +119,31 @@ export class ClientController {
   async getClientInfo(
     @Param('id', BigIntPipe) id: bigint,
     @Account('id') accountId: string,
+    @Account('permissions') permissions: string[],
   ) {
     const client = await this.clientService.findClient({ id });
     if (!client) {
       throw new HttpException('资源不存在', HttpStatus.NOT_FOUND);
     }
     const _accountId = BigInt(accountId);
-    if (client.manager.every((manager) => manager.id !== _accountId)) {
+    if (
+      client.manager.every((manager) => manager.id !== _accountId) &&
+      !permissionJudge(permissions, {
+        lhs: { op: Operator.HAS, expr: '*' },
+        op: Operator.OR,
+        rhs: { op: Operator.HAS, expr: 'CLIENT::QUERY::INFO::*' },
+      })
+    ) {
       throw new HttpException('资源不存在', HttpStatus.NOT_FOUND);
     }
     return client;
   }
 
+  @ApiOperation({
+    description: '获取客户端列表',
+    summary:
+      '如果操作角色拥有 CLIENT::QUERY::LIST::* | * 权限, 那么可以获取所有客户端列表',
+  })
   @ApiResponse({
     type: ClientList,
     status: HttpStatus.OK,
@@ -117,7 +156,17 @@ export class ClientController {
     @Query('preId', new BigIntPipe({ optional: true })) preId: bigint,
     @Query('size', new DefaultValuePipe(20), ParseIntPipe) size: number,
     @Account('id') accountId: string,
+    @Account('permissions') permissions: string[],
   ) {
-    return this.clientService.findClientList(size, preId, BigInt(accountId));
+    return this.clientService.findClientList(
+      size,
+      preId,
+      BigInt(accountId),
+      permissionJudge(permissions, {
+        lhs: { op: Operator.HAS, expr: '*' },
+        op: Operator.OR,
+        rhs: { op: Operator.HAS, expr: 'CLIENT::QUERY::LIST::*' },
+      }),
+    );
   }
 }

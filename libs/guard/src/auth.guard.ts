@@ -12,7 +12,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import Redis, { Cluster } from 'ioredis';
-import { AuthService } from '../../src/auth/auth.service';
+import { AuthService } from '../../../src/auth/auth.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {

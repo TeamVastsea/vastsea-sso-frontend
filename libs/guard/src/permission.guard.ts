@@ -5,11 +5,49 @@ import {
   ExecutionContext,
   HttpException,
   HttpStatus,
-  Inject,
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { PermissionService } from '../../src/permission/permission.service';
+import { PermissionService } from '../../../src/permission/permission.service';
+
+export const permissionJudge = (
+  userPermission: string[],
+  node: PermissionExpr,
+) => {
+  if (typeof node === 'boolean') {
+    return node;
+  }
+  if (node.op === Operator.HAS) {
+    return userPermission.includes(node.expr);
+  }
+  if (node.op === Operator.SOME) {
+    const required = node.expr;
+    return userPermission.some((p) => required.includes(p));
+  }
+  if (node.op === Operator.EVERY) {
+    const required = node.expr;
+    return userPermission.every((p) => required.includes(p));
+  }
+  if (node.op === Operator.NOT) {
+    return !permissionJudge(userPermission, node.expr);
+  }
+  if (node.op === Operator.AND || node.op === Operator.OR) {
+    const lval =
+      typeof node.lhs === 'object'
+        ? permissionJudge(userPermission, node.lhs)
+        : node.lhs;
+    const rval =
+      typeof node.rhs === 'object'
+        ? permissionJudge(userPermission, node.rhs)
+        : node.rhs;
+    if (node.op === Operator.AND) {
+      return lval && rval;
+    }
+    if (node.op === Operator.OR) {
+      return lval || rval;
+    }
+  }
+};
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
@@ -61,45 +99,10 @@ export class PermissionGuard implements CanActivate {
     }
     if (
       !Array.isArray(requiredPermissions) &&
-      this.judge(permissions, requiredPermissions)
+      permissionJudge(permissions, requiredPermissions)
     ) {
       return true;
     }
     throw new HttpException('权限不足', HttpStatus.FORBIDDEN);
-  }
-  judge(userPermission: string[], node: PermissionExpr) {
-    if (typeof node === 'boolean') {
-      return node;
-    }
-    if (node.op === Operator.HAS) {
-      return userPermission.includes(node.expr);
-    }
-    if (node.op === Operator.SOME) {
-      const required = node.expr;
-      return userPermission.some((p) => required.includes(p));
-    }
-    if (node.op === Operator.EVERY) {
-      const required = node.expr;
-      return userPermission.every((p) => required.includes(p));
-    }
-    if (node.op === Operator.NOT) {
-      return !this.judge(userPermission, node.expr);
-    }
-    if (node.op === Operator.AND || node.op === Operator.OR) {
-      const lval =
-        typeof node.lhs === 'object'
-          ? this.judge(userPermission, node.lhs)
-          : node.lhs;
-      const rval =
-        typeof node.rhs === 'object'
-          ? this.judge(userPermission, node.rhs)
-          : node.rhs;
-      if (node.op === Operator.AND) {
-        return lval && rval;
-      }
-      if (node.op === Operator.OR) {
-        return lval || rval;
-      }
-    }
   }
 }
