@@ -1,10 +1,12 @@
 import {
-  BadRequestException,
   Body,
+  ConflictException,
   Controller,
   DefaultValuePipe,
   Delete,
   Get,
+  HttpException,
+  HttpStatus,
   NotFoundException,
   Param,
   ParseIntPipe,
@@ -13,134 +15,101 @@ import {
   Query,
 } from '@nestjs/common';
 import { PermissionService } from './permission.service';
-import { Auth, BigIntPipe, Permission } from '@app/decorator';
-import {
-  CreatePermission,
-  GetPermissionList,
-  TPermission,
-} from './dto/create-permission';
-import { UpdatePermission } from './dto/update-permission';
-import {
-  ApiCreatedResponse,
-  ApiOkResponse,
-  ApiParam,
-  ApiQuery,
-} from '@nestjs/swagger';
-import { ApiException } from '@nanogiants/nestjs-swagger-api-exception-decorator';
 
+import { ApiException } from '@nanogiants/nestjs-swagger-api-exception-decorator';
+import { CreatePermission } from './dto/create-permission';
+import { BigIntPipe, Account, PermissionJudge, Operator } from '@app/decorator';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { UpdatePermission } from './dto/update-permission';
+@ApiTags('权限')
 @Controller('permission')
 export class PermissionController {
   constructor(private readonly permissionService: PermissionService) {}
 
-  @ApiQuery({ name: 'clientId', description: '客户端的clientId' })
-  @ApiQuery({ name: 'size', description: '页大小' })
-  @ApiQuery({
-    name: 'preId',
-    description: '前一页最后一个权限字段的数据库主键',
+  @ApiOperation({
+    summary: '创建权限',
+    description: `该接口用于在指定的客户端下创建权限。`,
   })
-  @ApiOkResponse({
-    type: GetPermissionList,
-  })
-  @Auth()
-  @Permission(['PERMISSION::GET::LIST'])
-  @Get('/')
-  async getPermissionList(
-    @Query('clientId') clientId: string,
-    @Query('size', new DefaultValuePipe(10), new ParseIntPipe({})) size: number,
-    @Query('preId', new BigIntPipe({ optional: true })) id?: bigint,
-  ) {
-    return this.permissionService.getPermissionList(id, clientId, size);
-  }
-
-  @ApiCreatedResponse({
-    type: TPermission,
-  })
-  @ApiException(() => BadRequestException, {
-    description:
-      '如果在同一个client下重复创建一个权限, 会抛出400错误. message字段会阐述失败原因',
-  })
-  @Auth()
-  @Permission(['PERMISSION::CREATE'])
-  @Post('/')
-  async createPermission(@Body() body: CreatePermission): Promise<TPermission> {
-    return this.permissionService.createPermission(body);
-  }
-
-  @ApiOkResponse({
-    type: TPermission,
-  })
-  @ApiParam({
-    name: 'id',
-    description: '权限数据库主键',
-  })
-  @ApiQuery({
-    name: 'clientId',
-    description: '要删除哪个客户端中的权限',
+  @ApiException(() => ConflictException, {
+    description: '如果创建的权限在客户端下存在, 那么会抛出一个Conflict错误',
   })
   @ApiException(() => NotFoundException, {
-    description:
-      '如果要删除的权限不在该 client 中, 则会抛出该错误. message 字段会阐述失败原因.',
+    description: '如果客户端不存在, 那么会抛出一个NotFound错误',
   })
-  @Auth()
-  @Permission(['PERMISSION::REMOVE'])
-  @Delete('/:id')
+  @Post('/')
+  createPermission(@Body() data: CreatePermission) {
+    return this.permissionService.createPermission(data);
+  }
+  @Delete(':id')
   removePermission(
     @Param('id', BigIntPipe) id: bigint,
-    @Query('clientId') clientId: string,
+    @Account('id') _userId: string,
+    @PermissionJudge({
+      lhs: { op: Operator.HAS, expr: '*' },
+      op: Operator.OR,
+      rhs: { op: Operator.HAS, expr: 'PERMISSION::REMOVE::*' },
+    })
+    allow: boolean,
   ) {
-    return this.permissionService.removePermission(id, clientId);
+    return this.permissionService.removePermission(id, BigInt(_userId), allow);
   }
-
-  @ApiOkResponse({
-    type: TPermission,
-  })
-  @ApiParam({
-    name: 'id',
-    description: '权限字段数据库主键',
-  })
-  @ApiQuery({
-    name: 'clientId',
-    description: '平台颁发的clientId',
-  })
-  @ApiException(() => NotFoundException, {
-    description: `
-      如果要的权限不在该 client 中, 则会抛出该错误. message 字段会阐述失败原因.
-      `,
-  })
-  @Auth()
-  @Permission(['PERMISSION::UPDATE'])
-  @Patch('/:id')
+  @Patch(':id')
   updatePermission(
     @Param('id', BigIntPipe) id: bigint,
-    @Query('clientId') clientId: string,
-    @Body() body: UpdatePermission,
+    @Account('id') accountId: string,
+    @PermissionJudge({
+      lhs: { op: Operator.HAS, expr: '*' },
+      op: Operator.OR,
+      rhs: { op: Operator.HAS, expr: 'PERMISSION::UPDATE::*' },
+    })
+    force: boolean,
+    @Body() data: UpdatePermission,
   ) {
-    return this.permissionService.updatePermission(id, clientId, body);
+    return this.permissionService.updatePermission(
+      id,
+      BigInt(accountId),
+      force,
+      data,
+    );
   }
-
-  @ApiOkResponse({
-    type: TPermission,
-  })
-  @ApiParam({
-    name: 'id',
-    description: '权限字段数据库主键',
-  })
-  @ApiQuery({
-    name: 'clientId',
-    description: '平台颁发的clientId',
-  })
-  @ApiException(() => NotFoundException, {
-    description: `
-      如果要的权限不在该 client 中, 则会抛出该错误. message 字段会阐述失败原因.
-      `,
-  })
-  @Auth()
-  @Permission(['PERMISSION::GET'])
-  @Get('/:id')
-  getPermissionInfo(
+  @Get(':id')
+  async getPermissionInfo(
     @Param('id', BigIntPipe) id: bigint,
-    @Query('clientId') clientId: string,
+    @Account('id') _accountId: string,
+    @PermissionJudge({
+      lhs: { op: Operator.HAS, expr: '*' },
+      op: Operator.OR,
+      rhs: { op: Operator.HAS, expr: 'PERMISSION::QUERY::INFO::*' },
+    })
+    force: boolean,
   ) {
-    return this.permissionService.getPermissionInfo(id, clientId);
+    const permission = await this.permissionService.findPermission({
+      id,
+      accountId: BigInt(_accountId),
+      force,
+    });
+    if (!permission) {
+      throw new HttpException('客户端不存在', HttpStatus.NOT_FOUND);
+    }
+    return permission;
+  }
+  @Get('/client/:clientId')
+  getPermissionList(
+    @Param('clientId') clientId: string,
+    @Query('preId', new BigIntPipe({ optional: true })) preId: bigint,
+    @Query('size', new DefaultValuePipe(20), ParseIntPipe) size: number,
+    @PermissionJudge({
+      lhs: { op: Operator.HAS, expr: '*' },
+      op: Operator.OR,
+      rhs: { op: Operator.HAS, expr: 'PERMISSION::QUERY::LIST::*' },
+    })
+    isSuper: boolean,
+  ) {
+    return this.permissionService.findPermissionList(
+      size,
+      preId,
+      clientId,
+      isSuper,
+    );
   }
 }

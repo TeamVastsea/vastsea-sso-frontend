@@ -29,6 +29,8 @@ model Account {
   role    Role[]
 
   client Client[]
+
+  @@index([email])
 }
 
 
@@ -49,8 +51,9 @@ model Client {
   clientId      String  @unique
   clientSecret  String
   redirect      String
-  manager       Account[]
+  administrator Account[]
   active        Boolean @default(true)
+  permission Permission[]
 
   @@index([name,clientId,active])
 }
@@ -59,8 +62,11 @@ model Permission {
   id        BigInt  @id
   name      String
   desc      String
-  clientId  String?
+  clientId  String
   role      Role[]
+  client    Client? @relation(fields: [clientPK], references: [id])
+  clientPK  BigInt
+  active    Boolean @default(true)
   @@index([name, clientId])
 }
 

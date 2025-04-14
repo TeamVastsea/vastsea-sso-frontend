@@ -1,5 +1,4 @@
-import { PERMISSION_KEY } from '@app/constant';
-import { Operator, PermissionArgs, PermissionExpr } from '@app/decorator';
+import { PermissionExpr, Operator, PermissionArgs } from '@app/decorator';
 import {
   CanActivate,
   ExecutionContext,
@@ -9,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PermissionService } from '../../../src/permission/permission.service';
+import { PERMISSION_KEY } from '@app/constant';
 
 export const permissionJudge = (
   userPermission: string[],
@@ -48,7 +48,6 @@ export const permissionJudge = (
     }
   }
 };
-
 @Injectable()
 export class PermissionGuard implements CanActivate {
   constructor(

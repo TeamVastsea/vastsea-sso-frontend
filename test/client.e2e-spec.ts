@@ -12,7 +12,6 @@ import request from 'supertest';
 import { CreateClient } from '../src/client/dto/create-client';
 import { login } from './utils/login';
 import { createClient } from './utils/create-client';
-import { ClientService } from '../src/client/client.service';
 import { UpdateClient } from 'src/client/dto/update-client';
 
 describe('Client E2E test', () => {

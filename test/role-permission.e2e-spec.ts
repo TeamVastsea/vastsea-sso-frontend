@@ -54,7 +54,7 @@ describe('Role And Permission end to end test', () => {
     expect(redis).toBeDefined();
     await createUser(app, redis, 'test@no-reply.com', 'test');
   });
-  describe('Permission', () => {
+  describe.only('Permission', () => {
     const tokenPair = {
       admin: { access: '' },
       test: { access: '' },

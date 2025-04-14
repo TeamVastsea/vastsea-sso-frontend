@@ -4,7 +4,6 @@ import { CreateClient } from './dto/create-client';
 import { GlobalCounterService } from '@app/global-counter';
 import {
   ACCOUNT_ASSIGN_CLIENT_TOTAL,
-  ACCOUNT_MANAGE_CLIENT_TOTAL,
   CLIENT_TOTAL,
   ID_COUNTER,
 } from '@app/constant';
@@ -28,7 +27,7 @@ export class ClientService {
   ) {}
 
   async createClient(data: CreateClient) {
-    const accountList = await this.getValidManager(data.manager);
+    const accountList = await this.getValidManager(data.administrator);
     const client = await this.findClient({ name: data.name });
     if (client) {
       throw new HttpException('客户端已存在', HttpStatus.CONFLICT);
@@ -43,7 +42,7 @@ export class ClientService {
           desc: data.desc,
           clientId,
           clientSecret,
-          manager: {
+          administrator: {
             connect: accountList,
           },
           active: true,
@@ -65,7 +64,10 @@ export class ClientService {
     if (!client) {
       throw new HttpException('资源不存在', HttpStatus.NOT_FOUND);
     }
-    if (client.manager.every((client) => client.id !== actor) && !isSuper) {
+    if (
+      client.administrator.every((client) => client.id !== actor) &&
+      !isSuper
+    ) {
       throw new HttpException(
         '你不是该客户端的管理员, 所以你不能停用这个客户端',
         HttpStatus.FORBIDDEN,
@@ -90,14 +92,17 @@ export class ClientService {
     if (!dbClient) {
       throw new HttpException('客户端不存在', HttpStatus.NOT_FOUND);
     }
-    if (dbClient.manager.every((client) => client.id !== actor) && !isSuper) {
+    if (
+      dbClient.administrator.every((client) => client.id !== actor) &&
+      !isSuper
+    ) {
       throw new HttpException(
         '你不是该客户端的管理员, 所以你不能修改这个客户端',
         HttpStatus.FORBIDDEN,
       );
     }
-    const accounts = data.manager
-      ? this.getValidManager(data.manager)
+    const accounts = data.administrator
+      ? this.getValidManager(data.administrator)
       : undefined;
     return this.prisma.client.update({
       where: {
@@ -105,7 +110,7 @@ export class ClientService {
       },
       data: {
         ...data,
-        manager: {
+        administrator: {
           connect: await accounts,
         },
       },
@@ -132,7 +137,7 @@ export class ClientService {
           active: active,
         },
         include: {
-          manager: { select: { id: true, email: true, profile: true } },
+          administrator: { select: { id: true, email: true, profile: true } },
         },
       })
       .then((client) => (isEmpty(client) ? null : client));
@@ -156,7 +161,7 @@ export class ClientService {
         id: {
           gt: preId,
         },
-        manager: !queryAll
+        administrator: !queryAll
           ? {
               some: {
                 id: accountId,
@@ -166,7 +171,7 @@ export class ClientService {
       },
       take: size,
       include: {
-        manager: {
+        administrator: {
           select: {
             id: true,
             profile: {
