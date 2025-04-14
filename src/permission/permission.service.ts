@@ -11,6 +11,7 @@ import {
   PERMISSION_TOTAL,
 } from '@app/constant';
 import { UpdatePermission } from './dto/update-permission';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class PermissionService {
@@ -28,6 +29,9 @@ export class PermissionService {
     const dbPermission = await this.findPermission({ name: data.name });
     if (dbPermission && dbPermission.clientId === data.clientId) {
       throw new HttpException('权限字段存在', HttpStatus.BAD_REQUEST);
+    }
+    if (!dbPermission.client) {
+      throw new HttpException('客户端不存在', HttpStatus.NOT_FOUND);
     }
     if (
       dbPermission &&
@@ -64,7 +68,6 @@ export class PermissionService {
   }
   async removePermission(id: bigint, accountId: bigint, force: boolean) {
     const dbPermission = await this.findPermission({ id });
-    console.log(dbPermission, id);
     if (!dbPermission) {
       throw new HttpException('权限字段不存在', HttpStatus.NOT_FOUND);
     }
@@ -191,6 +194,7 @@ export class PermissionService {
     if (isNil(name) && isNil(id)) {
       throw new HttpException('参数错误', HttpStatus.BAD_REQUEST);
     }
+
     const permission = await this.prisma.permission.findFirst({
       where: {
         OR: [{ id }, { name }],
@@ -199,7 +203,13 @@ export class PermissionService {
         role: true,
         client: {
           include: {
-            administrator: true,
+            administrator: {
+              select: {
+                id: true,
+                email: true,
+                profile: true,
+              },
+            },
           },
         },
       },

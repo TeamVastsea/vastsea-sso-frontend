@@ -20,7 +20,6 @@ import { PermissionService } from './permission/permission.service';
 import { RoleService } from './role/role.service';
 import { AccountService } from './account/account.service';
 import { randomBytes } from 'crypto';
-import { Permission } from '@prisma/client';
 import { AutoRedis } from '@app/decorator';
 import Redis, { Cluster } from 'ioredis';
 import { ID_COUNTER } from '@app/constant';
@@ -127,7 +126,7 @@ export class AppModule implements OnModuleInit {
     @AutoRedis() private redis: Redis | Cluster,
   ) {}
   async onModuleInit() {
-    const installed = await this.redis.get(`APP::LOCK`);
+    const installed = await this.redis.get(`SITE::LOCK`);
     if (installed) {
       this.logger.log(
         `${this.appName} look like initialization has been completed`,
@@ -182,12 +181,16 @@ export class AppModule implements OnModuleInit {
           },
         });
     for (const p of BUILT_IN_PERMISSIONS) {
-      await this.permission.createPermission({
-        name: p,
-        desc: p,
-        active: true,
-        clientId: client.clientId,
-      });
+      await this.permission.createPermission(
+        {
+          name: p,
+          desc: p,
+          active: true,
+          clientId: client.clientId,
+        },
+        dbAdminId,
+        true,
+      );
       this.logger.log(`创建权限 ${p} 成功`);
     }
     const superPermission = await this.prisma.permission.findFirst({
