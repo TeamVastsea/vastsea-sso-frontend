@@ -2,7 +2,7 @@ import {
   getRedisToken,
   DEFAULT_REDIS_NAMESPACE,
 } from '@liaoliaots/nestjs-redis';
-import { HttpStatus, INestApplication } from '@nestjs/common';
+import { HttpStatus, INestApplication, Logger } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { clear } from './utils/setup';
 import Redis from 'ioredis';
@@ -35,9 +35,9 @@ describe('Role And Permission end to end test', () => {
       {
         name,
         desc: name,
-        redirect: '',
+        redirect: 'http://example.org',
       },
-      app.get(ClientService),
+      app,
     );
     return client;
   };
@@ -54,7 +54,7 @@ describe('Role And Permission end to end test', () => {
     expect(redis).toBeDefined();
     await createUser(app, redis, 'test@no-reply.com', 'test');
   });
-  describe.only('Permission', () => {
+  describe('Permission', () => {
     const tokenPair = {
       admin: { access: '' },
       test: { access: '' },
@@ -147,12 +147,11 @@ describe('Role And Permission end to end test', () => {
             .post('/permission')
             .auth(tokenPair.admin.access, { type: 'bearer' })
             .send({
-              name: 'TEST::PERMISSION',
-              desc: 'TEST::PERMISSION',
+              name: 'TEST::2::PERMISSION',
+              desc: 'TEST::2::PERMISSION',
               clientId: client.clientId,
             } as CreatePermission);
           const p = body as Permission;
-          console.log(p);
           expect(statusCode).toBe(HttpStatus.CREATED);
         }
       });
@@ -208,6 +207,7 @@ describe('Role And Permission end to end test', () => {
           .send({
             name: 'Test-2',
           } as UpdatePermission);
+
         expect(body.name).not.toBe(permission.name);
         expect(body.desc).toBe(permission.desc);
         expect(statusCode).toBe(HttpStatus.OK);
@@ -263,7 +263,6 @@ describe('Role And Permission end to end test', () => {
           .get(`/permission/800`)
           .query({ clientId: process.env.CLIENT_ID })
           .auth(tokenPair.admin.access, { type: 'bearer' });
-        console.log(body);
         expect(statusCode).toBe(HttpStatus.NOT_FOUND);
       });
     });
@@ -281,7 +280,7 @@ describe('Role And Permission end to end test', () => {
           })
           .auth(tokenPair.admin.access, { type: 'bearer' });
         expect(statusCode).toBe(HttpStatus.OK);
-        expect(body.data).toHaveLength(10);
+        expect(body.data).toHaveLength(20);
         const { body: b2 } = await request(app.getHttpServer())
           .get('/permission')
           .query({
@@ -390,7 +389,6 @@ describe('Role And Permission end to end test', () => {
             desc: 'TestRole',
             clientId: process.env.CLIENT_ID,
           } as CreateRole);
-        console.log(h2.body);
         expect(h2.statusCode).toBe(HttpStatus.CREATED);
       });
     });
@@ -519,7 +517,6 @@ describe('Role And Permission end to end test', () => {
               .send({
                 active: true,
               } as UpdateRole);
-            console.log(body);
             expect(statusCode).toBe(HttpStatus.OK);
           });
           it('Should return 404, because parent is not found', async () => {

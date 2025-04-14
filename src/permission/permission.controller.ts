@@ -18,7 +18,14 @@ import { PermissionService } from './permission.service';
 
 import { ApiException } from '@nanogiants/nestjs-swagger-api-exception-decorator';
 import { CreatePermission } from './dto/create-permission';
-import { BigIntPipe, Account, PermissionJudge, Operator } from '@app/decorator';
+import {
+  BigIntPipe,
+  Account,
+  PermissionJudge,
+  Operator,
+  Permission,
+  Auth,
+} from '@app/decorator';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { UpdatePermission } from './dto/update-permission';
 @ApiTags('权限')
@@ -37,10 +44,38 @@ export class PermissionController {
     description: '如果客户端不存在, 那么会抛出一个NotFound错误',
   })
   @Post('/')
-  createPermission(@Body() data: CreatePermission) {
-    return this.permissionService.createPermission(data);
+  @Auth()
+  @Permission({
+    lhs: {
+      op: Operator.HAS,
+      expr: 'PERMISSION::CREATE',
+    },
+    op: Operator.OR,
+    rhs: { op: Operator.HAS, expr: 'PERMISSION::CREATE::*' },
+  })
+  createPermission(
+    @Body() data: CreatePermission,
+    @Account('id') actor: string,
+    @PermissionJudge({
+      lhs: { op: Operator.HAS, expr: '*' },
+      op: Operator.OR,
+      rhs: { op: Operator.HAS, expr: 'PERMISSION::CREATE::*' },
+    })
+    force: boolean,
+  ) {
+    return this.permissionService.createPermission(data, BigInt(actor), force);
   }
+  @Auth()
   @Delete(':id')
+  @Permission({
+    lhs: { op: Operator.HAS, expr: 'PERMISSION::REMOVE' },
+    op: Operator.OR,
+    rhs: {
+      lhs: { op: Operator.HAS, expr: '*' },
+      op: Operator.OR,
+      rhs: { op: Operator.HAS, expr: 'PERMISSION::REMOVE::*' },
+    },
+  })
   removePermission(
     @Param('id', BigIntPipe) id: bigint,
     @Account('id') _userId: string,
@@ -53,6 +88,17 @@ export class PermissionController {
   ) {
     return this.permissionService.removePermission(id, BigInt(_userId), allow);
   }
+
+  @Auth()
+  @Permission({
+    lhs: { op: Operator.HAS, expr: 'PERMISSION::UPDATE' },
+    op: Operator.OR,
+    rhs: {
+      lhs: { op: Operator.HAS, expr: '*' },
+      op: Operator.OR,
+      rhs: { op: Operator.HAS, expr: 'PERMISSION::UPDATE::*' },
+    },
+  })
   @Patch(':id')
   updatePermission(
     @Param('id', BigIntPipe) id: bigint,
@@ -72,6 +118,16 @@ export class PermissionController {
       data,
     );
   }
+  @Auth()
+  @Permission({
+    lhs: { op: Operator.HAS, expr: 'PERMISSION::QUERY::INFO' },
+    op: Operator.OR,
+    rhs: {
+      lhs: { op: Operator.HAS, expr: '*' },
+      op: Operator.OR,
+      rhs: { op: Operator.HAS, expr: 'PERMISSION::QUERY::INFO::*' },
+    },
+  })
   @Get(':id')
   async getPermissionInfo(
     @Param('id', BigIntPipe) id: bigint,
@@ -93,9 +149,20 @@ export class PermissionController {
     }
     return permission;
   }
-  @Get('/client/:clientId')
+
+  @Auth()
+  @Permission({
+    lhs: { op: Operator.HAS, expr: 'PERMISSION::QUERY::LIST' },
+    op: Operator.OR,
+    rhs: {
+      lhs: { op: Operator.HAS, expr: '*' },
+      op: Operator.OR,
+      rhs: { op: Operator.HAS, expr: 'PERMISSION::QUERY::LIST::*' },
+    },
+  })
+  @Get('/')
   getPermissionList(
-    @Param('clientId') clientId: string,
+    @Query('clientId') clientId: string,
     @Query('preId', new BigIntPipe({ optional: true })) preId: bigint,
     @Query('size', new DefaultValuePipe(20), ParseIntPipe) size: number,
     @PermissionJudge({

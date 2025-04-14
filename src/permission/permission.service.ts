@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '@app/prisma';
 import { AutoRedis } from '@app/decorator';
 import Redis, { Cluster } from 'ioredis';
@@ -20,10 +20,23 @@ export class PermissionService {
     @AutoRedis() private redis: Redis | Cluster,
     private counter: GlobalCounterService,
   ) {}
-  async createPermission(data: CreatePermission) {
+  async createPermission(
+    data: CreatePermission,
+    actor: bigint,
+    force: boolean,
+  ) {
     const dbPermission = await this.findPermission({ name: data.name });
-    if (dbPermission) {
+    if (dbPermission && dbPermission.clientId === data.clientId) {
       throw new HttpException('权限字段存在', HttpStatus.BAD_REQUEST);
+    }
+    if (
+      dbPermission &&
+      dbPermission.client.administrator.every(
+        (administrator) => administrator.id !== actor,
+      ) &&
+      !force
+    ) {
+      throw new HttpException('你不是该客户端的管理员', HttpStatus.FORBIDDEN);
     }
     return this.prisma.permission
       .create({
@@ -51,10 +64,11 @@ export class PermissionService {
   }
   async removePermission(id: bigint, accountId: bigint, force: boolean) {
     const dbPermission = await this.findPermission({ id });
+    console.log(dbPermission, id);
     if (!dbPermission) {
       throw new HttpException('权限字段不存在', HttpStatus.NOT_FOUND);
     }
-    if (isEmpty(dbPermission.role) || isNil(dbPermission.role)) {
+    if (!isEmpty(dbPermission.role)) {
       const roleNames = dbPermission.role.map((role) => role.name).join(',');
       throw new HttpException(
         `你不能这么做, 因为 ${roleNames} 绑定了该权限`,
@@ -81,8 +95,9 @@ export class PermissionService {
         HttpStatus.FORBIDDEN,
       );
     }
+
     return this.prisma.permission.update({
-      where: { id },
+      where: { id: dbPermission.id },
       data: {
         active: false,
       },
@@ -152,11 +167,13 @@ export class PermissionService {
         name: data.name,
         desc: data.desc,
         active: data.active,
-        client: {
-          connect: {
-            clientId: data.clientId,
-          },
-        },
+        client: data.clientId
+          ? {
+              connect: {
+                clientId: data.clientId,
+              },
+            }
+          : undefined,
       },
     });
   }
@@ -176,7 +193,7 @@ export class PermissionService {
     }
     const permission = await this.prisma.permission.findFirst({
       where: {
-        name,
+        OR: [{ id }, { name }],
       },
       include: {
         role: true,
@@ -212,7 +229,7 @@ export class PermissionService {
         ? this.redis.get(PERMISSION_TOTAL)
         : this.redis.get(CLIENT_PERMISSION_TOTAL(clientId))
     ).then(BigInt);
-    const data = this.prisma.permission.findFirst({
+    const data = this.prisma.permission.findMany({
       where: {
         id: {
           gt: preId,

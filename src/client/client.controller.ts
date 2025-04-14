@@ -34,7 +34,7 @@ import {
 } from '@nestjs/swagger';
 import { Client, ClientInfo, ClientList } from './entries/clientInfo';
 import { ApiException } from '@nanogiants/nestjs-swagger-api-exception-decorator';
-import { permissionJudge } from '@app/guard/permission-guard';
+import { permissionJudge } from '@app/decorator/permission-judge';
 
 @Controller('client')
 export class ClientController {
