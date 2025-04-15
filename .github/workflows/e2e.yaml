@@ -43,8 +43,5 @@ jobs:
       - name: Install dependencies
         run: pnpm i
       - name: e2e testing
-        run: pnpm prisma migrate deploy && pnpm prisma migrate reset -f && pnpm test:e2e client
-        # run: pnpm prisma migrate deploy    && pnpm test:e2e account &&
-        #      pnpm prisma migrate reset -f  && pnpm test:e2e auth    &&
-        #      pnpm prisma migrate reset -f  && pnpm test:e2e client  &&
-        #      pnpm prisma migrate reset -f  && pnpm test:e2e role
+        run: pnpm prisma migrate deploy && pnpm prisma migrate reset -f && pnpm test:e2e client &&
+             pnpm prisma migrate reset -f  && pnpm test:e2e role
