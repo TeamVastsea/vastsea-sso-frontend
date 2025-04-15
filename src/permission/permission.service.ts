@@ -11,7 +11,6 @@ import {
   PERMISSION_TOTAL,
 } from '@app/constant';
 import { UpdatePermission } from './dto/update-permission';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class PermissionService {
@@ -30,7 +29,7 @@ export class PermissionService {
     if (dbPermission && dbPermission.clientId === data.clientId) {
       throw new HttpException('权限字段存在', HttpStatus.BAD_REQUEST);
     }
-    if (!dbPermission.client) {
+    if (dbPermission && !dbPermission.client) {
       throw new HttpException('客户端不存在', HttpStatus.NOT_FOUND);
     }
     if (

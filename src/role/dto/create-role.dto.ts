@@ -2,7 +2,7 @@ import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
 export const createRole = z.object({
-  clientId: z.string().describe('平台颁发的clientId'),
+  clientId: z.string().describe('平台颁发的clientId').min(1),
   parent: z
     .array(z.bigint({ coerce: true }))
     .max(10)
@@ -15,6 +15,7 @@ export const createRole = z.object({
     .array(z.bigint({ coerce: true }))
     .default([])
     .describe('角色的权限'),
+  isDefault: z.boolean().default(false),
 });
 
 export class CreateRole extends createZodDto(createRole) {}

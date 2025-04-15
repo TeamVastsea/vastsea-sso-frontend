@@ -26,6 +26,7 @@ import { ID_COUNTER } from '@app/constant';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { RequireClientPairGuard } from '@app/guard';
 import { ClientService } from './client/client.service';
+import { RequriedClientAdministratorGuard } from '@app/guard/require-client-administrator';
 
 const BUILT_IN_PERMISSIONS = [
   '*',
@@ -82,13 +83,13 @@ const BUILT_IN_PERMISSIONS = [
           },
           true,
         ),
+    ClientModule,
     PermissionModule,
     GlobalCounterModule.forRoot({ global: true }),
     RedisCacheModule.forRoot({ global: true }),
     RoleModule,
     AuthModule,
     AccountModule,
-    ClientModule,
   ],
   providers: [
     {
@@ -110,6 +111,10 @@ const BUILT_IN_PERMISSIONS = [
     {
       provide: APP_GUARD,
       useClass: RequireClientPairGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RequriedClientAdministratorGuard,
     },
   ],
 })

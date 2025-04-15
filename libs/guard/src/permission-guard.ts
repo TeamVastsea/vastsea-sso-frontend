@@ -45,6 +45,7 @@ export class PermissionGuard implements CanActivate {
     if (permissions.includes('*')) {
       return true;
     }
+    console.log(permissions);
     if (
       Array.isArray(requiredPermissions) &&
       requiredPermissions.length > permissions.length

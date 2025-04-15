@@ -14,7 +14,7 @@ export const createClient = z.object({
   avatar: z.string().optional().describe('Client 的Logo'),
   redirect: z.string().min(1).describe('获取Code后跳转到哪'),
   administrator: z
-    .array(z.bigint())
+    .array(z.bigint({ coerce: true }))
     .optional()
     .describe('该客户端的管理员, 如果不指派则默认为创建者'),
 });

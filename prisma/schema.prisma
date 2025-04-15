@@ -54,6 +54,7 @@ model Client {
   administrator Account[]
   active        Boolean @default(true)
   permission Permission[]
+  role Role[]
 
   @@index([name,clientId,active])
 }
@@ -64,7 +65,7 @@ model Permission {
   desc      String
   clientId  String
   role      Role[]
-  client    Client? @relation(fields: [clientPK], references: [id])
+  client    Client @relation(fields: [clientPK], references: [id])
   clientPK  BigInt
   active    Boolean @default(true)
   @@index([name, clientId])
@@ -73,13 +74,15 @@ model Permission {
 model Role {
   id         BigInt  @id
   name       String
-  desc       String
-  clientId   String?
+  desc       String  @default("")
+  clientId   String
   parents    Role[] @relation("roles")
   children   Role[] @relation("roles")
   account    Account[]
   permission Permission[]
-  deleted    Boolean @default(false)
+  client     Client @relation(fields: [clientPK], references: [id])
+  clientPK   BigInt
+  active     Boolean @default(true)
 
-  @@index([id, desc, clientId, deleted])
+  @@index([id, desc, clientId, active])
 }

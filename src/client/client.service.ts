@@ -14,6 +14,7 @@ import { UpdateClient } from './dto/update-client';
 import { isEmpty, isNil } from 'ramda';
 import { AutoRedis } from '@app/decorator';
 import Redis, { Cluster } from 'ioredis';
+import { Client, Prisma } from '@prisma/client';
 
 @Injectable()
 export class ClientService {
@@ -207,5 +208,8 @@ export class ClientService {
       .digest('base64')
       .slice(0, 32);
     return { clientId, clientSecret };
+  }
+  isAdministrator(administrator: bigint[], id: bigint) {
+    return administrator.includes(id);
   }
 }

@@ -47,9 +47,9 @@ CREATE TABLE "Permission" (
 CREATE TABLE "Role" (
     "id" BIGINT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
-    "desc" TEXT NOT NULL,
+    "desc" TEXT NOT NULL DEFAULT '',
     "clientId" TEXT,
-    "deleted" BOOLEAN NOT NULL DEFAULT false
+    "active" BOOLEAN NOT NULL DEFAULT true
 );
 
 -- CreateTable
@@ -85,6 +85,9 @@ CREATE TABLE "_roles" (
 );
 
 -- CreateIndex
+CREATE INDEX "Account_email_idx" ON "Account"("email");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Profile_accountid_key" ON "Profile"("accountid");
 
 -- CreateIndex
@@ -94,16 +97,10 @@ CREATE UNIQUE INDEX "Client_clientId_key" ON "Client"("clientId");
 CREATE INDEX "Client_name_clientId_active_idx" ON "Client"("name", "clientId", "active");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Permission_clientId_key" ON "Permission"("clientId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Permission_clientPK_key" ON "Permission"("clientPK");
-
--- CreateIndex
 CREATE INDEX "Permission_name_clientId_idx" ON "Permission"("name", "clientId");
 
 -- CreateIndex
-CREATE INDEX "Role_id_desc_clientId_deleted_idx" ON "Role"("id", "desc", "clientId", "deleted");
+CREATE INDEX "Role_id_desc_clientId_active_idx" ON "Role"("id", "desc", "clientId", "active");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_AccountToRole_AB_unique" ON "_AccountToRole"("A", "B");
