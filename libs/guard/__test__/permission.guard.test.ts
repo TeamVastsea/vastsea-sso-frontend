@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { PermissionGuard } from '../permission.guard';
+import { PermissionGuard } from '../src/permission.guard';
 import { Operator, PermissionExpr } from '@app/decorator';
 
 describe('PermissionGuard', () => {

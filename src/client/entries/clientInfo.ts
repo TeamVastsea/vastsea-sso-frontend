@@ -42,7 +42,7 @@ export class ClientInfo extends Client {
     isArray: true,
     type: () => ClientManagerProfile,
   })
-  manager: ClientManagerProfile[];
+  administrator: ClientManagerProfile[];
 }
 export class ClientList {
   @ApiProperty({ description: '客户端列表总数' })

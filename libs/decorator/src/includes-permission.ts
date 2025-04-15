@@ -1,6 +1,6 @@
 import { createParamDecorator } from '@nestjs/common';
 import { PermissionExpr } from './permission';
-import { permissionJudge } from '../../guard';
+import { permissionJudge } from '../../decorator/src/permission-judge';
 
 export const Account = createParamDecorator(
   (requiredPermission: PermissionExpr, ctx) => {

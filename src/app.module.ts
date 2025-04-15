@@ -13,20 +13,23 @@ import { AuthModule } from './auth/auth.module';
 import { readFileSync } from 'fs';
 import { SuperSerializerInterceptor } from './super_serializer/super_serializer.interceptor';
 import { ClientModule } from './client/client.module';
-import { AuthGuard, PermissionGuard } from '@app/guard';
+import { AuthGuard } from '@app/guard';
+import { PermissionGuard } from '../libs/guard/src/permission-guard';
 import { AccountModule } from './account/account.module';
 import { PermissionService } from './permission/permission.service';
 import { RoleService } from './role/role.service';
 import { AccountService } from './account/account.service';
 import { randomBytes } from 'crypto';
-import { Permission } from '@prisma/client';
 import { AutoRedis } from '@app/decorator';
 import Redis, { Cluster } from 'ioredis';
 import { ID_COUNTER } from '@app/constant';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { RequireClientPairGuard } from '@app/guard';
+import { ClientService } from './client/client.service';
+import { RequriedClientAdministratorGuard } from '@app/guard/require-client-administrator';
 
-const permissions = [
+const BUILT_IN_PERMISSIONS = [
+  '*',
   'CLIENT::GET::LIST',
   'CLIENT::GET::INFO',
   'CLIENT::CREATE',
@@ -48,7 +51,6 @@ const permissions = [
       pubKey: readFileSync(join(__dirname, '../keys/pub.pem')).toString(),
       keyPairType: 'RS256',
     }),
-    PermissionModule,
     ConfigModule.forRoot({
       loader: tomlLoader(
         join(
@@ -81,12 +83,13 @@ const permissions = [
           },
           true,
         ),
+    ClientModule,
+    PermissionModule,
     GlobalCounterModule.forRoot({ global: true }),
     RedisCacheModule.forRoot({ global: true }),
     RoleModule,
     AuthModule,
     AccountModule,
-    ClientModule,
   ],
   providers: [
     {
@@ -109,6 +112,10 @@ const permissions = [
       provide: APP_GUARD,
       useClass: RequireClientPairGuard,
     },
+    {
+      provide: APP_GUARD,
+      useClass: RequriedClientAdministratorGuard,
+    },
   ],
 })
 export class AppModule implements OnModuleInit {
@@ -120,10 +127,11 @@ export class AppModule implements OnModuleInit {
     private account: AccountService,
     private prisma: PrismaService,
     private cnt: GlobalCounterService,
+    private client: ClientService,
     @AutoRedis() private redis: Redis | Cluster,
   ) {}
   async onModuleInit() {
-    const installed = await this.redis.get(`APP::LOCK`);
+    const installed = await this.redis.get(`SITE::LOCK`);
     if (installed) {
       this.logger.log(
         `${this.appName} look like initialization has been completed`,
@@ -143,92 +151,82 @@ export class AppModule implements OnModuleInit {
         email,
       },
     });
-    let permission = await this.prisma.permission.findFirst({
-      where: {
-        name: '*',
-      },
-    });
-    try {
-      if (!permission) {
-        permission = await this.cretePermission('*', 'Super Permission');
-      }
-    } catch (err) {
-      this.logger.error(err.message, err.stack);
-      this.logger.error(`Create Super permission Fail.`);
-      process.exit(-1);
-    }
-    const role = await this.createRole('Admin', [permission])
-      .then((role) => role)
-      .catch((err) => {
-        this.logger.error(err.message, err.stack);
-        this.logger.error(`Create Admin Role Fail.`);
-        process.exit(-1);
-      });
+    let dbAdminId = dbAdmin?.id;
     if (!dbAdmin) {
-      const admin = await this.account.createAccount({
-        email,
-        password,
-        profile: {
-          nick: 'Admin',
-        },
-      });
-      await this.prisma.account.update({
-        where: { id: admin.id },
-        data: {
-          role: {
-            connect: {
-              id: role.id,
+      dbAdminId = (
+        await this.account.createAccount({
+          email,
+          password,
+          profile: {
+            nick: 'Admin',
+          },
+        })
+      ).id;
+    }
+    console.clear();
+    this.logger.log('管理员创建成功');
+    const client = !__TEST__
+      ? await this.client.createClient({
+          name: 'AuthServer',
+          redirect: process.env.REDIRECT,
+          administrator: [dbAdminId],
+        })
+      : await this.prisma.client.create({
+          data: {
+            id: await this.redis.incr(ID_COUNTER.CLIENT),
+            name: 'AuthServer',
+            redirect: process.env.REDIRECT,
+            administrator: {
+              connect: {
+                id: dbAdminId,
+              },
             },
+            clientId: process.env.CLIENT_ID,
+            clientSecret: process.env.CLIENT_SECRET,
+          },
+        });
+    for (const p of BUILT_IN_PERMISSIONS) {
+      await this.permission.createPermission(
+        {
+          name: p,
+          desc: p,
+          active: true,
+          clientId: client.clientId,
+        },
+        dbAdminId,
+        true,
+      );
+      this.logger.log(`创建权限 ${p} 成功`);
+    }
+    const superPermission = await this.prisma.permission.findFirst({
+      where: { name: '*' },
+    });
+    const role = await this.role.createRole({
+      name: 'Admin',
+      permissions: [superPermission.id],
+      clientId: client.clientId,
+      desc: '',
+    });
+    await this.prisma.account.update({
+      where: {
+        id: dbAdminId,
+      },
+      data: {
+        role: {
+          connect: {
+            id: role.id,
           },
         },
-      });
-      this.logger.log(`Create Admin Success`);
-    }
-
-    for (const p of permissions) {
-      const res = await this.cretePermission(p, p);
-      this.logger.log(`Create Permission ${res.name} Success`);
-    }
-    await this.initClient();
-    await this.redis.set(`APP::LOCK`, new Date().toLocaleDateString());
-    this.logger.log(`${this.appName} init success`);
-    this.logger.log(`Welcome use ${this.appName}`);
-    this.logger.log(`Admin Email: ${email}`);
-    this.logger.log(`Admin Password: ${password}`);
-  }
-  cretePermission(name: string, desc: string) {
-    return this.permission.createPermission({
-      name,
-      desc: desc ?? '',
-      clientId: process.env.CLIENT_ID,
-    });
-  }
-  createRole(name: string, permission: Permission[]) {
-    return this.role.createRole({
-      name,
-      desc: 'admin',
-      clientId: process.env.CLIENT_ID,
-      permissions: permission.map((permission) => permission.id),
-    });
-  }
-  async initClient() {
-    const client = await this.prisma.client.findFirst({
-      where: {
-        clientId: process.env.CLIENT_ID,
-        clientSecret: process.env.CLIENT_SECRET,
       },
     });
-    if (client) {
-      return client;
-    }
-    await this.prisma.client.create({
-      data: {
-        redirect: process.env.REDIRECT,
-        clientId: process.env.CLIENT_ID,
-        clientSecret: process.env.CLIENT_SECRET,
-        id: await this.cnt.incr(ID_COUNTER.CLIENT),
-        name: 'AuthServer',
-      },
-    });
+    await this.redis.set(`SITE::LOCK`, new Date().toLocaleDateString());
+    await this.redis.hset(`SITE::META`, client);
+    this.logger.log('-----Welcome Vastsea AuthServer!-----');
+    this.logger.log(`AdminEmail: ${email}`);
+    this.logger.log(`AdminPassword: ${password}`);
+    this.logger.log(`---------------------------`);
+    this.logger.log(`ClientId: ${client.clientId}`);
+    this.logger.log(`ClientId: ${client.clientSecret}`);
+    this.logger.log(`---------------------------`);
   }
 }

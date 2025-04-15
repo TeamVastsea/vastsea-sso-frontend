@@ -1,5 +1,4 @@
-import { PERMISSION_KEY } from '@app/constant';
-import { Operator, PermissionArgs, PermissionExpr } from '@app/decorator';
+import { PermissionArgs } from '@app/decorator';
 import {
   CanActivate,
   ExecutionContext,
@@ -9,45 +8,8 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PermissionService } from '../../../src/permission/permission.service';
-
-export const permissionJudge = (
-  userPermission: string[],
-  node: PermissionExpr,
-) => {
-  if (typeof node === 'boolean') {
-    return node;
-  }
-  if (node.op === Operator.HAS) {
-    return userPermission.includes(node.expr);
-  }
-  if (node.op === Operator.SOME) {
-    const required = node.expr;
-    return userPermission.some((p) => required.includes(p));
-  }
-  if (node.op === Operator.EVERY) {
-    const required = node.expr;
-    return userPermission.every((p) => required.includes(p));
-  }
-  if (node.op === Operator.NOT) {
-    return !permissionJudge(userPermission, node.expr);
-  }
-  if (node.op === Operator.AND || node.op === Operator.OR) {
-    const lval =
-      typeof node.lhs === 'object'
-        ? permissionJudge(userPermission, node.lhs)
-        : node.lhs;
-    const rval =
-      typeof node.rhs === 'object'
-        ? permissionJudge(userPermission, node.rhs)
-        : node.rhs;
-    if (node.op === Operator.AND) {
-      return lval && rval;
-    }
-    if (node.op === Operator.OR) {
-      return lval || rval;
-    }
-  }
-};
+import { PERMISSION_KEY } from '@app/constant';
+import { permissionJudge } from '../../decorator/src/permission-judge';
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
@@ -83,6 +45,7 @@ export class PermissionGuard implements CanActivate {
     if (permissions.includes('*')) {
       return true;
     }
+    console.log(permissions);
     if (
       Array.isArray(requiredPermissions) &&
       requiredPermissions.length > permissions.length

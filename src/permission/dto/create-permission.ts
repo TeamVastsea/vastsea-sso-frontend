@@ -15,40 +15,10 @@ export const createPermission = z.object({
       例如:
       client-a 中 存在 test::permission
       client-b 可以继续创建 test::permission
-      但是如果在 client-a 中继续创建 test::permission 则会抛出 400 错误. 
+      但是如果在 client-a 中继续创建 test::permission 则会抛出 409 错误. 
       `,
   ),
+  active: z.boolean().default(true).describe('是否启用该权限'),
 });
 
 export class CreatePermission extends createZodDto(createPermission) {}
-
-export class TPermission implements Permission {
-  @ApiProperty({
-    description: '权限名称',
-  })
-  name: string;
-  @ApiProperty({
-    description: '权限简介',
-  })
-  desc: string;
-  @ApiProperty({
-    description: '权限所属的客户端',
-  })
-  clientId: string;
-  @ApiProperty({
-    description: '权限数据库id',
-  })
-  id: bigint;
-}
-
-export class GetPermissionList {
-  @ApiProperty({
-    type: () => TPermission,
-    isArray: true,
-  })
-  data: TPermission[];
-  @ApiProperty({
-    description: '总数',
-  })
-  total: bigint;
-}

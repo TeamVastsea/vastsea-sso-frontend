@@ -26,5 +26,5 @@ export const createUser = async (
       },
     } as CreateAccount);
   expect(statusCode).toBe(HttpStatus.CREATED);
-  return b2;
+  return b2 as { id: bigint; email: string };
 };

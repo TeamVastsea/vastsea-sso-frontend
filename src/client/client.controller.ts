@@ -34,7 +34,7 @@ import {
 } from '@nestjs/swagger';
 import { Client, ClientInfo, ClientList } from './entries/clientInfo';
 import { ApiException } from '@nanogiants/nestjs-swagger-api-exception-decorator';
-import { permissionJudge } from '@app/guard';
+import { permissionJudge } from '@app/decorator/permission-judge';
 
 @Controller('client')
 export class ClientController {
@@ -57,7 +57,9 @@ export class ClientController {
   ) {
     return this.clientService.createClient({
       ...createDto,
-      manager: createDto.manager ? createDto.manager : [BigInt(accountId)],
+      administrator: createDto.administrator
+        ? createDto.administrator
+        : [BigInt(accountId)],
     });
   }
 
@@ -157,7 +159,7 @@ export class ClientController {
     }
     const _accountId = BigInt(accountId);
     if (
-      client.manager.every((manager) => manager.id !== _accountId) &&
+      client.administrator.every((manager) => manager.id !== _accountId) &&
       !permissionJudge(permissions, {
         lhs: { op: Operator.HAS, expr: '*' },
         op: Operator.OR,

@@ -102,7 +102,7 @@ const exprToString = (expr: PermissionExpr | string[]) => {
     return `${exprToString(expr.lhs)} ${expr.op === Operator.AND ? 'and' : 'or'} ${exprToString(expr.rhs)}`;
   }
   if (expr.op === Operator.HAS) {
-    return `HAS(${expr.expr})`;
+    return `HAS(${expr.expr === '*' ? '\\*' : expr.expr})`;
   }
   if (expr.op === Operator.EVERY) {
     return `EVERY(${exprToString(expr.expr)})`;
@@ -115,7 +115,7 @@ const exprToString = (expr: PermissionExpr | string[]) => {
 export const Permission = (permissions: string[] | PermissionExpr) => {
   return applyDecorators(
     ApiException(() => ForbiddenException, {
-      description: `当该不存在 ${exprToString(permissions)} 权限时, 接口会抛出403错误并在message字段中阐述错误原因`,
+      description: `当该不满足表达式 ${exprToString(permissions)} 时, 接口会抛出403错误并在message字段中阐述错误原因`,
     }),
     SetMetadata(PERMISSION_KEY, permissions),
   );

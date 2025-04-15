@@ -19,6 +19,8 @@ export const ACCOUNT_ROLE = (accountId: string | bigint, clientId: string) =>
   `ACCOUNT::${accountId}::${clientId}::ROLE`;
 export const CLIENT_ROLE_TOTAL = (clientId: string) =>
   `ROLE::${clientId}::TOTAL`;
+export const CLIENT_DEFAULT_ROLE = (cilentId: string) =>
+  `CLIENT::${cilentId}::DEFAULT::ROLE`;
 
 export const OAUTH_CODE_ID_PAIR = (code: string) => `OAUTH::${code}`;
 

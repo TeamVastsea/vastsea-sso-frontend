@@ -1,126 +1,255 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '@app/prisma';
 import { AutoRedis } from '@app/decorator';
 import Redis, { Cluster } from 'ioredis';
 import { GlobalCounterService } from '@app/global-counter';
 import { CreatePermission } from './dto/create-permission';
-import { UpdatePermission } from './dto/update-permission';
+import { isEmpty, isNil } from 'ramda';
 import {
   CLIENT_PERMISSION_TOTAL,
   ID_COUNTER,
-  PERMISSION_INFO_CACHE,
   PERMISSION_TOTAL,
 } from '@app/constant';
-import { Permission } from '@prisma/client';
+import { UpdatePermission } from './dto/update-permission';
 
 @Injectable()
 export class PermissionService {
-  private logger: Logger = new Logger(PermissionService.name);
+  // private logger: Logger = new Logger(PermissionService.name);
   constructor(
     private prisma: PrismaService,
     @AutoRedis() private redis: Redis | Cluster,
     private counter: GlobalCounterService,
   ) {}
-  async createPermission(body: CreatePermission) {
-    const { name, desc, clientId } = body;
-    const dbPermission = await this.prisma.permission.findFirst({
-      where: {
-        name,
-        clientId,
-      },
-    });
-    if (dbPermission) {
-      throw new HttpException(`权限 ${name} 已存在`, HttpStatus.BAD_REQUEST);
-    }
-    const dbId = await this.counter.incr(ID_COUNTER.PERMISSION);
-    const handle = await this.prisma.permission.create({
-      data: {
-        id: dbId,
-        name,
-        desc,
-        clientId,
-      },
-    });
-
-    return this.redis
-      .incr(PERMISSION_TOTAL)
-      .then(() => this.redis.incr(CLIENT_PERMISSION_TOTAL(clientId)))
-      .then(() => handle);
-  }
-  async removePermission(id: bigint, clientId: string) {
-    const permission = await this.getPermissionInfo(id, clientId);
-    if (!permission) {
-      throw new HttpException(`${id} 不存在`, HttpStatus.NOT_FOUND);
-    }
-    const handle = this.prisma.permission.delete({
-      where: {
-        id,
-        clientId,
-      },
-    });
-    return handle.then((removedPermission) => {
-      const { id, clientId } = removedPermission;
-      return this.redis
-        .decr(PERMISSION_TOTAL)
-        .then(() => this.redis.decr(CLIENT_PERMISSION_TOTAL(clientId)))
-        .then(() => this.redis.del(PERMISSION_INFO_CACHE(id)))
-        .then(() => removedPermission);
-    });
-  }
-  async updatePermission(id: bigint, clientId: string, body: UpdatePermission) {
-    const info = await this.getPermissionInfo(id, clientId);
-    if (!info) {
-      throw new HttpException(`${id} 不存在`, HttpStatus.NOT_FOUND);
-    }
-    const permission = await this.prisma.permission.update({
-      where: {
-        id,
-        clientId,
-      },
-      data: {
-        ...body,
-      },
-    });
-    console.log(permission);
-    await this.updateCache(id, permission, 60);
-    return permission;
-  }
-  private async updateCache(
-    id: bigint,
-    permission: Permission,
-    expire: number,
+  async createPermission(
+    data: CreatePermission,
+    actor: bigint,
+    force: boolean,
   ) {
-    await this.redis.hmset(PERMISSION_INFO_CACHE(id), permission);
-    await this.redis.expire(PERMISSION_INFO_CACHE(id), expire);
+    const dbPermission = await this.findPermission({ name: data.name });
+    if (dbPermission && dbPermission.clientId === data.clientId) {
+      throw new HttpException('权限字段存在', HttpStatus.BAD_REQUEST);
+    }
+    if (dbPermission && !dbPermission.client) {
+      throw new HttpException('客户端不存在', HttpStatus.NOT_FOUND);
+    }
+    if (
+      dbPermission &&
+      dbPermission.client.administrator.every(
+        (administrator) => administrator.id !== actor,
+      ) &&
+      !force
+    ) {
+      throw new HttpException('你不是该客户端的管理员', HttpStatus.FORBIDDEN);
+    }
+    return this.prisma.permission
+      .create({
+        data: {
+          id: await this.counter.incr(ID_COUNTER.PERMISSION),
+          name: data.name,
+          desc: data.desc,
+          clientId: data.clientId,
+          client: {
+            connect: {
+              clientId: data.clientId,
+            },
+          },
+          active: data.active,
+        },
+      })
+      .then((permission) =>
+        this.redis.incr(PERMISSION_TOTAL).then(() => permission),
+      )
+      .then((permission) =>
+        this.redis
+          .incr(CLIENT_PERMISSION_TOTAL(data.clientId))
+          .then(() => permission),
+      );
   }
-  async getPermissionInfo(id: bigint, clientId: string) {
+  async removePermission(id: bigint, accountId: bigint, force: boolean) {
+    const dbPermission = await this.findPermission({ id });
+    if (!dbPermission) {
+      throw new HttpException('权限字段不存在', HttpStatus.NOT_FOUND);
+    }
+    if (!isEmpty(dbPermission.role)) {
+      const roleNames = dbPermission.role.map((role) => role.name).join(',');
+      throw new HttpException(
+        `你不能这么做, 因为 ${roleNames} 绑定了该权限`,
+        HttpStatus.CONFLICT,
+      );
+    }
+    const client = await this.prisma.client.findFirst({
+      where: {
+        id: dbPermission.clientPK,
+      },
+      select: {
+        administrator: { select: { id: true } },
+      },
+    });
+    if (!client) {
+      throw new HttpException('客户端不存在', HttpStatus.NOT_FOUND);
+    }
+    if (
+      client.administrator.every((manage) => manage.id !== accountId) &&
+      !force
+    ) {
+      throw new HttpException(
+        '你不能停用这个权限字段, 因为权限字段所属的客户端您没有管理权限',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    return this.prisma.permission.update({
+      where: { id: dbPermission.id },
+      data: {
+        active: false,
+      },
+    });
+  }
+  /**
+   * @description
+   *
+   * 修改的时候应该检查如下几件事
+   *
+   * 如果该权限不存在, 显然应该报错
+   * 如果该权限存在, 但这个权限所属的客户端不归属用户管辖, 且没有 PERMISSION::UPDATE::* | * 权限, 那么就不能修改
+   * 如果该权限存在, 这个权限所属的客户端规树用户管辖, 但是要转移到另一个客户端下, 如果目标客户端不归属用户管辖, 那么就应该拒绝。
+   */
+  async updatePermission(
+    id: bigint,
+    account: bigint,
+    force: boolean,
+    data: UpdatePermission,
+  ) {
+    const permission = await this.findPermission({ id });
+    if (!permission) {
+      throw new HttpException('资源不存在', HttpStatus.NOT_FOUND);
+    }
+    const client = await this.prisma.client.findFirst({
+      where: {
+        id: permission.clientPK,
+        administrator: force
+          ? undefined
+          : {
+              some: {
+                id: account,
+              },
+            },
+      },
+    });
+    if (!client) {
+      throw new HttpException(
+        '你不能修改这个权限字段, 该字段所属的客户端不归属于你',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    if (data.clientId) {
+      const targetClient = await this.prisma.client.findFirst({
+        where: {
+          clientId: data.clientId,
+        },
+        include: {
+          administrator: true,
+        },
+      });
+      if (
+        targetClient.administrator.every((manage) => manage.id !== account) &&
+        !force
+      ) {
+        throw new HttpException(
+          '你不能将该字段转移到不属于你管辖的客户端内',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+    }
+    return this.prisma.permission.update({
+      where: {
+        id,
+      },
+      data: {
+        name: data.name,
+        desc: data.desc,
+        active: data.active,
+        client: data.clientId
+          ? {
+              connect: {
+                clientId: data.clientId,
+              },
+            }
+          : undefined,
+      },
+    });
+  }
+  async findPermission({
+    name,
+    id,
+    accountId,
+    force,
+  }: {
+    name?: string;
+    id?: bigint;
+    accountId?: bigint;
+    force?: boolean;
+  }) {
+    if (isNil(name) && isNil(id)) {
+      throw new HttpException('参数错误', HttpStatus.BAD_REQUEST);
+    }
+
     const permission = await this.prisma.permission.findFirst({
       where: {
-        clientId,
-        id,
+        OR: [{ id }, { name }],
+      },
+      include: {
+        role: true,
+        client: {
+          include: {
+            administrator: {
+              select: {
+                id: true,
+                email: true,
+                profile: true,
+              },
+            },
+          },
+        },
       },
     });
-    if (!permission) {
-      throw new HttpException('字段不存在', HttpStatus.NOT_FOUND);
+    if (!permission || isEmpty(permission)) {
+      return permission;
+    }
+    if (
+      accountId &&
+      permission.client.administrator.every(
+        (manage) => manage.id !== accountId,
+      ) &&
+      !force
+    ) {
+      throw new HttpException('权限不足', HttpStatus.FORBIDDEN);
     }
     return permission;
   }
-  async getPermissionList(id?: bigint, clientId?: string, size?: number) {
-    const permissions = this.prisma.permission.findMany({
+  async findPermissionList(
+    size: number = 20,
+    preId?: bigint,
+    clientId?: string,
+    isSuper?: boolean,
+  ) {
+    const total = (
+      isSuper
+        ? this.redis.get(PERMISSION_TOTAL)
+        : this.redis.get(CLIENT_PERMISSION_TOTAL(clientId))
+    ).then(BigInt);
+    const data = this.prisma.permission.findMany({
       where: {
         id: {
-          gt: id,
+          gt: preId,
         },
-        clientId,
+        clientId: isSuper ? undefined : clientId,
       },
       take: size,
     });
-    const total = clientId
-      ? BigInt(await this.redis.get(CLIENT_PERMISSION_TOTAL(clientId)))
-      : BigInt(await this.redis.get(PERMISSION_TOTAL));
     return {
-      data: await permissions,
-      total: total,
+      total: await total,
+      data: await data,
     };
   }
   async getAccountPermission(account: bigint, clientId: string) {

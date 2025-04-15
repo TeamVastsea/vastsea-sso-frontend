@@ -7,5 +7,9 @@ export const createPermission = (
   app: INestApplication,
 ) => {
   const service = app.get(PermissionService);
-  return service.createPermission({ name, desc: name, clientId });
+  return service.createPermission(
+    { name, desc: name, clientId },
+    100001n,
+    true,
+  );
 };

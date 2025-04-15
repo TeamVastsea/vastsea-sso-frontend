@@ -1,5 +1,10 @@
 import { ConfigService } from '@app/config';
-import { CLIENT_ROLE_TOTAL, ID_COUNTER, ROLE_TOTAL } from '@app/constant';
+import {
+  CLIENT_DEFAULT_ROLE,
+  CLIENT_ROLE_TOTAL,
+  ID_COUNTER,
+  ROLE_TOTAL,
+} from '@app/constant';
 import { AutoRedis } from '@app/decorator';
 import { PrismaService } from '@app/prisma';
 import { RedisCacheService } from '@app/redis-cache';
@@ -8,13 +13,18 @@ import Redis, { Cluster } from 'ioredis';
 import { CreateRole } from './dto/create-role.dto';
 import { GlobalCounterService } from '@app/global-counter';
 import { UpdateRole } from './dto/update-role.dto';
-import { isNil } from 'ramda';
+import { isEmpty, isNil } from 'ramda';
+import { Prisma } from '@prisma/client';
+import { ClientService } from '../client/client.service';
+import { PermissionService } from '../permission/permission.service';
 
 @Injectable()
 export class RoleService {
   private logger: Logger = new Logger(RoleService.name);
   constructor(
     private prisma: PrismaService,
+    private client: ClientService,
+    private permission: PermissionService,
     private config: ConfigService,
     private redisCache: RedisCacheService,
     private cnt: GlobalCounterService,
@@ -22,149 +32,226 @@ export class RoleService {
   ) {}
 
   async createRole(data: CreateRole) {
-    const { name, desc, clientId, permissions, parent } = data;
-    const dbRole = await this.getRoleByName(name, clientId);
-    if (dbRole) {
-      throw new HttpException(`${name} 存在`, HttpStatus.BAD_REQUEST);
-    }
-    const id = await this.cnt.incr(ID_COUNTER.ROLE);
-    const role = this.prisma.role.create({
-      data: {
-        id,
-        name,
-        desc,
-        clientId,
-        permission: permissions
-          ? {
-              connect: permissions.map((id) => ({ id })),
-            }
-          : undefined,
-        parents: parent
-          ? {
-              connect: parent.map((id) => ({ id })),
-            }
-          : undefined,
-      },
-      include: {
-        parents: true,
-        permission: true,
-      },
-    });
-    await this.redis.incr(ROLE_TOTAL);
-    await this.redis.incr(CLIENT_ROLE_TOTAL(clientId));
-    return role;
+    const permissions = await this.validPermissions(
+      data.clientId,
+      data.permissions,
+    );
+    const handles = data.parent?.map((id) => this.findRole({ id })) ?? [];
+    const permissionIds = permissions.map((permission) => ({
+      id: permission.id,
+    }));
+    const parents = Promise.all(handles)
+      .then((roles) => {
+        if (!roles) {
+          return [];
+        }
+        if (roles.some((role) => isNil(role) || isEmpty(role))) {
+          throw new HttpException('参数错误', HttpStatus.BAD_REQUEST);
+        }
+        return roles.map((role) => ({ id: role.id }));
+      })
+      .catch((err) => {
+        throw new HttpException('服务器繁忙', HttpStatus.TOO_MANY_REQUESTS);
+      });
+    return this.prisma.role
+      .create({
+        data: {
+          id: await this.cnt.incr(ID_COUNTER.ROLE),
+          name: data.name,
+          desc: data.desc,
+          permission: {
+            connect: permissionIds,
+          },
+          parents: {
+            connect: await parents,
+          },
+          client: {
+            connect: {
+              clientId: data.clientId,
+            },
+          },
+          clientId: data.clientId,
+        },
+      })
+      .then((role) => this.redis.incr(ROLE_TOTAL).then(() => role))
+      .then((role) =>
+        this.redis.incr(CLIENT_ROLE_TOTAL(data.clientId)).then(() => role),
+      )
+      .then((role) =>
+        this.redis
+          .set(CLIENT_DEFAULT_ROLE(data.clientId), role.id.toString())
+          .then(() => role),
+      );
   }
-
-  async updateRole(id: bigint, data: UpdateRole) {
-    const role = await this.prisma.role.findFirst({
-      where: {
-        id,
-      },
-      select: { id: true, parents: true, name: true },
-    });
-    for (const id of data.parent ?? []) {
-      const role = await this.prisma.role.findFirst({ where: { id: id } });
-      if (!role) {
-        throw new HttpException(`${id} 不存在`, HttpStatus.NOT_FOUND);
-      }
-    }
+  async removeRole(id: bigint) {
+    const role = await this.findRole({ id });
     if (!role) {
       throw new HttpException('资源不存在', HttpStatus.NOT_FOUND);
     }
-    if (!isNil(data.active)) {
-      const deletedParent = role.parents.filter((parent) => parent.deleted);
-      const names = deletedParent.map((role) => role.name);
-      if (names.length) {
+    return this.prisma.role.update({
+      where: { id },
+      data: {
+        active: false,
+      },
+    });
+  }
+  async updateRole(
+    id: bigint,
+    data: UpdateRole,
+    actor: bigint,
+    force: boolean = false,
+  ) {
+    const sourceRole = await this.prisma.role.findFirst({
+      where: {
+        id,
+        client: !force
+          ? {
+              administrator: {
+                some: { id: actor },
+              },
+            }
+          : undefined,
+      },
+    });
+    if (!sourceRole) {
+      throw new HttpException('资源不存在', HttpStatus.NOT_FOUND);
+    }
+    const targetClient = data.clientId
+      ? await this.client.findClient({ clientId: data.clientId })
+      : undefined;
+    if (targetClient) {
+      const adminIds = targetClient.administrator.map((admin) => admin.id);
+      if (!force && !this.client.isAdministrator(adminIds, actor)) {
         throw new HttpException(
-          `${names.join(',')} 作为 ${role.name} 的父级. 如果要重新启用角色 ${role.name} 那么要将 ${role.name} 的所有父级启用`,
-          HttpStatus.BAD_REQUEST,
+          '你不是目标客户端的管理员',
+          HttpStatus.FORBIDDEN,
         );
       }
     }
-    const updatedRole = await this.prisma.role.update({
+    const permissions = !data.permissions
+      ? undefined
+      : Promise.all(
+          data.permissions.map((id) =>
+            this.permission.findPermission({ id, accountId: actor, force }),
+          ),
+        )
+          .then((permissions) => {
+            return permissions;
+          })
+          .then((permissions) => {
+            return permissions.map((permission) => ({ id: permission.id }));
+          })
+          .catch((err) => {
+            throw err;
+          });
+    return this.prisma.role
+      .update({
+        where: {
+          id,
+        },
+        data: {
+          name: data.name,
+          desc: data.desc,
+          permission: (await permissions)
+            ? {
+                connect: await permissions,
+              }
+            : undefined,
+          client: targetClient
+            ? {
+                connect: {
+                  id: targetClient.id,
+                },
+              }
+            : undefined,
+          clientId: targetClient.clientId,
+        },
+      })
+      .then((role) => {
+        if (!data.isDefault) {
+          return role;
+        }
+        return this.redis
+          .set(CLIENT_ROLE_TOTAL(role.clientId), role.id.toString())
+          .then(() => role);
+      });
+  }
+
+  findRole(
+    { id }: { id: bigint },
+    include: Prisma.RoleInclude = {
+      permission: { select: { id: true, name: true, desc: true } },
+    },
+  ) {
+    return this.prisma.role.findFirst({
       where: {
         id,
       },
-      data: {
-        clientId: data.clientId,
-        parents: data.parent
-          ? {
-              connect: data.parent.map((id) => ({ id })),
-            }
-          : undefined,
-        desc: data.desc,
-        name: data.name,
-        deleted: !data.active,
-        permission: data.permissions
-          ? {
-              connect: data.permissions.map((id) => ({ id })),
-            }
-          : undefined,
-      },
-      include: {
-        parents: true,
-      },
+      include,
     });
-    return updatedRole;
   }
-
-  async removeRole(id: bigint) {
-    const dbRole = await this.prisma.role.findFirst({
-      where: { id },
-      select: { children: true, name: true, deleted: true },
-    });
-    if (!dbRole || dbRole.deleted) {
-      throw new HttpException(`${id} 不存在`, HttpStatus.NOT_FOUND);
+  findRoleList(size: number, preId?: bigint, clientId?: string, all?: boolean) {
+    if (!all && !clientId) {
+      throw new HttpException('参数错误', HttpStatus.BAD_REQUEST);
     }
-
-    if (dbRole.children.some((child) => !child.deleted)) {
-      throw new HttpException(
-        `${dbRole.name} 下存在子角色, 请先删除子角色`,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-    const deletedRole = await this.prisma.role.update({
-      where: { id },
-      data: { deleted: true },
-    });
-    return deletedRole;
-  }
-  async getRoleInfo(id: bigint, clientId: string) {
-    const role = await this.prisma.role.findFirst({
-      where: { id, clientId },
-      include: {
-        permission: true,
-        parents: true,
-      },
-    });
-    if (!role) {
-      throw new HttpException('资源不存在', HttpStatus.NOT_FOUND);
-    }
-    return role;
-  }
-  async getRoleList(preId?: bigint, size?: number, clientId?: string) {
-    const total = this.redis.get(
-      clientId ? CLIENT_ROLE_TOTAL(clientId) : ROLE_TOTAL,
-    );
-    const roles = this.prisma.role.findMany({
+    const rawKey = all
+      ? this.redis.get(ROLE_TOTAL)
+      : this.redis.get(CLIENT_ROLE_TOTAL(clientId));
+    const total = rawKey.then(BigInt);
+    const data = this.prisma.role.findMany({
       where: {
         id: {
           gt: preId,
         },
-        clientId,
+        clientId: all ? undefined : clientId,
       },
       take: size,
-      include: {
-        parents: true,
-        permission: true,
-      },
     });
-    return { data: await roles, total: BigInt(await total) };
+    return data
+      .then((data) => {
+        return {
+          data,
+        };
+      })
+      .then(({ data }) => {
+        return total.then((total) => ({ data, total }));
+      });
   }
-  private getRoleByName(name: string, clientId: string) {
-    return this.prisma.role.findFirst({
-      where: { name, clientId },
+  /**
+   *
+   * @throws {HttpException} 如果有一个角色不在该客户端下, 那么会抛出 400 参数错误
+   */
+  async validRole(clientId: string, roleIds: bigint[]) {
+    const roles = await this.prisma.role.findMany({
+      where: {
+        id: {
+          in: roleIds,
+        },
+        clientId,
+      },
       select: { id: true },
     });
+    if (roles.length > roleIds.length) {
+      throw new HttpException('参数错误', HttpStatus.BAD_REQUEST);
+    }
+    return roles;
+  }
+  /**
+   * @throws {HttpException} 如果有一个权限不在该客户端下, 那么会抛出 400 参数错误
+   */
+  async validPermissions(clientId: string, permissions: bigint[]) {
+    const dbPermissions = await this.prisma.permission.findMany({
+      where: {
+        id: {
+          in: permissions,
+        },
+        clientId,
+      },
+      select: { id: true },
+    });
+    if (dbPermissions.length > permissions.length) {
+      throw new HttpException('参数错误', HttpStatus.BAD_REQUEST);
+    }
+    return dbPermissions;
   }
 }

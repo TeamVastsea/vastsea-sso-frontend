@@ -1,11 +1,8 @@
 import {
-  BadRequestException,
   Body,
   Controller,
-  DefaultValuePipe,
   Delete,
   Get,
-  NotFoundException,
   Param,
   ParseIntPipe,
   Patch,
@@ -13,98 +10,111 @@ import {
   Query,
 } from '@nestjs/common';
 import { RoleService } from './role.service';
-import { Auth, BigIntPipe, Permission } from '@app/decorator';
+import {
+  Account,
+  Auth,
+  BigIntPipe,
+  Operator,
+  Permission,
+  PermissionJudge,
+} from '@app/decorator';
 import { CreateRole } from './dto/create-role.dto';
 import { UpdateRole } from './dto/update-role.dto';
-import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
-import { RoleList, TRole } from './dto/role.dto';
-import { ApiException } from '@nanogiants/nestjs-swagger-api-exception-decorator';
+import { ApplyDecorator } from '@app/decorator/apply-decorator';
+import { RequiredClientAdministrator } from '@app/decorator/required-client-administrator';
 
 @Controller('role')
 export class RoleController {
   constructor(private readonly roleService: RoleService) {}
 
-  @ApiCreatedResponse({
-    type: TRole,
-  })
-  @ApiException(() => BadRequestException, {
-    description: '当角色存在时会返回400错误, message 会阐述失败原因',
-  })
-  @Auth()
-  @Permission(['ROLE::CREATE'])
+  @ApplyDecorator(
+    Auth(),
+    Permission(['ROLE::CREATE']),
+    RequiredClientAdministrator(
+      {
+        lhs: { op: Operator.HAS, expr: '*' },
+        op: Operator.OR,
+        rhs: { op: Operator.HAS, expr: 'ROLE::CREATE::*' },
+      },
+      'body',
+      'clientId',
+    ),
+  )
   @Post('/')
-  async createRole(@Body() data: CreateRole) {
+  createRole(@Body() data: CreateRole) {
     return this.roleService.createRole(data);
   }
-
-  @ApiOkResponse({
-    type: TRole,
-  })
-  @ApiException(() => NotFoundException, {
-    description: '当需要删除的角色不存在时, 会抛出404错误. message阐述失败原因',
-  })
-  @ApiException(() => BadRequestException, {
-    description: '当前角色下存在未被删除的子角色时会抛出该错误',
-  })
   @Auth()
   @Permission(['ROLE::REMOVE'])
+  @RequiredClientAdministrator({
+    lhs: {
+      op: Operator.HAS,
+      expr: '*',
+    },
+    op: Operator.OR,
+    rhs: { op: Operator.HAS, expr: 'ROLE::REMOVE::*' },
+  })
   @Delete('/:id')
-  async removeRole(@Param('id', BigIntPipe) id: bigint) {
+  removeRole(@Param('id', BigIntPipe) id: bigint) {
     return this.roleService.removeRole(id);
   }
-  @ApiOkResponse({
-    type: TRole,
-  })
-  @ApiException(() => NotFoundException, {
-    description: `
-    出现该错误有两种情况两种情况
-    1. 当需要修改的角色不存在时, 会抛出404错误. message阐述具体的失败原因
-    2. 修改了角色父级, 但角色父级不存在 会抛出404错误. message阐述具体的失败原因
-    `,
-  })
-  @ApiException(() => BadRequestException, {
-    description: '当传入了 active 参数时, 该client的父级被删除时会抛出该错误',
-  })
+
   @Auth()
   @Permission(['ROLE::UPDATE'])
-  @Patch('/:id')
-  async updateRole(
+  @RequiredClientAdministrator(
+    {
+      lhs: { op: Operator.HAS, expr: '*' },
+      op: Operator.OR,
+      rhs: { op: Operator.HAS, expr: 'ROLE::UPDATE::*' },
+    },
+    'body',
+  )
+  @Patch(':id')
+  updateRole(
     @Param('id', BigIntPipe) id: bigint,
     @Body() data: UpdateRole,
+    @Account('id') actor: string,
+    @PermissionJudge({
+      lhs: { op: Operator.HAS, expr: '*' },
+      op: Operator.OR,
+      rhs: { op: Operator.HAS, expr: 'ROLE::UPDATE::*' },
+    })
+    force: boolean,
   ) {
-    return this.roleService.updateRole(id, data);
+    return this.roleService.updateRole(id, data, BigInt(actor), force);
   }
 
-  @ApiOkResponse({
-    type: TRole,
-    description: '',
-  })
-  @ApiException(() => NotFoundException, {
-    description: '当需要获取的角色不存在时, 会抛出404错误. message阐述失败原因',
-  })
   @Auth()
-  @Permission(['ROLE::GET::INFO'])
   @Get('/:id')
-  async getRole(
-    @Param('id', BigIntPipe) id: bigint,
-    @Query('clientId') clientId?: string,
-  ) {
-    return this.roleService.getRoleInfo(id, clientId);
+  @Permission(['ROLE::QUERY::INFO'])
+  @RequiredClientAdministrator({
+    lhs: {
+      op: Operator.HAS,
+      expr: '*',
+    },
+    op: Operator.OR,
+    rhs: { op: Operator.HAS, expr: 'ROLE::QUERY::INFO::*' },
+  })
+  findRoleInfo(@Param('id', BigIntPipe) id: bigint) {
+    return this.roleService.findRole({ id });
   }
 
-  // TODO: swagger doc
-
-  @ApiOkResponse({
-    type: RoleList,
-  })
   @Auth()
-  @Permission(['ROLE::GET::LIST'])
-  @Get('/')
-  async getRoleList(
-    @Query('size', new DefaultValuePipe(20), ParseIntPipe) size: number,
-    @Query('preId', new BigIntPipe({ optional: true })) preId?: bigint,
-    @Query('clientId') clientId?: string,
+  @Get()
+  @Permission(['ROLE::QUERY::LIST'])
+  @RequiredClientAdministrator({
+    lhs: {
+      op: Operator.HAS,
+      expr: '*',
+    },
+    op: Operator.OR,
+    rhs: { op: Operator.HAS, expr: 'ROLE::QUERY::LIST::*' },
+  })
+  findRoleList(
+    @Param('clientId') clientId: string,
+    @Query('preId', BigIntPipe) preId: bigint,
+    @Query('size', ParseIntPipe) size: number,
   ) {
-    return this.roleService.getRoleList(preId, size, clientId);
+    return this.roleService.findRoleList(size, preId, clientId);
   }
 }
