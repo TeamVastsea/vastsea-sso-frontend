@@ -7,6 +7,7 @@ import {
   Query,
   Res,
   Delete,
+  HttpCode,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -15,6 +16,7 @@ import { ClientService } from '../client/client.service';
 import { RefreshToken } from './dto/refresh-token';
 import { JwtService } from '@app/jwt';
 import { PermissionService } from '../permission/permission.service';
+import { STATUS_CODES } from 'http';
 
 @Controller('auth')
 export class AuthController {
@@ -46,6 +48,8 @@ export class AuthController {
     );
     return tokenPayload;
   }
+
+  @HttpCode(HttpStatus.FOUND)
   @Post('/code')
   async createCode(
     @Body() body: LoginDto,
