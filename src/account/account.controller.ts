@@ -63,7 +63,7 @@ export class AccountController {
   }
 
   @Auth()
-  @Permission(['ACCOUNT::REMOVE'])
+  @Permission(['ACCOUNT::UPDATE'])
   @Patch(':id')
   updateAccount(
     @Param('id', BigIntPipe) id: bigint,
