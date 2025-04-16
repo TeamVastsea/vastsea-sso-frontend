@@ -36,7 +36,7 @@ describe('Auth E2E test', () => {
     await redis.flushdb();
     await app.init();
     expect(redis).toBeDefined();
-    await createUser(app, redis, 'test@no-reply.com', 'test');
+    const account = await createUser(app, redis, 'test@no-reply.com', 'test');
     const roleId = await cnt.incr(ID_COUNTER.ROLE);
     const permissionId = await cnt.incr(ID_COUNTER.PERMISSION);
     const clientPk = await cnt.incr(ID_COUNTER.CLIENT);
@@ -83,7 +83,7 @@ describe('Auth E2E test', () => {
       },
     });
     const testRoleId = await redis.incr(ID_COUNTER.ROLE);
-    await prisma.role.create({
+    const role = await prisma.role.create({
       data: {
         id: testRoleId,
         name: 'TestRole',
@@ -97,6 +97,18 @@ describe('Auth E2E test', () => {
         permission: {
           connect: {
             id: permission.id,
+          },
+        },
+      },
+    });
+    await prisma.account.update({
+      where: {
+        id: account.id,
+      },
+      data: {
+        role: {
+          connect: {
+            id: role.id,
           },
         },
       },

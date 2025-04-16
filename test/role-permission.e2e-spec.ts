@@ -18,6 +18,7 @@ import { UpdatePermission } from 'src/permission/dto/update-permission';
 import { CreateRole } from 'src/role/dto/create-role.dto';
 import { RoleService } from '../src/role/role.service';
 import { CreateClient } from 'src/client/dto/create-client';
+import { removePermission } from './utils/remove-permission';
 
 /**
  * @description Role 和 Permission 几乎不会独立出现. 这里直接混合测试了.
@@ -26,7 +27,10 @@ describe('Role And Permission end to end test', () => {
   let app: INestApplication;
   let redis: Redis;
   let service: RoleService;
-  const createTestClient = async (name: string, administrator: bigint[]) => {
+  const createTestClient = async (
+    name: string,
+    administrator: bigint[] = [],
+  ) => {
     const client = await createClient(
       {
         name,
@@ -339,7 +343,8 @@ describe('Role And Permission end to end test', () => {
           } satisfies CreateRole);
         expect(statusCode).toBe(HttpStatus.CREATED);
       });
-      it.only('Fail, Not a client administrator', async () => {
+      it('Fail, Not a client administrator', async () => {
+        await removePermission('test@no-reply.com');
         const { statusCode, body } = await request(app.getHttpServer())
           .post('/role')
           .auth(tokens.a, { type: 'bearer' })

@@ -1,9 +1,9 @@
 import { ConfigService } from '@app/config';
 import { TOKEN_PAIR } from '@app/constant';
-import { AutoRedis, PermissionExpr, permissionJudge } from '@app/decorator';
+import { AutoRedis } from '@app/decorator';
 import { JwtService } from '@app/jwt';
 import { PrismaService } from '@app/prisma';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { createHash, randomBytes, randomUUID } from 'crypto';
 import Redis, { Cluster } from 'ioredis';
 import { LoginDto } from './dto/login.dto';
@@ -38,7 +38,6 @@ export class AuthService {
         id: true,
       },
     });
-    await this.setDefaultRole(account.id, process.env.CLIENT_ID);
     return {
       ok: true,
       id: account.id,
@@ -83,34 +82,6 @@ export class AuthService {
     multi.pexpire(TOKEN_PAIR(accountId.toString(), 'access'), expire.access);
     multi.pexpire(TOKEN_PAIR(accountId.toString(), 'refresh'), expire.refresh);
     return multi.exec();
-  }
-  async setDefaultRole(userId: bigint, clientId: string) {
-    const defaultRole = await this.role.getDefaultRole(clientId);
-    const accountRoles = await this.prisma.account.findFirst({
-      where: {
-        id: userId,
-      },
-      include: {
-        role: {
-          select: {
-            id: true,
-          },
-        },
-      },
-    });
-    if (accountRoles.role.some((role) => role.id === defaultRole.id)) {
-      return true;
-    }
-    await this.prisma.account.update({
-      where: {
-        id: userId,
-      },
-      data: {
-        role: {
-          connect: [...accountRoles.role, { id: defaultRole.id }],
-        },
-      },
-    });
   }
   createCode(clientId: string) {
     const code = createHash('sha512')
