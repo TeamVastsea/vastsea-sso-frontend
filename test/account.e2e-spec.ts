@@ -34,7 +34,7 @@ describe('Auth E2E test', () => {
   it('Create User Account Success', async () => {
     await createUser(app, redis, 'test2@no-reply.com', 'test');
   });
-  describe('Online', () => {
+  describe.only('Online', () => {
     it('success', async () => {
       await login('test@no-reply.com', 'test', process.env.CLIENT_ID, app);
       const { status, body } = await request(app.getHttpServer())

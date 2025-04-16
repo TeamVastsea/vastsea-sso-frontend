@@ -9,7 +9,12 @@ import {
 } from '@nestjs/common';
 import { AccountService } from './account.service';
 import { CreateAccount } from './dto/create-account';
-import { BigIntPipe, RequireClientPair } from '@app/decorator';
+import {
+  BigIntPipe,
+  Operator,
+  PermissionJudge,
+  RequireClientPair,
+} from '@app/decorator';
 import { ApiException } from '@nanogiants/nestjs-swagger-api-exception-decorator';
 import { ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { AccountOnline } from './dto/account-online-body';
@@ -24,9 +29,19 @@ export class AccountController {
     };
   }
   @Post('')
-  async createAccount(@Body() body: CreateAccount) {
-    const emailCode = await this.accountService.getEmailCode(body.email);
-    await this.accountService.verifyCode(body.email, body.code, emailCode);
+  async createAccount(
+    @Body() body: CreateAccount,
+    @PermissionJudge({
+      lhs: { op: Operator.HAS, expr: '*' },
+      op: Operator.OR,
+      rhs: { op: Operator.HAS, expr: 'ACCOUNT::CREATE::*' },
+    })
+    force: boolean,
+  ) {
+    if (!force) {
+      const emailCode = await this.accountService.getEmailCode(body.email);
+      await this.accountService.verifyCode(body.email, body.code, emailCode);
+    }
     return this.accountService.createAccount(body);
   }
 
@@ -43,12 +58,9 @@ export class AccountController {
   })
   @RequireClientPair()
   @Get('/online/:id')
-  getAccountOnlineState(
-    @Param('id', BigIntPipe) id: bigint,
-    @Query('clientId') clientId: string,
-  ) {
+  getAccountOnlineState(@Param('id', BigIntPipe) id: bigint) {
     return this.accountService
-      .userOnline(clientId, id)
+      .userOnline(id)
       .then((state) => ({ online: Boolean(state) }));
   }
 }

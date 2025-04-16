@@ -123,10 +123,10 @@ export class AccountService {
       .then(() => this.redis.ttl(AUTH_EMAIL_CODE(email)))
       .catch((err) => this.logger.error(err.message, err.stack));
   }
-  async userOnline(clientId: string, userId: bigint) {
+  async userOnline(userId: bigint) {
     if (!(await this.getAccountInfo(userId))) {
       throw new HttpException('用户不存在', HttpStatus.NOT_FOUND);
     }
-    return this.redis.exists(TOKEN_PAIR(userId.toString(), clientId, 'access'));
+    return this.redis.exists(TOKEN_PAIR(userId.toString(), 'access'));
   }
 }
