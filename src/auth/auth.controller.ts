@@ -49,8 +49,8 @@ export class AuthController {
     return tokenPayload;
   }
 
-  @HttpCode(HttpStatus.FOUND)
   @Post('/code')
+  @HttpCode(HttpStatus.FOUND)
   async createCode(
     @Body() body: LoginDto,
     @Query('clientId') clientId: string,

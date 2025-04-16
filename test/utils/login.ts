@@ -11,12 +11,12 @@ export const login = async (
 ) => {
   const { code } = await getCode({ email, password }, clientId, app);
   const { body, statusCode } = await request(app.getHttpServer())
-    .get('/auth/redirect')
+    .post('/auth/token')
     .query({
       code,
     });
   const pair = body as TokenPayload;
-  expect(statusCode).toBe(HttpStatus.OK);
+  expect(statusCode).toBe(HttpStatus.CREATED);
   return pair;
 };
 
@@ -40,7 +40,7 @@ export const getCode = async (
   app: INestApplication,
 ) => {
   const { statusCode, headers } = await request(app.getHttpServer())
-    .post('/auth/login')
+    .post('/auth/code')
     .send(data)
     .query({
       clientId,
