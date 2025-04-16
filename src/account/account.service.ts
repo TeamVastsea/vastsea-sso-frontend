@@ -58,6 +58,20 @@ export class AccountService {
     await this.redis.incr(ACCOUNT_TOTAL);
     return { id: account.id, email: account.email, profile: account.profile };
   }
+  async removeAccount(id: bigint) {
+    const account = await this.getAccountInfo(id);
+    if (!account) {
+      throw new HttpException('账号不存在', HttpStatus.NOT_FOUND);
+    }
+    return this.prisma.account.update({
+      where: {
+        id,
+      },
+      data: {
+        active: false,
+      },
+    });
+  }
   async getAccountList(preId?: bigint, size: number = 20) {
     const total = this.redis.get(ACCOUNT_TOTAL).then(BigInt);
     const data = this.prisma.account.findMany({

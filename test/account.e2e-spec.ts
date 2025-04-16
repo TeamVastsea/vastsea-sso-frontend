@@ -72,6 +72,20 @@ describe('Auth E2E test', () => {
       expect(status).toBe(HttpStatus.BAD_REQUEST);
     });
   });
+  describe('Remove Account', () => {
+    it('Success', async () => {
+      const { access_token } = await login(
+        'admin@no-reply.com',
+        'admin',
+        process.env.CLIENT_ID,
+        app,
+      );
+      const { status } = await request(app.getHttpServer())
+        .del(`/account/${id}`)
+        .auth(access_token, { type: 'bearer' });
+      expect(status).toBe(HttpStatus.OK);
+    });
+  });
   describe('Online', () => {
     it('success', async () => {
       await login('test@no-reply.com', 'test', process.env.CLIENT_ID, app);

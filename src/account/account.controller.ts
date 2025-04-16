@@ -15,6 +15,7 @@ import {
 import { AccountService } from './account.service';
 import { CreateAccount } from './dto/create-account';
 import {
+  Auth,
   BigIntPipe,
   Operator,
   Permission,
@@ -52,9 +53,17 @@ export class AccountController {
     return this.accountService.createAccount(body);
   }
 
+  @Auth()
+  @Permission(['ACCOUNT::REMOVE'])
+  @Delete(':id')
+  async removeAccount(@Param('id', BigIntPipe) id: bigint) {
+    return this.accountService.removeAccount(id);
+  }
+
+  @Auth()
   @Permission(['ACCOUNT::QUERY::INFO'])
   @Get(':id')
-  async getAccountInfo(@Param('id', new BigIntPipe({})) id: bigint) {
+  async getAccountInfo(@Param('id', BigIntPipe) id: bigint) {
     const account = this.accountService.getAccountInfo(id);
     return account.then((account) => {
       if (!account) {
@@ -64,6 +73,7 @@ export class AccountController {
     });
   }
 
+  @Auth()
   @Permission(['ACCOUNT::QUERY::LIST'])
   @Get('')
   async getAccountList(
@@ -72,6 +82,7 @@ export class AccountController {
   ) {
     return this.accountService.getAccountList(preId, size);
   }
+
   @ApiQuery({ name: 'id', description: '用户id' })
   @ApiOperation({
     summary: '获取用户在当前客户端下的登陆状态',
