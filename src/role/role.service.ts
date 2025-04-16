@@ -77,16 +77,29 @@ export class RoleService {
       .then((role) =>
         this.redis.incr(CLIENT_ROLE_TOTAL(data.clientId)).then(() => role),
       )
-      .then((role) =>
-        this.redis
-          .set(CLIENT_DEFAULT_ROLE(data.clientId), role.id.toString())
-          .then(() => role),
-      );
+      .then((role) => {
+        return this.redis
+          .exists(CLIENT_DEFAULT_ROLE(data.clientId))
+          .then((hasDefaultRole) => {
+            if (!hasDefaultRole) {
+              return this.redis
+                .set(CLIENT_DEFAULT_ROLE(data.clientId), role.id.toString())
+                .then(() => role);
+            }
+            return role;
+          });
+      });
   }
   async removeRole(id: bigint) {
     const role = await this.findRole({ id });
     if (!role) {
       throw new HttpException('资源不存在', HttpStatus.NOT_FOUND);
+    }
+    const isDefaltRole = await this.redis.exists(
+      CLIENT_DEFAULT_ROLE(role.clientId),
+    );
+    if (isDefaltRole) {
+      throw new HttpException('你不能停用一个默认用户', HttpStatus.BAD_REQUEST);
     }
     return this.prisma.role.update({
       where: { id },
@@ -216,6 +229,21 @@ export class RoleService {
       .then(({ data }) => {
         return total.then((total) => ({ data, total }));
       });
+  }
+  async getDefaultRole(clientId: string) {
+    const roleId = await this.redis.get(CLIENT_DEFAULT_ROLE(clientId));
+    if (!roleId) {
+      return null;
+    }
+    return this.prisma.role.findFirst({
+      where: {
+        clientId,
+        id: BigInt(roleId),
+      },
+      include: {
+        parents: true,
+      },
+    });
   }
   /**
    *

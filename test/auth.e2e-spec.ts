@@ -10,17 +10,18 @@ import {
 import { createUser } from './utils/create-user';
 import { ClientService } from '../src/client/client.service';
 import { createClient } from './utils/create-client';
-import { Client } from '@prisma/client';
+import { Client, PrismaClient } from '@prisma/client';
 import request from 'supertest';
+import { GlobalCounterService } from '@app/global-counter';
+import { CLIENT_DEFAULT_ROLE, ID_COUNTER } from '@app/constant';
 import { LoginDto } from 'src/auth/dto/login.dto';
-import { getCode, getToken } from './utils/login';
-import { TokenPayload } from 'src/auth/dto/token-pair.dto';
-import { OAUTH_CODE_ID_PAIR } from '@app/constant';
 
 describe('Auth E2E test', () => {
   let app: INestApplication;
   let redis: Redis;
   let clientService: ClientService;
+  let prisma: PrismaClient;
+  let cnt: GlobalCounterService;
   const clients: Client[] = [];
   beforeEach(async () => {
     const moduleFixture = await Test.createTestingModule({
@@ -30,241 +31,162 @@ describe('Auth E2E test', () => {
 
     redis = app.get(getRedisToken(DEFAULT_REDIS_NAMESPACE));
     clientService = app.get(ClientService);
+    cnt = app.get(GlobalCounterService);
     await clear('sqlite');
     await redis.flushdb();
     await app.init();
     expect(redis).toBeDefined();
     await createUser(app, redis, 'test@no-reply.com', 'test');
-    const client = await createClient(
-      {
+    const roleId = await cnt.incr(ID_COUNTER.ROLE);
+    const permissionId = await cnt.incr(ID_COUNTER.PERMISSION);
+    const clientPk = await cnt.incr(ID_COUNTER.CLIENT);
+    prisma = new PrismaClient();
+    const client = await prisma.client.create({
+      data: {
+        id: clientPk,
         name: 'test',
-        redirect: 'http://redirect.test.org',
+        redirect: 'http://example.org',
+        clientId: 'test',
+        clientSecret: 'test',
+        role: {
+          create: {
+            id: roleId,
+            name: 'test.role',
+            desc: '',
+            clientId: 'test',
+            permission: {
+              create: {
+                id: permissionId,
+                name: 'test-client.default.permission',
+                desc: '',
+                clientId: 'test',
+                client: {
+                  connect: {
+                    id: clientPk,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
-      clientService,
-    );
+    });
     clients.unshift(client);
+    const authClient = await prisma.client.findFirst({
+      where: {
+        clientId: process.env.CLIENT_ID,
+      },
+    });
+    const permission = await prisma.permission.findFirst({
+      where: {
+        name: 'AUTH-SERVER::LOGIN',
+      },
+    });
+    const testRoleId = await redis.incr(ID_COUNTER.ROLE);
+    await prisma.role.create({
+      data: {
+        id: testRoleId,
+        name: 'TestRole',
+        desc: '',
+        clientId: process.env.CLIENT_ID,
+        client: {
+          connect: {
+            id: authClient.id,
+          },
+        },
+        permission: {
+          connect: {
+            id: permission.id,
+          },
+        },
+      },
+    });
+    await redis.set(CLIENT_DEFAULT_ROLE('test'), roleId.toString());
   });
-
-  describe('Login', () => {
-    it('should redirect to client redirect', async () => {
-      const { statusCode, header } = await request(app.getHttpServer())
-        .post('/auth/login')
-        .send({
-          email: 'test@no-reply.com',
-          password: 'test',
-        } as LoginDto)
+  describe('GetCode', () => {
+    it('Success', async () => {
+      const { status, header } = await request(app.getHttpServer())
+        .post('/auth/code')
         .query({
           clientId: clients[0].clientId,
-        });
-      expect(statusCode).toBe(HttpStatus.FOUND);
-      const to = header.location;
-      expect(to).toBeDefined();
-      const url = new URL(to);
-      expect(url.origin).toBe(clients[0].redirect);
+          state: 'abc',
+          type: 'code',
+        })
+        .send({
+          email: 'admin@no-reply.com',
+          password: 'admin',
+        } as LoginDto);
+      const url = new URL(header.location);
       expect(url.searchParams.get('ok')).toBe('true');
-      expect(url.searchParams.get('code')).toBeDefined();
+      expect(url.searchParams.get('state')).toBe('abc');
+      expect(header['set-cookie'][0]).toContain('session-state');
+      expect(url.origin).toBe(clients[0].redirect);
+      expect(status).toBe(HttpStatus.FOUND);
     });
-    it('should redirect to redirect query, because client not found', async () => {
-      const { statusCode, header } = await request(app.getHttpServer())
-        .post('/auth/login')
-        .send({
-          email: 'test@no-reply.com',
-          password: 'test',
-        } as LoginDto)
+    it('Fail, Client not found', async () => {
+      const { status, header } = await request(app.getHttpServer())
+        .post('/auth/code')
         .query({
-          clientId: 'not exists',
-          redirect: 'http://example.org/',
-        });
-      expect(statusCode).toBe(HttpStatus.FOUND);
-      const url = new URL(header.location);
-      expect(url.href).toMatch('http://example.org/');
-      expect(url.searchParams.get('ok')).toBe('false');
-    });
-    it('should redirect to common error redirect, because client not found and `redirect` query is undefined', async () => {
-      const { statusCode, header } = await request(app.getHttpServer())
-        .post('/auth/login')
+          clientId: 'not-found',
+          state: 'abc',
+          type: 'code',
+        })
         .send({
-          email: 'test@no-reply.com',
-          password: 'test',
-        } as LoginDto)
-        .query({
-          clientId: 'not exists',
-        });
-      expect(statusCode).toBe(HttpStatus.FOUND);
+          email: 'admin@no-reply.com',
+          password: 'admin',
+        } as LoginDto);
       const url = new URL(header.location);
-      expect(url.href).toMatch(process.env.COMMON_ERROR_REDIRECT);
       expect(url.searchParams.get('ok')).toBe('false');
+      expect(url.searchParams.get('reason')).toBe('客户端不存在');
+      expect(status).toBe(HttpStatus.FOUND);
     });
   });
   describe('GetToken', () => {
-    it('should return tokenPair', async () => {
-      const { code } = await getCode(
-        {
+    it('Success', async () => {
+      const { header } = await request(app.getHttpServer())
+        .post('/auth/code')
+        .query({
+          clientId: clients[0].clientId,
+          state: 'abc',
+          type: 'code',
+        })
+        .send({
+          email: 'admin@no-reply.com',
+          password: 'admin',
+        } as LoginDto);
+      const url = new URL(header.location);
+      const code = url.searchParams.get('code');
+      const { statusCode } = await request(app.getHttpServer())
+        .post('/auth/token')
+        .query({ code });
+      expect(statusCode).toBe(HttpStatus.CREATED);
+    });
+    it('Fail, code not exist', async () => {
+      const { statusCode } = await request(app.getHttpServer())
+        .post('/auth/token')
+        .query({ code: 'wrong code' });
+      expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
+    });
+  });
+
+  describe('Dashboard Login', () => {
+    it('Success, Because is admin', async () => {
+      const { status } = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({
+          email: 'admin@no-reply.com',
+          password: 'admin',
+        } as LoginDto);
+      expect(status).toBe(HttpStatus.CREATED);
+    });
+    it('Success, Because has AUTH-SERVER::LOGIN permission', async () => {
+      const { status } = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({
           email: 'test@no-reply.com',
           password: 'test',
-        },
-        clients[0].clientId,
-        app,
-      );
-      const { body, statusCode } = await request(app.getHttpServer())
-        .get('/auth/token')
-        .query({
-          code,
-          clientId: clients[0].clientId,
-          clientSecret: clients[0].clientSecret,
         });
-      expect(statusCode).toBe(HttpStatus.OK);
-      const tokenPair = body as TokenPayload;
-      expect(tokenPair.access_token).toBeDefined();
-      expect(tokenPair.refresh_token).toBeDefined();
-      expect(tokenPair.expire).toBeDefined();
-      expect(tokenPair.expireAt).toBeDefined();
-    });
-    it('should throw unauthorized error, becuase code expire', async () => {
-      const { code } = await getCode(
-        { email: 'test@no-reply.com', password: 'test' },
-        clients[0].clientId,
-        app,
-      );
-      const key = OAUTH_CODE_ID_PAIR(code);
-      await redis.del(key);
-      const { statusCode } = await request(app.getHttpServer())
-        .get('/auth/token')
-        .query({
-          code,
-          clientId: clients[0].clientId,
-          clientSecret: clients[0].clientSecret,
-        });
-      expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
-    });
-    it('should return bad request, because client id invalid', async () => {
-      const { code } = await getCode(
-        { email: 'test@no-reply.com', password: 'test' },
-        clients[0].clientId,
-        app,
-      );
-      const key = OAUTH_CODE_ID_PAIR(code);
-      await redis.del(key);
-      const { statusCode } = await request(app.getHttpServer())
-        .get('/auth/token')
-        .query({
-          code,
-          clientId: 'clientId',
-          clientSecret: clients[0].clientSecret,
-        });
-      expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
-    });
-    it('should return bad request, because clientSecret invalid', async () => {
-      const { code } = await getCode(
-        { email: 'test@no-reply.com', password: 'test' },
-        clients[0].clientId,
-        app,
-      );
-      const key = OAUTH_CODE_ID_PAIR(code);
-      await redis.del(key);
-      const { statusCode } = await request(app.getHttpServer())
-        .get('/auth/token')
-        .query({
-          code,
-          clientId: clients[0].clientId,
-          clientSecret: 'client secret',
-        });
-      expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
-    });
-  });
-  /**
-   * Ignore now
-   */
-  describe('Get MailCode', () => {
-    it.todo('Success');
-    it.todo('Too Many Request');
-  });
-  describe('Refresh Token', () => {
-    it('Invalid Refresh Token', async () => {
-      const { statusCode } = await request(app.getHttpServer())
-        .post('/auth/refresh')
-        .send({
-          refreshToken: 'refresh_token',
-        })
-        .query({
-          clientId: clients[0].clientId,
-          clientSecret: clients[0].clientSecret,
-        });
-      expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
-    });
-    it('Refresh Token Expire', async () => {
-      const { code } = await getCode(
-        { email: 'test@no-reply.com', password: 'test' },
-        clients[0].clientId,
-        app,
-      );
-      expect(code).toBeDefined();
-      const { refresh_token } = await getToken(
-        code,
-        clients[0].clientId,
-        clients[0].clientSecret,
-        app,
-      );
-      await redis.del(await redis.keys(`TOKEN::*::refresh`));
-      const { body, statusCode } = await request(app.getHttpServer())
-        .post('/auth/refresh')
-        .send({
-          refreshToken: refresh_token,
-        })
-        .query({
-          clientId: clients[0].clientId,
-          clientSecret: clients[0].clientSecret,
-        });
-      expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
-    });
-    it('Client secret invalid', async () => {
-      const { code } = await getCode(
-        { email: 'test@no-reply.com', password: 'test' },
-        clients[0].clientId,
-        app,
-      );
-      expect(code).toBeDefined();
-      const { refresh_token } = await getToken(
-        code,
-        clients[0].clientId,
-        clients[0].clientSecret,
-        app,
-      );
-      const { statusCode } = await request(app.getHttpServer())
-        .post('/auth/refresh')
-        .send({
-          refreshToken: refresh_token,
-        })
-        .query({
-          clientId: clients[0].clientId,
-          clientSecret: 'clients[0].clientSecret',
-        });
-      expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
-    });
-    it('Success', async () => {
-      const { code } = await getCode(
-        { email: 'test@no-reply.com', password: 'test' },
-        clients[0].clientId,
-        app,
-      );
-      expect(code).toBeDefined();
-      const { access_token, refresh_token } = await getToken(
-        code,
-        clients[0].clientId,
-        clients[0].clientSecret,
-        app,
-      );
-      const { body, statusCode } = await request(app.getHttpServer())
-        .post('/auth/refresh')
-        .send({
-          refreshToken: refresh_token,
-        })
-        .query({
-          clientId: clients[0].clientId,
-          clientSecret: clients[0].clientSecret,
-        });
-      expect(statusCode).toBe(HttpStatus.CREATED);
-      expect(body.access_token).not.toBe(access_token);
+      expect(status).toBe(HttpStatus.CREATED);
     });
   });
 });

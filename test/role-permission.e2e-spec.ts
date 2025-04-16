@@ -349,7 +349,6 @@ describe('Role And Permission end to end test', () => {
             permissions: [],
             clientId: clientB.clientId,
           });
-        console.log(body);
         expect(statusCode).toBe(HttpStatus.FORBIDDEN);
       });
       it.todo(

@@ -46,9 +46,7 @@ export class AuthGuard implements CanActivate {
       throw new HttpException(msg, HttpStatus.UNAUTHORIZED);
     }
     const { id } = this.jwt.decode<AccessTokenPayload>(token);
-    const activeState = this.auth
-      .active(BigInt(id), process.env.CLIENT_ID)
-      .then(Boolean);
+    const activeState = this.auth.active(BigInt(id)).then(Boolean);
     if (!(await activeState)) {
       throw new HttpException('未登录', HttpStatus.BAD_REQUEST);
     }
