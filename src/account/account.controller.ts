@@ -9,6 +9,7 @@ import {
   NotFoundException,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
@@ -25,6 +26,7 @@ import {
 import { ApiException } from '@nanogiants/nestjs-swagger-api-exception-decorator';
 import { ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { AccountOnline } from './dto/account-online-body';
+import { UpdateAccount } from './dto/update-account';
 
 @Controller('account')
 export class AccountController {
@@ -58,6 +60,16 @@ export class AccountController {
   @Delete(':id')
   async removeAccount(@Param('id', BigIntPipe) id: bigint) {
     return this.accountService.removeAccount(id);
+  }
+
+  @Auth()
+  @Permission(['ACCOUNT::REMOVE'])
+  @Patch(':id')
+  updateAccount(
+    @Param('id', BigIntPipe) id: bigint,
+    @Body() body: UpdateAccount,
+  ) {
+    return this.accountService.updateAccount(id, body);
   }
 
   @Auth()

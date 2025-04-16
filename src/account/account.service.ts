@@ -14,6 +14,7 @@ import Redis, { Cluster } from 'ioredis';
 import { GlobalCounterService } from '@app/global-counter';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@app/config';
+import { UpdateAccount } from './dto/update-account';
 
 @Injectable()
 export class AccountService {
@@ -72,6 +73,34 @@ export class AccountService {
       },
     });
   }
+
+  async updateAccount(id: bigint, data: UpdateAccount) {
+    const account = await this.getAccountInfo(id);
+    if (!account) {
+      throw new HttpException('客户端不存在', HttpStatus.NOT_FOUND);
+    }
+    const salt = randomBytes(128).toString('base64');
+    const iterations = 1000;
+    const password = this.hashPwd(data.password, salt, iterations);
+    return this.prisma.account.update({
+      where: {
+        id,
+      },
+      data: {
+        email: data.email,
+        password,
+        profile: {
+          update: {
+            nick: data.profile.nick,
+            desc: data.profile.desc,
+            avatar: data.profile.avatar,
+          },
+        },
+      },
+    });
+  }
+  kickout(id: bigint) {}
+
   async getAccountList(preId?: bigint, size: number = 20) {
     const total = this.redis.get(ACCOUNT_TOTAL).then(BigInt);
     const data = this.prisma.account.findMany({
