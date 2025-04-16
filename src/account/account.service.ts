@@ -58,7 +58,7 @@ export class AccountService {
     await this.redis.incr(ACCOUNT_TOTAL);
     return { id: account.id, email: account.email, profile: account.profile };
   }
-  async getAccountList(preId: bigint, size: number = 20) {
+  async getAccountList(preId?: bigint, size: number = 20) {
     const total = this.redis.get(ACCOUNT_TOTAL).then(BigInt);
     const data = this.prisma.account.findMany({
       where: {
@@ -67,6 +67,11 @@ export class AccountService {
         },
       },
       take: size,
+      select: {
+        id: true,
+        email: true,
+        profile: true,
+      },
     });
     return {
       total: await total,

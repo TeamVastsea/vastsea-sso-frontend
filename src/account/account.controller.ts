@@ -1,12 +1,14 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
   HttpException,
   HttpStatus,
   NotFoundException,
   Param,
+  ParseIntPipe,
   Post,
   Query,
 } from '@nestjs/common';
@@ -33,17 +35,6 @@ export class AccountController {
     };
   }
 
-  @Permission(['ACCOUNT::QUERY::INFO'])
-  @Get(':id')
-  async getAccountInfo(@Param('id', new BigIntPipe({})) id: bigint) {
-    const account = this.accountService.getAccountInfo(id);
-    return account.then((account) => {
-      if (!account) {
-        throw new HttpException('账号不存在', HttpStatus.NOT_FOUND);
-      }
-      return account;
-    });
-  }
   @Post('')
   async createAccount(
     @Body() body: CreateAccount,
@@ -61,6 +52,26 @@ export class AccountController {
     return this.accountService.createAccount(body);
   }
 
+  @Permission(['ACCOUNT::QUERY::INFO'])
+  @Get(':id')
+  async getAccountInfo(@Param('id', new BigIntPipe({})) id: bigint) {
+    const account = this.accountService.getAccountInfo(id);
+    return account.then((account) => {
+      if (!account) {
+        throw new HttpException('账号不存在', HttpStatus.NOT_FOUND);
+      }
+      return account;
+    });
+  }
+
+  @Permission(['ACCOUNT::QUERY::LIST'])
+  @Get('')
+  async getAccountList(
+    @Query('preId', new BigIntPipe({ optional: true })) preId: bigint,
+    @Query('size', new DefaultValuePipe(20), ParseIntPipe) size: number,
+  ) {
+    return this.accountService.getAccountList(preId, size);
+  }
   @ApiQuery({ name: 'id', description: '用户id' })
   @ApiOperation({
     summary: '获取用户在当前客户端下的登陆状态',
