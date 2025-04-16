@@ -1,7 +1,13 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { CreateAccount } from './dto/create-account';
 import { pbkdf2Sync, randomBytes } from 'crypto';
-import { AUTH_EMAIL_CODE, ID_COUNTER, TOKEN_PAIR } from '@app/constant';
+import {
+  ACCOUNT_ASSIGN_CLIENT_TOTAL,
+  ACCOUNT_TOTAL,
+  AUTH_EMAIL_CODE,
+  ID_COUNTER,
+  TOKEN_PAIR,
+} from '@app/constant';
 import { PrismaService } from '@app/prisma';
 import { AutoRedis } from '@app/decorator';
 import Redis, { Cluster } from 'ioredis';
@@ -49,7 +55,23 @@ export class AccountService {
         profile: true,
       },
     });
+    await this.redis.incr(ACCOUNT_TOTAL);
     return { id: account.id, email: account.email, profile: account.profile };
+  }
+  async getAccountList(preId: bigint, size: number = 20) {
+    const total = this.redis.get(ACCOUNT_TOTAL).then(BigInt);
+    const data = this.prisma.account.findMany({
+      where: {
+        id: {
+          gt: preId,
+        },
+      },
+      take: size,
+    });
+    return {
+      total: await total,
+      data: await data,
+    };
   }
   async getEmailCode(email: string) {
     const emailCode = await this.redis.get(AUTH_EMAIL_CODE(email));
@@ -65,9 +87,23 @@ export class AccountService {
     await this.redis.del(AUTH_EMAIL_CODE(email));
   }
   getAccountInfo(id: bigint) {
-    return this.prisma.account.findFirst({
-      where: { id },
-    });
+    return this.prisma.account
+      .findFirst({
+        where: { id },
+        select: {
+          id: true,
+          email: true,
+          profile: true,
+          role: {
+            select: {
+              id: true,
+              name: true,
+              desc: true,
+            },
+          },
+        },
+      })
+      .then((account) => account);
   }
   findAccountByEmail(email: string) {
     return this.prisma.account.findFirst({ where: { email } });

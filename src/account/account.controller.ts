@@ -1,7 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpException,
+  HttpStatus,
   NotFoundException,
   Param,
   Post,
@@ -12,6 +15,7 @@ import { CreateAccount } from './dto/create-account';
 import {
   BigIntPipe,
   Operator,
+  Permission,
   PermissionJudge,
   RequireClientPair,
 } from '@app/decorator';
@@ -27,6 +31,18 @@ export class AccountController {
     return {
       ttl: await this.accountService.createEmailCode(email),
     };
+  }
+
+  @Permission(['ACCOUNT::QUERY::INFO'])
+  @Get(':id')
+  async getAccountInfo(@Param('id', new BigIntPipe({})) id: bigint) {
+    const account = this.accountService.getAccountInfo(id);
+    return account.then((account) => {
+      if (!account) {
+        throw new HttpException('账号不存在', HttpStatus.NOT_FOUND);
+      }
+      return account;
+    });
   }
   @Post('')
   async createAccount(
