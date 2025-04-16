@@ -3,7 +3,7 @@ import { TOKEN_PAIR } from '@app/constant';
 import { AutoRedis } from '@app/decorator';
 import { JwtService } from '@app/jwt';
 import { PrismaService } from '@app/prisma';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { createHash, randomBytes, randomUUID } from 'crypto';
 import Redis, { Cluster } from 'ioredis';
 import { LoginDto } from './dto/login.dto';

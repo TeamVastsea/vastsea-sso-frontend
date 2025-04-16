@@ -2,7 +2,6 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { CreateAccount } from './dto/create-account';
 import { pbkdf2Sync, randomBytes } from 'crypto';
 import {
-  ACCOUNT_ASSIGN_CLIENT_TOTAL,
   ACCOUNT_TOTAL,
   AUTH_EMAIL_CODE,
   ID_COUNTER,
@@ -82,24 +81,33 @@ export class AccountService {
     const salt = randomBytes(128).toString('base64');
     const iterations = 1000;
     const password = this.hashPwd(data.password, salt, iterations);
-    return this.prisma.account.update({
-      where: {
-        id,
-      },
-      data: {
-        email: data.email,
-        password,
-        profile: {
-          update: {
-            nick: data.profile.nick,
-            desc: data.profile.desc,
-            avatar: data.profile.avatar,
+    return this.prisma.account
+      .update({
+        where: {
+          id,
+        },
+        data: {
+          email: data.email,
+          password,
+          profile: {
+            update: {
+              nick: data.profile.nick,
+              desc: data.profile.desc,
+              avatar: data.profile.avatar,
+            },
           },
         },
-      },
-    });
+      })
+      .then((account) => {
+        return this.kickout(account.id).then(() => account);
+      });
   }
-  kickout(id: bigint) {}
+  kickout(id: bigint) {
+    return this.redis.del(
+      TOKEN_PAIR(id.toString(), 'access'),
+      TOKEN_PAIR(id.toString(), 'refresh'),
+    );
+  }
 
   async getAccountList(preId?: bigint, size: number = 20) {
     const total = this.redis.get(ACCOUNT_TOTAL).then(BigInt);

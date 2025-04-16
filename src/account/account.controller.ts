@@ -73,6 +73,13 @@ export class AccountController {
   }
 
   @Auth()
+  @Permission(['ACCOUNT::KICKOUT'])
+  @Post('/kick/:id')
+  kick(@Param('id', BigIntPipe) id: bigint) {
+    return this.accountService.kickout(id);
+  }
+
+  @Auth()
   @Permission(['ACCOUNT::QUERY::INFO'])
   @Get(':id')
   async getAccountInfo(@Param('id', BigIntPipe) id: bigint) {
