@@ -128,7 +128,7 @@ export class ClientService {
     active?: boolean;
     clientId?: string;
   }) {
-    if (isNil(name) && isNil(id)) {
+    if (isNil(name) && isNil(id) && isNil(clientId)) {
       throw new HttpException('参数错误', HttpStatus.BAD_REQUEST);
     }
     return this.prisma.client

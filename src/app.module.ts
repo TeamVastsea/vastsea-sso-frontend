@@ -40,6 +40,7 @@ const BUILT_IN_PERMISSIONS = [
   'ROLE::UPDATE',
   'ROLE::GET::INFO',
   'ROLE::GET::LIST',
+  'AUTH-SERVER::LOGIN',
 ];
 
 @Module({
@@ -88,8 +89,8 @@ const BUILT_IN_PERMISSIONS = [
     GlobalCounterModule.forRoot({ global: true }),
     RedisCacheModule.forRoot({ global: true }),
     RoleModule,
-    AuthModule,
     AccountModule,
+    AuthModule,
   ],
   providers: [
     {

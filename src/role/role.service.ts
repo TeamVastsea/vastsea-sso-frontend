@@ -1,10 +1,5 @@
 import { ConfigService } from '@app/config';
-import {
-  CLIENT_DEFAULT_ROLE,
-  CLIENT_ROLE_TOTAL,
-  ID_COUNTER,
-  ROLE_TOTAL,
-} from '@app/constant';
+import { CLIENT_ROLE_TOTAL, ID_COUNTER, ROLE_TOTAL } from '@app/constant';
 import { AutoRedis } from '@app/decorator';
 import { PrismaService } from '@app/prisma';
 import { RedisCacheService } from '@app/redis-cache';
@@ -77,11 +72,7 @@ export class RoleService {
       .then((role) =>
         this.redis.incr(CLIENT_ROLE_TOTAL(data.clientId)).then(() => role),
       )
-      .then((role) =>
-        this.redis
-          .set(CLIENT_DEFAULT_ROLE(data.clientId), role.id.toString())
-          .then(() => role),
-      );
+      .then((role) => role);
   }
   async removeRole(id: bigint) {
     const role = await this.findRole({ id });
@@ -167,14 +158,7 @@ export class RoleService {
           clientId: targetClient.clientId,
         },
       })
-      .then((role) => {
-        if (!data.isDefault) {
-          return role;
-        }
-        return this.redis
-          .set(CLIENT_ROLE_TOTAL(role.clientId), role.id.toString())
-          .then(() => role);
-      });
+      .then((role) => role);
   }
 
   findRole(

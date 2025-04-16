@@ -13,6 +13,8 @@ import { CreateClient } from '../src/client/dto/create-client';
 import { login } from './utils/login';
 import { createClient } from './utils/create-client';
 import { UpdateClient } from 'src/client/dto/update-client';
+import { PrismaClient } from '@prisma/client';
+import { removePermission } from './utils/remove-permission';
 
 describe('Client E2E test', () => {
   let app: INestApplication;
@@ -54,13 +56,15 @@ describe('Client E2E test', () => {
         process.env.CLIENT_ID,
         app,
       );
+      await removePermission('test@no-reply.com');
+
       const { statusCode } = await request(app.getHttpServer())
         .post('/client/')
         .auth(access_token, { type: 'bearer' })
         .send({
           name: 'Test Client',
           desc: 'Test Client',
-          redirect: 'http://exmaple.com',
+          redirect: 'http://example.com',
         } as CreateClient);
       expect(statusCode).toBe(HttpStatus.FORBIDDEN);
     });
@@ -111,6 +115,7 @@ describe('Client E2E test', () => {
         process.env.CLIENT_ID,
         app,
       );
+      await removePermission('test@no-reply.com');
       const { statusCode } = await request(app.getHttpServer())
         .delete(`/client/${client.id}`)
         .auth(access_token, { type: 'bearer' });
@@ -165,6 +170,7 @@ describe('Client E2E test', () => {
         process.env.CLIENT_ID,
         app,
       );
+      await removePermission('test@no-reply.com');
       const { statusCode } = await request(app.getHttpServer())
         .patch(`/client/${client.id}`)
         .send({
@@ -214,6 +220,7 @@ describe('Client E2E test', () => {
         process.env.CLIENT_ID,
         app,
       );
+      await removePermission('test@no-reply.com');
       const { statusCode } = await request(app.getHttpServer())
         .get(`/client/${client.id}`)
         .auth(access_token, { type: 'bearer' });
@@ -270,6 +277,7 @@ describe('Client E2E test', () => {
         process.env.CLIENT_ID,
         app,
       );
+      await removePermission('test@no-reply.com');
       const { statusCode } = await request(app.getHttpServer())
         .get('/client/')
         .auth(access_token, { type: 'bearer' })

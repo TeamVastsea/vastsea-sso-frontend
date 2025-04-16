@@ -2,131 +2,143 @@ import {
   Controller,
   Post,
   Body,
-  Res,
-  Query,
-  Get,
-  BadRequestException,
   HttpException,
   HttpStatus,
+  Query,
+  Res,
+  Delete,
+  HttpCode,
+  Req,
 } from '@nestjs/common';
-import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
-import { TokenPayload } from './dto/token-pair.dto';
+import { Request, Response } from 'express';
+import { ClientService } from '../client/client.service';
 import { RefreshToken } from './dto/refresh-token';
 import { JwtService } from '@app/jwt';
-import { ApiException } from '@nanogiants/nestjs-swagger-api-exception-decorator';
-import { errors } from '@gaonengwww/jose';
+import { PermissionService } from '../permission/permission.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly jwtService: JwtService,
+    private readonly client: ClientService,
+    private readonly permission: PermissionService,
+    private readonly jwt: JwtService,
   ) {}
 
-  @ApiOperation({
-    description: `
-    该接口作为登录使用. 最终会被重定向到两个地方
-    1. 如果客户端不存在, 那么将会重定向到 rediect query 指定的位置
-    2. 如果客户端不存在, 且redirect没有指定, 那么将会跳转到本项目设置的 process.env.COMMON_ERROR_REDIRECT 位置
-    `,
-  })
-  @ApiQuery({
-    name: 'redirect',
-    description: '如果传入了该参数, 失败时会重定向于此. 成功时不会',
-    required: false,
-  })
-  @ApiQuery({
-    name: 'clientId',
-    description: '注册时, 平台颁发的clientId',
-    required: true,
-  })
-  @Post('login')
-  async login(
-    @Body() body: LoginDto,
-    @Query('redirect') redirect: string,
-    @Query('clientId') clientId: string,
-    @Res() res: Response,
-  ) {
-    const { ok, reason, code, client } =
-      await this.authService.generateAuthCode(
-        body.email,
-        body.password,
-        clientId,
-      );
-    const url = new URL(
-      (client ? client.redirect : null) ??
-        redirect ??
-        process.env.COMMON_ERROR_REDIRECT,
+  @Post('/login')
+  async login(@Body() body: LoginDto) {
+    const loginHandle = await this.authService.login(body);
+    if (loginHandle.ok === false) {
+      throw new HttpException(loginHandle.reason, HttpStatus.BAD_REQUEST);
+    }
+    const permission = await this.permission.getAccountPermission(
+      loginHandle.id,
+      process.env.CLIENT_ID,
     );
-    if (!ok) {
+    if (
+      !permission.includes('*') &&
+      !permission.includes('AUTH-SERVER::LOGIN')
+    ) {
+      throw new HttpException('权限不足', HttpStatus.FORBIDDEN);
+    }
+    const tokenPayload = await this.authService.createTokenPair(
+      loginHandle.id.toString(),
+    );
+    return tokenPayload;
+  }
+
+  @Post('/session')
+  async getCodeBySession(
+    @Query('clientId') clientId: string,
+    @Req() req: Request,
+  ) {
+    const client = await this.client.findClient({ clientId });
+    if (!client) {
+      throw new HttpException('客户端不存在', HttpStatus.BAD_REQUEST);
+    }
+    const cookie = req.cookies?.['session-state'];
+    if (!cookie) {
+      throw new HttpException('session-state 不合法', HttpStatus.BAD_REQUEST);
+    }
+    const codeHandle = await this.authService.getCodeBySession(cookie);
+    if (codeHandle.ok === false) {
+      throw new HttpException(codeHandle.reason, codeHandle.state);
+    }
+    return { code: codeHandle.code };
+  }
+
+  @Post('/code')
+  @HttpCode(HttpStatus.FOUND)
+  async createCode(
+    @Body() body: LoginDto,
+    @Query('clientId') clientId: string,
+    @Query('state') state: string,
+    @Res() res: Response,
+    @Req() req: Request,
+  ) {
+    const client = await this.client.findClient({ clientId });
+    if (!client) {
+      const url = new URL(process.env.COMMON_ERROR_REDIRECT);
       url.searchParams.append('ok', 'false');
-      url.searchParams.append('reason', reason);
+      url.searchParams.append('reason', '客户端不存在');
       res.redirect(url.toString());
       return;
     }
+    const url = new URL(client?.redirect ?? process.env.COMMON_ERROR_REDIRECT);
+    const loginHandle = await this.authService.login(body);
+    if (loginHandle.ok === false) {
+      url.searchParams.append('ok', `${loginHandle.ok}`);
+      url.searchParams.append('reason', loginHandle.reason);
+      res.redirect(url.toString());
+      return;
+    }
+    const code = this.authService.createCode(clientId);
+    const sessionState = this.authService.createSessionState();
+    await this.authService.invokeSessionState(code, clientId, sessionState);
+    await this.authService.invokeCode(loginHandle.id, code);
     url.searchParams.append('ok', 'true');
     url.searchParams.append('code', code);
+    url.searchParams.append('state', state);
+    res.cookie('session-state', sessionState);
     res.redirect(url.toString());
+    return;
   }
-
-  @Get('/redirect')
-  redirect(@Query('code') code: string) {
-    return this.token(code, process.env.CLIENT_ID, process.env.CLIENT_SECRET);
+  @Post('/token')
+  async createToken(@Query('code') code: string) {
+    const userId = await this.authService.getPayloadFromCode(code);
+    if (!userId) {
+      throw new HttpException('校验码过期', HttpStatus.BAD_REQUEST);
+    }
+    const tokenPayload = this.authService.createTokenPair(userId);
+    return tokenPayload.then((payload) => {
+      return this.authService
+        .revokeCode(code)
+        .then(() => this.authService.invokeTokenPair(userId, payload))
+        .then(() => payload);
+    });
   }
-
-  @ApiQuery({ name: 'code', description: '从 /login 获取到的授权码' })
-  @ApiQuery({ name: 'clientId', description: '注册时平台颁发的clientId' })
-  @ApiQuery({
-    name: 'clientSecret',
-    description: '注册时平台颁发的clientSecret',
-  })
-  @ApiOkResponse({
-    type: TokenPayload,
-    description:
-      '返回的是一个json对象,该对象将会阐明AccessToken,RefreshToken以及两个令牌的过期时间.',
-  })
-  @Get('/token')
-  token(
+  @Post('/token/refresh')
+  async refreshToken(@Body() body: RefreshToken) {
+    try {
+      const { id } = this.jwt.decode<{ id: string }>(body.refreshToken);
+      if (!id) {
+        throw new HttpException('Token不合法', HttpStatus.BAD_REQUEST);
+      }
+      const tokenPair = this.authService.createTokenPair(id);
+      return tokenPair.then((payload) =>
+        this.authService.invokeTokenPair(id, payload).then(() => payload),
+      );
+    } catch {
+      throw new HttpException('Token不合法', HttpStatus.BAD_REQUEST);
+    }
+  }
+  @Delete('/session')
+  async removeSession(
     @Query('code') code: string,
     @Query('clientId') clientId: string,
-    @Query('clientSecret') clientSecret: string,
-  ): Promise<TokenPayload> {
-    return this.authService.generateToken(code, clientId, clientSecret);
-  }
-
-  @ApiQuery({ name: 'clientId', description: '平台注册时颁发的clientId' })
-  @ApiQuery({
-    name: 'clientSecret',
-    description: '平台注册时颁发的clientSecret',
-  })
-  @ApiOkResponse({ description: '返回一组新的密钥对', type: TokenPayload })
-  @ApiException(() => BadRequestException, {
-    description: '参数错误, message字段是一个自然语言, 阐述了失败的原因',
-  })
-  @Post('/refresh')
-  refreshToken(
-    @Body() body: RefreshToken,
-    @Query('clientId') clientId: string,
-    @Query('clientSecret') clientSecret: string,
   ) {
-    const { refreshToken } = body;
-    try {
-      const userId = this.jwtService.decode<{ id: string }>(
-        body.refreshToken,
-      ).id;
-      return this.authService.refreshToken(
-        userId,
-        refreshToken,
-        clientId,
-        clientSecret,
-      );
-    } catch (e) {
-      if (e instanceof errors.JWTInvalid) {
-        throw new HttpException('刷新令牌不合法', HttpStatus.BAD_REQUEST);
-      }
-    }
+    await this.authService.revokeSession(code, clientId);
   }
 }

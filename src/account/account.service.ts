@@ -37,7 +37,7 @@ export class AccountService {
         password: hashPwd,
         email,
         salt,
-        iterations: 1000,
+        iterations,
         profile: {
           create: {
             ...profile,
@@ -68,6 +68,21 @@ export class AccountService {
     return this.prisma.account.findFirst({
       where: { id },
     });
+  }
+  findAccountByEmail(email: string) {
+    return this.prisma.account.findFirst({ where: { email } });
+  }
+  async verifyPassword(email: string, userPassword: string) {
+    const account = await this.prisma.account.findFirst({
+      where: { email },
+    });
+    if (!account) {
+      throw new HttpException('账号不存在', HttpStatus.NOT_FOUND);
+    }
+    return (
+      this.hashPwd(userPassword, account.salt, account.iterations) ===
+      account.password
+    );
   }
   hashPwd(password: string, salt: string, iterations: number) {
     return pbkdf2Sync(password, salt, iterations, 64, 'sha512').toString('hex');
