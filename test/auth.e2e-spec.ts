@@ -15,6 +15,7 @@ import request from 'supertest';
 import { GlobalCounterService } from '@app/global-counter';
 import { CLIENT_DEFAULT_ROLE, ID_COUNTER } from '@app/constant';
 import { LoginDto } from 'src/auth/dto/login.dto';
+import cookieParser from 'cookie-parser';
 
 describe('Auth E2E test', () => {
   let app: INestApplication;
@@ -28,7 +29,7 @@ describe('Auth E2E test', () => {
       imports: [AppModule],
     }).compile();
     app = moduleFixture.createNestApplication();
-
+    app.use(cookieParser());
     redis = app.get(getRedisToken(DEFAULT_REDIS_NAMESPACE));
     clientService = app.get(ClientService);
     cnt = app.get(GlobalCounterService);
@@ -134,6 +135,46 @@ describe('Auth E2E test', () => {
       expect(header['set-cookie'][0]).toContain('session-state');
       expect(url.origin).toBe(clients[0].redirect);
       expect(status).toBe(HttpStatus.FOUND);
+    });
+    it('Ignore login data if has session-state', async () => {
+      const { headers } = await request(app.getHttpServer())
+        .post('/auth/code')
+        .query({
+          clientId: clients[0].clientId,
+          state: 'abc',
+          type: 'code',
+        })
+        .send({
+          email: 'admin@no-reply.com',
+          password: 'admin',
+        } as LoginDto);
+      const { statusCode } = await request(app.getHttpServer())
+        .post('/auth/session')
+        .query({
+          clientId: clients[0].clientId,
+        })
+        .set('Cookie', headers['set-cookie']);
+      expect(statusCode).toBe(HttpStatus.CREATED);
+    });
+    it('If login other client, can ignore login data when login other valid client', async () => {
+      const { headers } = await request(app.getHttpServer())
+        .post('/auth/code')
+        .query({
+          clientId: clients[0].clientId,
+          state: 'abc',
+          type: 'code',
+        })
+        .send({
+          email: 'admin@no-reply.com',
+          password: 'admin',
+        } as LoginDto);
+      const { statusCode } = await request(app.getHttpServer())
+        .post('/auth/session')
+        .query({
+          clientId: process.env.CLIENT_ID,
+        })
+        .set('Cookie', headers['set-cookie']);
+      expect(statusCode).toBe(HttpStatus.CREATED);
     });
     it('Fail, Client not found', async () => {
       const { status, header } = await request(app.getHttpServer())

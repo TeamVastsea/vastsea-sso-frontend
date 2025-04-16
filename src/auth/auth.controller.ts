@@ -8,15 +8,15 @@ import {
   Res,
   Delete,
   HttpCode,
+  Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { ClientService } from '../client/client.service';
 import { RefreshToken } from './dto/refresh-token';
 import { JwtService } from '@app/jwt';
 import { PermissionService } from '../permission/permission.service';
-import { STATUS_CODES } from 'http';
 
 @Controller('auth')
 export class AuthController {
@@ -49,6 +49,26 @@ export class AuthController {
     return tokenPayload;
   }
 
+  @Post('/session')
+  async getCodeBySession(
+    @Query('clientId') clientId: string,
+    @Req() req: Request,
+  ) {
+    const client = await this.client.findClient({ clientId });
+    if (!client) {
+      throw new HttpException('客户端不存在', HttpStatus.BAD_REQUEST);
+    }
+    const cookie = req.cookies?.['session-state'];
+    if (!cookie) {
+      throw new HttpException('session-state 不合法', HttpStatus.BAD_REQUEST);
+    }
+    const codeHandle = await this.authService.getCodeBySession(cookie);
+    if (codeHandle.ok === false) {
+      throw new HttpException(codeHandle.reason, codeHandle.state);
+    }
+    return { code: codeHandle.code };
+  }
+
   @Post('/code')
   @HttpCode(HttpStatus.FOUND)
   async createCode(
@@ -56,6 +76,7 @@ export class AuthController {
     @Query('clientId') clientId: string,
     @Query('state') state: string,
     @Res() res: Response,
+    @Req() req: Request,
   ) {
     const client = await this.client.findClient({ clientId });
     if (!client) {
@@ -65,8 +86,8 @@ export class AuthController {
       res.redirect(url.toString());
       return;
     }
-    const loginHandle = await this.authService.login(body);
     const url = new URL(client?.redirect ?? process.env.COMMON_ERROR_REDIRECT);
+    const loginHandle = await this.authService.login(body);
     if (loginHandle.ok === false) {
       url.searchParams.append('ok', `${loginHandle.ok}`);
       url.searchParams.append('reason', loginHandle.reason);

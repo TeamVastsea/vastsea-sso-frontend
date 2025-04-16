@@ -3,7 +3,7 @@ import { TOKEN_PAIR } from '@app/constant';
 import { AutoRedis } from '@app/decorator';
 import { JwtService } from '@app/jwt';
 import { PrismaService } from '@app/prisma';
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { createHash, randomBytes, randomUUID } from 'crypto';
 import Redis, { Cluster } from 'ioredis';
 import { LoginDto } from './dto/login.dto';
@@ -24,6 +24,39 @@ export class AuthService {
     private jwt: JwtService,
   ) {}
 
+  async getCodeBySession(sessionState: string) {
+    const client = await this.redis.get(`AUTH::SESSION::${sessionState}`);
+    if (!client) {
+      return {
+        ok: false,
+        reason: 'session-state 过期',
+        state: HttpStatus.FORBIDDEN,
+      };
+    }
+    const oldCode = await this.redis.get(
+      `AUTH::SESSION::${sessionState}::CODE`,
+    );
+    if (!oldCode) {
+      return {
+        ok: false,
+        reason: 'session-state 不合法',
+        state: HttpStatus.FORBIDDEN,
+      };
+    }
+    const code = this.createCode(client);
+    const codeId = await this.redis.get(`AUTH::${oldCode}`);
+    if (!codeId) {
+      return {
+        ok: false,
+        reason: 'session-state 不合法',
+        state: HttpStatus.FORBIDDEN,
+      };
+    }
+    await this.invokeCode(BigInt(codeId), code);
+    await this.revokeSession(oldCode, client);
+    await this.invokeSessionState(code, client, sessionState);
+    return { ok: true, code };
+  }
   async login(data: LoginDto) {
     const valid = await this.account.verifyPassword(data.email, data.password);
     if (!valid) {
@@ -110,8 +143,12 @@ export class AuthService {
     const codeToSession = `AUTH::${code}::${clientId}`;
     const clientToSession = `AUTH::${clientId}::SESSION`;
     const sessionToClient = `AUTH::SESSION::${sessionState}`;
+    const sessionToCode = `AUTH::SESSION::${sessionState}::CODE`;
+    multi.set(sessionToCode, code);
     multi.set(clientToSession, sessionState);
     multi.set(sessionToClient, clientId);
+    multi.set(sessionToCode, code);
+    multi.pexpire(sessionToCode, this.config.get('cache.ttl.auth.code'));
     multi.pexpire(codeToSession, this.config.get('cache.ttl.auth.code'));
     multi.pexpire(clientToSession, this.config.get('cache.ttl.auth.code'));
     multi.pexpire(sessionToClient, this.config.get('cache.ttl.auth.code'));
