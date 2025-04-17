@@ -136,7 +136,4 @@ dist
 .pnp.*
 
 
-src/keys
-keys
-
 prisma/*.db
