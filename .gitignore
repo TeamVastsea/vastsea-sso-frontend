@@ -137,3 +137,5 @@ dist
 
 
 prisma/*.db
+dump.rdb
+.pwd
