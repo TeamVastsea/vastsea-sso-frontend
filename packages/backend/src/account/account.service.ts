@@ -33,7 +33,7 @@ export class AccountService {
     if (dbAccount) {
       throw new HttpException(`邮箱已存在`, HttpStatus.BAD_REQUEST);
     }
-    const salt = randomBytes(64).toString('hex');
+    const salt = randomBytes(128).toString('base64');
     const iterations = 1000;
     const hashPwd = this.hashPwd(password, salt, iterations);
     const id = await this.cnt.incr(ID_COUNTER.ACCOUNT);

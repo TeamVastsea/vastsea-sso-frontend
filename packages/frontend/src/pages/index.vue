@@ -1,5 +1,5 @@
 <template>
-  <tiny-button>
-    hello world
-  </tiny-button>
+  <div class="w-screen h-screen">
+    <router-view />
+  </div>
 </template>

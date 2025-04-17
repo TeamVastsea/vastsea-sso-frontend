@@ -4,7 +4,7 @@ import {
   Injectable,
   NestInterceptor,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { map, Observable } from 'rxjs';
 import SuperJSON from 'superjson';
 
@@ -15,6 +15,9 @@ export class SuperSerializerInterceptor<T>
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
       map((data) => {
+        if (context.switchToHttp().getRequest().headers['x-meta']) {
+          return SuperJSON.serialize(data);
+        }
         return SuperJSON.serialize(data).json;
       }),
     );
