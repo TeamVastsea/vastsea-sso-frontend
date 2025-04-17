@@ -22,4 +22,5 @@ jobs:
       - name: Install dependencies
         run: pnpm i
       - name: Build
+        working-directory: packages/backend
         run: pnpm build

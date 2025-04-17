@@ -43,6 +43,7 @@ jobs:
       - name: Install dependencies
         run: pnpm i
       - name: e2e testing
+        working-directory: packages/backend
         run: pnpm prisma migrate deploy && pnpm prisma migrate reset -f && pnpm test:e2e client &&
              pnpm prisma migrate reset -f  && pnpm test:e2e role && 
              pnpm prisma migrate reset -f  && pnpm test:e2e auth && 
