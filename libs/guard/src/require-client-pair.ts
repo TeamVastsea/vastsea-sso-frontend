@@ -39,7 +39,7 @@ export class RequireClientPairGuard implements CanActivate {
     if (!clientSecret) {
       throw new HttpException('clientSecret 不能为空', HttpStatus.BAD_REQUEST);
     }
-    const client = await this.clientService.findClientByClientId(clientId);
+    const client = await this.clientService.findClient({ clientId });
     if (!client) {
       throw new HttpException('客户端不存在', HttpStatus.NOT_FOUND);
     }

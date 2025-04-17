@@ -1,18 +1,32 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
+  Delete,
   Get,
+  HttpException,
+  HttpStatus,
   NotFoundException,
   Param,
+  ParseIntPipe,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
 import { AccountService } from './account.service';
 import { CreateAccount } from './dto/create-account';
-import { BigIntPipe, RequireClientPair } from '@app/decorator';
+import {
+  Auth,
+  BigIntPipe,
+  Operator,
+  Permission,
+  PermissionJudge,
+  RequireClientPair,
+} from '@app/decorator';
 import { ApiException } from '@nanogiants/nestjs-swagger-api-exception-decorator';
 import { ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { AccountOnline } from './dto/account-online-body';
+import { UpdateAccount } from './dto/update-account';
 
 @Controller('account')
 export class AccountController {
@@ -23,11 +37,69 @@ export class AccountController {
       ttl: await this.accountService.createEmailCode(email),
     };
   }
+
   @Post('')
-  async createAccount(@Body() body: CreateAccount) {
-    const emailCode = await this.accountService.getEmailCode(body.email);
-    await this.accountService.verifyCode(body.email, body.code, emailCode);
+  async createAccount(
+    @Body() body: CreateAccount,
+    @PermissionJudge({
+      lhs: { op: Operator.HAS, expr: '*' },
+      op: Operator.OR,
+      rhs: { op: Operator.HAS, expr: 'ACCOUNT::CREATE::*' },
+    })
+    force: boolean,
+  ) {
+    if (!force) {
+      const emailCode = await this.accountService.getEmailCode(body.email);
+      await this.accountService.verifyCode(body.email, body.code, emailCode);
+    }
     return this.accountService.createAccount(body);
+  }
+
+  @Auth()
+  @Permission(['ACCOUNT::REMOVE'])
+  @Delete(':id')
+  async removeAccount(@Param('id', BigIntPipe) id: bigint) {
+    return this.accountService.removeAccount(id);
+  }
+
+  @Auth()
+  @Permission(['ACCOUNT::UPDATE'])
+  @Patch(':id')
+  updateAccount(
+    @Param('id', BigIntPipe) id: bigint,
+    @Body() body: UpdateAccount,
+  ) {
+    return this.accountService.updateAccount(id, body);
+  }
+
+  @Auth()
+  @Permission(['ACCOUNT::KICKOUT'])
+  @Post('/kick/:id')
+  kick(@Param('id', BigIntPipe) id: bigint) {
+    return this.accountService.kickout(id);
+  }
+
+  @Auth()
+  @Permission(['ACCOUNT::QUERY::INFO'])
+  @Get(':id')
+  async getAccountInfo(@Param('id', BigIntPipe) id: bigint) {
+    const account = this.accountService.getAccountInfo(id);
+    return account.then((account) => {
+      if (!account) {
+        throw new HttpException('账号不存在', HttpStatus.NOT_FOUND);
+      }
+      return account;
+    });
+  }
+
+  @Auth()
+  @Permission(['ACCOUNT::QUERY::LIST'])
+  @Get('')
+  async getAccountList(
+    @Query('preId', new BigIntPipe({ optional: true })) preId: bigint,
+    @Query('size', new DefaultValuePipe(20), ParseIntPipe) size: number,
+  ) {
+    return this.accountService.getAccountList(preId, size);
   }
 
   @ApiQuery({ name: 'id', description: '用户id' })
@@ -43,12 +115,9 @@ export class AccountController {
   })
   @RequireClientPair()
   @Get('/online/:id')
-  getAccountOnlineState(
-    @Param('id', BigIntPipe) id: bigint,
-    @Query('clientId') clientId: string,
-  ) {
+  getAccountOnlineState(@Param('id', BigIntPipe) id: bigint) {
     return this.accountService
-      .userOnline(clientId, id)
+      .userOnline(id)
       .then((state) => ({ online: Boolean(state) }));
   }
 }

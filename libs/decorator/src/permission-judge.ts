@@ -44,6 +44,6 @@ export const PermissionJudge = createParamDecorator(
   (expr: PermissionExpr, context) => {
     const http = context.switchToHttp();
     const req = http.getRequest();
-    return permissionJudge(req.user.permissions, expr);
+    return permissionJudge(req.user?.permissions ?? [], expr);
   },
 );

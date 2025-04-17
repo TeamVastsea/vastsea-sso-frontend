@@ -26,13 +26,65 @@ describe('Auth E2E test', () => {
     await app.init();
     expect(redis).toBeDefined();
     const u = await createUser(app, redis, 'test@no-reply.com', 'test');
-    id = u.id;
+    id = u.id.toString();
   });
   afterEach(async () => {
     await redis.flushall();
   });
   it('Create User Account Success', async () => {
     await createUser(app, redis, 'test2@no-reply.com', 'test');
+  });
+  describe('GetAccountInfo', () => {
+    it('success', async () => {
+      const { access_token } = await login(
+        'admin@no-reply.com',
+        'admin',
+        process.env.CLIENT_ID,
+        app,
+      );
+      const { status } = await request(app.getHttpServer())
+        .get(`/account/${id}`)
+        .auth(access_token, { type: 'bearer' });
+      expect(status).toBe(HttpStatus.OK);
+    });
+    it('fail not found', async () => {
+      const { access_token } = await login(
+        'admin@no-reply.com',
+        'admin',
+        process.env.CLIENT_ID,
+        app,
+      );
+      const { status } = await request(app.getHttpServer())
+        .get(`/account/123654789`)
+        .auth(access_token, { type: 'bearer' });
+      expect(status).toBe(HttpStatus.NOT_FOUND);
+    });
+    it('should fail,param invalid, except bigint but found string', async () => {
+      const { access_token } = await login(
+        'admin@no-reply.com',
+        'admin',
+        process.env.CLIENT_ID,
+        app,
+      );
+      const { status } = await request(app.getHttpServer())
+        .get(`/account/abc`)
+        .auth(access_token, { type: 'bearer' });
+      expect(status).toBe(HttpStatus.BAD_REQUEST);
+    });
+  });
+  describe('Remove Account', () => {
+    it('Success', async () => {
+      const { access_token } = await login(
+        'admin@no-reply.com',
+        'admin',
+        process.env.CLIENT_ID,
+        app,
+      );
+      const { status } = await request(app.getHttpServer())
+        .del(`/account/${id}`)
+        .auth(access_token, { type: 'bearer' });
+      expect(status).toBe(HttpStatus.OK);
+    });
   });
   describe('Online', () => {
     it('success', async () => {

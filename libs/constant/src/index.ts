@@ -39,5 +39,6 @@ export const CLIENT_PK__ID = (pk: bigint) => `CLIENT::${pk}::ID`;
 export const CLIENT_TOTAL = () => `CLIENT::TOTAL`;
 export const AUTH_EMAIL_CODE = (email: string) => `AUTH::${email}::CODE`;
 
+export const ACCOUNT_TOTAL = `ACCOUNT_TOTAL`;
 export const ACCOUNT_ASSIGN_CLIENT_TOTAL = (managerId: bigint) =>
   `ACCOUNT::${managerId}::CLIENT::TOTAL`;

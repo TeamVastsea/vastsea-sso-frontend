@@ -1,13 +1,19 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { CreateAccount } from './dto/create-account';
 import { pbkdf2Sync, randomBytes } from 'crypto';
-import { AUTH_EMAIL_CODE, ID_COUNTER, TOKEN_PAIR } from '@app/constant';
+import {
+  ACCOUNT_TOTAL,
+  AUTH_EMAIL_CODE,
+  ID_COUNTER,
+  TOKEN_PAIR,
+} from '@app/constant';
 import { PrismaService } from '@app/prisma';
 import { AutoRedis } from '@app/decorator';
 import Redis, { Cluster } from 'ioredis';
 import { GlobalCounterService } from '@app/global-counter';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@app/config';
+import { UpdateAccount } from './dto/update-account';
 
 @Injectable()
 export class AccountService {
@@ -49,7 +55,79 @@ export class AccountService {
         profile: true,
       },
     });
+    await this.redis.incr(ACCOUNT_TOTAL);
     return { id: account.id, email: account.email, profile: account.profile };
+  }
+  async removeAccount(id: bigint) {
+    const account = await this.getAccountInfo(id);
+    if (!account) {
+      throw new HttpException('账号不存在', HttpStatus.NOT_FOUND);
+    }
+    return this.prisma.account.update({
+      where: {
+        id,
+      },
+      data: {
+        active: false,
+      },
+    });
+  }
+
+  async updateAccount(id: bigint, data: UpdateAccount) {
+    const account = await this.getAccountInfo(id);
+    if (!account) {
+      throw new HttpException('客户端不存在', HttpStatus.NOT_FOUND);
+    }
+    const salt = randomBytes(128).toString('base64');
+    const iterations = 1000;
+    const password = this.hashPwd(data.password, salt, iterations);
+    return this.prisma.account
+      .update({
+        where: {
+          id,
+        },
+        data: {
+          email: data.email,
+          password,
+          profile: {
+            update: {
+              nick: data.profile.nick,
+              desc: data.profile.desc,
+              avatar: data.profile.avatar,
+            },
+          },
+        },
+      })
+      .then((account) => {
+        return this.kickout(account.id).then(() => account);
+      });
+  }
+  kickout(id: bigint) {
+    return this.redis.del(
+      TOKEN_PAIR(id.toString(), 'access'),
+      TOKEN_PAIR(id.toString(), 'refresh'),
+    );
+  }
+
+  async getAccountList(preId?: bigint, size: number = 20) {
+    const total = this.redis.get(ACCOUNT_TOTAL).then(BigInt);
+    const data = this.prisma.account.findMany({
+      where: {
+        id: {
+          gt: preId,
+        },
+      },
+      take: size,
+      select: {
+        id: true,
+        email: true,
+        profile: true,
+      },
+    });
+    return {
+      total: await total,
+      data: await data,
+    };
   }
   async getEmailCode(email: string) {
     const emailCode = await this.redis.get(AUTH_EMAIL_CODE(email));
@@ -65,9 +143,23 @@ export class AccountService {
     await this.redis.del(AUTH_EMAIL_CODE(email));
   }
   getAccountInfo(id: bigint) {
-    return this.prisma.account.findFirst({
-      where: { id },
-    });
+    return this.prisma.account
+      .findFirst({
+        where: { id },
+        select: {
+          id: true,
+          email: true,
+          profile: true,
+          role: {
+            select: {
+              id: true,
+              name: true,
+              desc: true,
+            },
+          },
+        },
+      })
+      .then((account) => account);
   }
   findAccountByEmail(email: string) {
     return this.prisma.account.findFirst({ where: { email } });
@@ -123,10 +215,10 @@ export class AccountService {
       .then(() => this.redis.ttl(AUTH_EMAIL_CODE(email)))
       .catch((err) => this.logger.error(err.message, err.stack));
   }
-  async userOnline(clientId: string, userId: bigint) {
+  async userOnline(userId: bigint) {
     if (!(await this.getAccountInfo(userId))) {
       throw new HttpException('用户不存在', HttpStatus.NOT_FOUND);
     }
-    return this.redis.exists(TOKEN_PAIR(userId.toString(), clientId, 'access'));
+    return this.redis.exists(TOKEN_PAIR(userId.toString(), 'access'));
   }
 }
