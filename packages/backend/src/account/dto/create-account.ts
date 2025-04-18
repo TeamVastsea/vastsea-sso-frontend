@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 export const createAccount = z.object({
   email: z.string().describe('邮箱'),
-  code: z.string().describe('邮箱验证码'),
+  code: z.string().describe('邮箱验证码').optional(),
   password: z.string().describe('登陆密码'),
   profile: z.object({
     nick: z.string().describe('昵称'),

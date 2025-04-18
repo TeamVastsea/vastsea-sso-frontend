@@ -17,7 +17,7 @@ export class PermissionGuard implements CanActivate {
     private readonly permission: PermissionService,
     private readonly reflector: Reflector,
   ) {}
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  canActivate(context: ExecutionContext): boolean {
     const requiredPermissions: PermissionArgs =
       this.reflector.getAllAndOverride(PERMISSION_KEY, [
         context.getHandler(),
@@ -31,18 +31,9 @@ export class PermissionGuard implements CanActivate {
     }
     const req: AuthReq = context.switchToHttp().getRequest();
     const {
-      user: { id },
+      user: { id, permissions, super: isSuper },
     } = req;
-    const permissions = await this.permission.getAccountPermission(
-      BigInt(id),
-      process.env.CLIENT_ID,
-    );
-    req.user = {
-      ...req.user,
-      permissions,
-      super: permissions.includes('*'),
-    };
-    if (permissions.includes('*')) {
+    if (isSuper) {
       return true;
     }
     if (

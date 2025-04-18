@@ -13,6 +13,7 @@ import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import Redis, { Cluster } from 'ioredis';
 import { AuthService } from '../../../src/auth/auth.service';
+import { PermissionService } from '../../../src/permission/permission.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -20,6 +21,7 @@ export class AuthGuard implements CanActivate {
     private reflector: Reflector,
     private jwt: JwtService,
     private auth: AuthService,
+    private permissions: PermissionService,
     @AutoRedis() private redis: Redis | Cluster,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -46,11 +48,15 @@ export class AuthGuard implements CanActivate {
       throw new HttpException(msg, HttpStatus.UNAUTHORIZED);
     }
     const { id } = this.jwt.decode<AccessTokenPayload>(token);
-    const activeState = this.auth.active(BigInt(id)).then(Boolean);
-    if (!(await activeState)) {
+    const activeState = await this.auth.active(BigInt(id)).then(Boolean);
+    if (!activeState) {
       throw new HttpException('未登录', HttpStatus.BAD_REQUEST);
     }
-    req.user = { id, permissions: [], super: false };
+    const permissions = await this.permissions.getAccountPermission(
+      BigInt(id),
+      process.env.CLIENT_ID,
+    );
+    req.user = { id, permissions, super: permissions.includes('*') };
     return true;
   }
   getToken(req: Request) {

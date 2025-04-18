@@ -16,6 +16,7 @@ import {
 import { AccountService } from './account.service';
 import { CreateAccount } from './dto/create-account';
 import {
+  Account,
   Auth,
   BigIntPipe,
   Operator,
@@ -38,6 +39,7 @@ export class AccountController {
     };
   }
 
+  @Auth()
   @Post('')
   async createAccount(
     @Body() body: CreateAccount,
@@ -69,7 +71,9 @@ export class AccountController {
     @Param('id', BigIntPipe) id: bigint,
     @Body() body: UpdateAccount,
   ) {
-    return this.accountService.updateAccount(id, body);
+    return this.accountService
+      .updateAccount(id, body)
+      .then((data) => this.kick(id).then(() => data));
   }
 
   @Auth()

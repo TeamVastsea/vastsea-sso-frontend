@@ -1,10 +1,11 @@
+import type { TokenPayload } from '@/store';
 import type { CommonComposablesProps } from '@/types/common-composables';
 import type { TinyForm } from '@opentiny/vue';
 import type { ComponentInstance, Reactive } from 'vue';
+import { useAccountStore } from '@/store';
 import { type } from 'arktype';
 import { reactive } from 'vue';
 import instance from './axios';
-import { useAccountStore, type TokenPayload } from '@/store';
 
 export function useLogin(
   { fetcher }: CommonComposablesProps = { fetcher: instance },
@@ -30,9 +31,9 @@ export function useLogin(
       if (!ok) {
         return;
       }
-      fetcher.post<unknown,TokenPayload>('/auth/login', { ...formData })
+      fetcher.post<unknown, TokenPayload>('/auth/login', { ...formData })
         .then((resp) => {
-          account.setTokenPair(resp)
+          account.setTokenPair(resp);
           return resp;
         });
     });

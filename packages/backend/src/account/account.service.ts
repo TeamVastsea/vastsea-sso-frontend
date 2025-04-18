@@ -80,7 +80,10 @@ export class AccountService {
     }
     const salt = randomBytes(128).toString('base64');
     const iterations = 1000;
-    const password = this.hashPwd(data.password, salt, iterations);
+    let password;
+    if (data.password) {
+      password = this.hashPwd(data.password, salt, iterations);
+    }
     return this.prisma.account
       .update({
         where: {
@@ -96,6 +99,10 @@ export class AccountService {
               avatar: data.profile.avatar,
             },
           },
+          active: data.active,
+        },
+        include: {
+          profile: true,
         },
       })
       .then((account) => {
@@ -122,6 +129,8 @@ export class AccountService {
         id: true,
         email: true,
         profile: true,
+        active: true,
+        createAt: true,
       },
     });
     return {
@@ -150,6 +159,7 @@ export class AccountService {
           id: true,
           email: true,
           profile: true,
+          active: true,
           role: {
             select: {
               id: true,
