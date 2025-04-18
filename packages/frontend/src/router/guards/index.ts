@@ -1,8 +1,8 @@
-import type { Router } from "vue-router";
-import authGuard from "./auth-guard";
+import type { Router } from 'vue-router';
+import authGuard from './auth-guard';
 
-const guards = [authGuard]
+const guards = [authGuard];
 
-export const setupGuard = (router: Router) => {
+export function setupGuard(router: Router) {
   guards.forEach(guard => guard(router));
 }

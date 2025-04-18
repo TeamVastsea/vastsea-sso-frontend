@@ -5,6 +5,11 @@ export default defineConfig({
   presets: [
     wind4({ dark: 'class' }),
     presetTypography(),
-    presetIcons(),
+    presetIcons({
+      collections: {
+        tabler: () => import('@iconify-json/tabler').then(i => i.default),
+        material: () => import('@iconify-json/material-symbols').then(i => i.default),
+      },
+    }),
   ],
 });

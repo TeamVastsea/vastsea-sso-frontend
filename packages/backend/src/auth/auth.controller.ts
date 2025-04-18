@@ -46,6 +46,7 @@ export class AuthController {
     const tokenPayload = await this.authService.createTokenPair(
       loginHandle.id.toString(),
     );
+    await this.authService.invokeTokenPair(loginHandle.id, tokenPayload);
     return tokenPayload;
   }
 
