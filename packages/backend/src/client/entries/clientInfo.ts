@@ -50,7 +50,7 @@ export class ClientList {
   @ApiProperty({
     description: '当前页的客户端',
     isArray: true,
-    type: () => Client,
+    type: () => ClientInfo,
   })
   datas: ClientInfo[];
 }

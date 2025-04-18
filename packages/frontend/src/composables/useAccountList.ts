@@ -1,9 +1,9 @@
 import type { CommonComposablesProps } from '@/types/common-composables';
 import type { MaybeRef, Ref } from 'vue';
-import { ref, setDevtoolsHook, unref, watch } from 'vue';
-import instance from './axios';
 import type { CreateAccountMininalDto } from './useAccount';
 import SuperJSON from 'superjson';
+import { ref, setDevtoolsHook, unref, watch } from 'vue';
+import instance from './axios';
 
 export type UseAccountList = CommonComposablesProps & {
   preId?: MaybeRef<bigint>;
@@ -57,36 +57,36 @@ export function useAccountList({ fetcher, preId: _preId, size: _size }: UseAccou
   };
   const remove = (id: bigint) => {
     return fetcher.delete<never, MininalAccount>(`/account/${id}`)
-    .then((account) => {
-      if(!data.value?.data){
-        return;
-      }
-      data.value.data = data.value?.data.map((localAccount) => {
-        if (localAccount.id === account.id.toString()) {
-          return {
-            ...localAccount,
-            active: false
+      .then((account) => {
+        if (!data.value?.data) {
+          return;
+        }
+        data.value.data = data.value?.data.map((localAccount) => {
+          if (localAccount.id === account.id.toString()) {
+            return {
+              ...localAccount,
+              active: false,
+            };
           }
+          return localAccount;
+        });
+        return account;
+      });
+  };
+  const update = (id: bigint, body: Partial<CreateAccountMininalDto & { active: boolean }>) => {
+    fetcher.patch<unknown, MininalAccount>(`/account/${id.toString()}`, SuperJSON.serialize(body).json)
+      .then((account) => {
+        if (!data.value) {
+          return;
         }
-        return localAccount
-      })
-      return account;
-    })
-  }
-  const update = (id:bigint, body: Partial<CreateAccountMininalDto & {active: boolean}>) => {
-    fetcher.patch<unknown,MininalAccount>(`/account/${id.toString()}`, SuperJSON.serialize(body).json)
-    .then((account) => {
-      if (!data.value){
-        return;
-      }
-      data.value.data = data.value.data.map((localData) => {
-        if(localData.id === account.id.toString()){
-          return getSafeData([account])[0]
-        }
-        return localData;
-      })
-    })
-  }
+        data.value.data = data.value.data.map((localData) => {
+          if (localData.id === account.id.toString()) {
+            return getSafeData([account])[0];
+          }
+          return localData;
+        });
+      });
+  };
   const onClickNext = (page: number) => {
     const len = data.value?.data.length ?? 0;
     const id = data.value?.data[Math.max(0, len - 1)].id;

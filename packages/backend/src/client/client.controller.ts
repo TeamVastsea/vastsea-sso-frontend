@@ -57,7 +57,7 @@ export class ClientController {
   ) {
     return this.clientService.createClient({
       ...createDto,
-      administrator: createDto.administrator
+      administrator: createDto.administrator && createDto.administrator.length
         ? createDto.administrator
         : [BigInt(accountId)],
     });

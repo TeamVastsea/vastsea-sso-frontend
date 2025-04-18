@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { MininalAccount } from '@/composables';
 import type { Ref } from 'vue';
-import { Modal, ModalContent, ModalHeader } from '@/components/modal';
+import { Modal, ModalContent, ModalHeader } from '@/components/ui/modal';
 import { useAccountList } from '@/composables';
 import { Grid, GridColumn, TinyButton, TinyPager } from '@opentiny/vue';
 import { useToggle } from '@vueuse/core';
