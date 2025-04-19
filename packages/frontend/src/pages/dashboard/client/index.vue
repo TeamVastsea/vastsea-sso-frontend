@@ -1,21 +1,41 @@
 <script lang="ts" setup>
+import type { Client, ClientInfo } from '@/composables';
 import { useModal } from '@/components/ui/modal';
 import { useClientList } from '@/composables';
 import { TinyButton, TinyGrid, TinyGridColumn } from '@opentiny/vue';
-import { h, onMounted } from 'vue';
+import { h, onMounted, ref } from 'vue';
+import ClientInfoModal from './components/client-info.vue';
 import createClientForm from './components/create-client-form.vue';
 
 const { data, getList, loading } = useClientList();
 
 const { createModal, removeCurrent } = useModal();
 
-const showRegisterModal = () => {
+const selectColumn = ref<string[]>([]);
+
+const showModal = <T extends new (...args: any) => any>(comp: T, props?: InstanceType<T>['$props']) => {
   createModal({
-    content: h(createClientForm),
+    content: h(comp, props),
     onHidden() {
       removeCurrent();
     },
   });
+};
+const onUpdateSuccess = (client: Client) => {
+  data.value = data.value.map((clientInfo) => {
+    if (clientInfo.id === client.id) {
+      return {
+        ...clientInfo,
+        ...client,
+      };
+    }
+    return clientInfo;
+  });
+  removeCurrent();
+};
+
+const onSelect = ({ selection }: { selection: ClientInfo[] }) => {
+  selectColumn.value = selection.map(info => info.id.toString());
 };
 
 onMounted(() => {
@@ -26,12 +46,16 @@ onMounted(() => {
 <template>
   <div class="size-full flex flex-col gap-2">
     <div class="size-fit basis-auto shrink-0 grow-0">
-      <tiny-button @click="showRegisterModal()">
+      <tiny-button @click="showModal(createClientForm)">
         注册客户端
+      </tiny-button>
+      <tiny-button @click="showModal(ClientInfoModal, { id: selectColumn, onSuccess: onUpdateSuccess })">
+        客户端信息
       </tiny-button>
     </div>
     <div class="flex-shrink grow basis-auto">
-      <tiny-grid :data="data" :loading="loading">
+      <tiny-grid :data="data" :loading="loading" :select-config="{ showHeader: false }" @select-change="onSelect">
+        <tiny-grid-column type="selection" />
         <tiny-grid-column field="id" title="ID" />
         <tiny-grid-column field="name" title="客户端名称" />
         <tiny-grid-column field="active" title="客户端状态">

@@ -5,3 +5,4 @@ export * from './useClientList';
 export * from './useInfiniteAccountList';
 export * from './useLogin';
 export * from './useSidebar';
+export * from './useClient';

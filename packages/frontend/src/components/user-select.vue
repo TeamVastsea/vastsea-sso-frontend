@@ -6,11 +6,12 @@ import { onMounted, ref, watch } from 'vue';
 
 const { data, load, loadMore, isLoading } = useInfiniteAccountList();
 const vInfiniteScroll = InfiniteScroll;
-const administratorId = ref<string[]>([]);
 const modelValue = defineModel<string[]>();
-watch(administratorId, ()=>{
-  modelValue.value = administratorId.value;
-})
+const administratorId = ref<string[]>(modelValue.value ?? []);
+
+watch(() => modelValue, () => {
+  administratorId.value = modelValue.value ?? [];
+}, { deep: true });
 
 onMounted(() => {
   load();
@@ -18,7 +19,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <tiny-select :loading="isLoading" v-model="administratorId" v-infinite-scroll="loadMore" multiple>
+  <tiny-select v-model="modelValue" v-infinite-scroll="loadMore" :loading="isLoading" multiple>
     <tiny-option v-for="option in data" :key="option.id" :value="option.id" :label="option.profile.nick" />
   </tiny-select>
 </template>
