@@ -11,7 +11,6 @@ const instance = axios.create({
     Authorization: `Bearer ${unref(account.accessToken)}`,
   },
 });
-const router = useRouter();
 instance.interceptors.request.use((config) => {
   return config;
 });
@@ -19,9 +18,9 @@ instance.interceptors.response.use((resp) => {
   return resp.data;
 }, (err) => {
   if (err.status === 401) {
+    history.go(0);
     account.accessToken = '';
     account.refreshToken = '';
-    router.replace({ name: 'dashboard-login' });
   }
 });
 

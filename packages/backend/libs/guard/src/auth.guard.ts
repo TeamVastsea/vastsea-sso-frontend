@@ -50,7 +50,7 @@ export class AuthGuard implements CanActivate {
     const { id } = this.jwt.decode<AccessTokenPayload>(token);
     const activeState = await this.auth.active(BigInt(id)).then(Boolean);
     if (!activeState) {
-      throw new HttpException('未登录', HttpStatus.BAD_REQUEST);
+      throw new HttpException('未登录', HttpStatus.UNAUTHORIZED);
     }
     const permissions = await this.permissions.getAccountPermission(
       BigInt(id),
