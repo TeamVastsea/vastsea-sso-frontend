@@ -34,6 +34,7 @@ export class ClientService {
       throw new HttpException('客户端已存在', HttpStatus.CONFLICT);
     }
     const id = await this.cnt.incr(ID_COUNTER.CLIENT);
+    console.log(id);
     const { clientId, clientSecret } = this.getClientPair();
     return this.prisma.client
       .create({
@@ -58,7 +59,8 @@ export class ClientService {
         return this.incrManagerClientTotal(
           accountList.map(({ id }) => id),
         ).then(() => client);
-      });
+      })
+      .then((client) => client);
   }
   async removeClient(id: bigint, actor: bigint, isSuper: boolean) {
     const client = await this.findClient({ id });

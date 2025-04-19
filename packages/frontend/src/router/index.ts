@@ -13,6 +13,15 @@ export const dashboardHomeChildren: RouteRecordRaw[] = [
       title: '账号管理',
     },
   },
+  {
+    name: 'ClientManage',
+    path: 'client',
+    component: () => import('@/pages/dashboard/client/index.vue'),
+    meta: {
+      auth: true,
+      title: '客户端管理',
+    },
+  },
 ];
 
 const routes: RouteRecordRaw[] = [
