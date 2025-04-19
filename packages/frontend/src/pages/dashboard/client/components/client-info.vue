@@ -2,16 +2,16 @@
 import type { Client, ClientInfo, CreateClientData, UpdateClient } from '@/composables';
 import UserSelect from '@/components/user-select.vue';
 import { useClient } from '@/composables';
-import { TinyButton, TinyCheckbox, TinyForm, TinyFormItem, TinyInput } from '@opentiny/vue';
+import { TinyButton, TinyCheckbox, TinyForm, TinyFormItem, TinyInput, TinyTabItem, TinyTabs } from '@opentiny/vue';
 import { onMounted, reactive, ref, watch } from 'vue';
 
 const { id, onSuccess } = defineProps<{
-  id: string[];
+  id: string;
   onSuccess?: (client: Client) => void;
 }>();
 const { fetchInfo, rules, update } = useClient();
 
-const cache = new Map<string, ClientInfo>();
+const cache = new Map<string, ClientInfo | Client>();
 const activeId = ref<string | null>(null);
 const data: UpdateClient = reactive({
   name: '',
@@ -21,12 +21,12 @@ const data: UpdateClient = reactive({
   administrator: [],
   active: false,
 });
-const setData = (info: ClientInfo) => {
+const setData = (info: ClientInfo | Client) => {
   data.name = info.name;
   data.desc = info.desc;
   data.avatar = info.avatar;
   data.redirect = info.redirect;
-  data.administrator = info.administrator.map(admin => admin.id);
+  data.administrator = 'administrator' in info ? info.administrator.map(admin => admin.id) : [];
   data.active = info.active;
 };
 const updateClient = (id: string | null, data: UpdateClient) => {
@@ -53,7 +53,7 @@ watch(activeId, () => {
 });
 
 onMounted(() => {
-  activeId.value = id[0];
+  activeId.value = id;
 });
 </script>
 
