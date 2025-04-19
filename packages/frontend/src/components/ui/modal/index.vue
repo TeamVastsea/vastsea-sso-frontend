@@ -1,13 +1,17 @@
 <script lang="ts" setup>
+import type { RendererElement } from 'vue';
 import { useMouse, useToggle } from '@vueuse/core';
-import { reactive, ref, unref, watch, type RendererElement } from 'vue';
+import { onUnmounted, reactive, ref, unref, watch } from 'vue';
 import { useProvideModalContext } from './constant';
 
-defineProps<{ to?: string|RendererElement }>();
+defineProps<{ to?: string | RendererElement }>();
+const emits = defineEmits<{
+  hidden: [];
+}>();
 const modelValue = defineModel<boolean>({ default: false });
 const isOpen = ref(unref(modelValue));
 const { x, y } = useMouse();
-const transformer = reactive({ x: 0, y: 0 });
+const transformer = reactive({ x: x.value, y: y.value });
 const open = () => {
   modelValue.value = true;
 };
@@ -21,6 +25,9 @@ watch(() => modelValue, () => {
   if (modelValue.value) {
     transformer.x = x.value;
     transformer.y = y.value;
+  }
+  if (!isOpen.value) {
+    emits('hidden');
   }
 }, { deep: true });
 

@@ -1,25 +1,32 @@
 <script lang="ts" setup>
-import createClientForm from './components/create-client-form.vue';
-import { Modal, ModalContent, ModalHeader } from '@/components/ui/modal';
+import { useModal } from '@/components/ui/modal';
 import { useClientList } from '@/composables';
 import { TinyButton, TinyGrid, TinyGridColumn } from '@opentiny/vue';
-import { useToggle } from '@vueuse/core';
-import { onMounted, ref } from 'vue';
+import { h, onMounted } from 'vue';
+import createClientForm from './components/create-client-form.vue';
 
 const { data, getList, loading } = useClientList();
-const showRegisterModal = ref(false);
-const toggleClientRegisteModal = useToggle(showRegisterModal);
 
-onMounted(()=>{
-  getList()
-})
+const { createModal, removeCurrent } = useModal();
 
+const showRegisterModal = () => {
+  createModal({
+    content: h(createClientForm),
+    onHidden() {
+      removeCurrent();
+    },
+  });
+};
+
+onMounted(() => {
+  getList();
+});
 </script>
 
 <template>
   <div class="size-full flex flex-col gap-2">
     <div class="size-fit basis-auto shrink-0 grow-0">
-      <tiny-button @click="toggleClientRegisteModal()">
+      <tiny-button @click="showRegisterModal()">
         注册客户端
       </tiny-button>
     </div>
@@ -34,13 +41,5 @@ onMounted(()=>{
         </tiny-grid-column>
       </tiny-grid>
     </div>
-    <modal v-model="showRegisterModal">
-      <modal-content>
-        <modal-header class="text-2xl mb-4">
-          创建客户端
-        </modal-header>
-        <create-client-form @ok="(client)=>data.push({...client,administrator: []})" />
-      </modal-content>
-    </modal>
   </div>
 </template>
