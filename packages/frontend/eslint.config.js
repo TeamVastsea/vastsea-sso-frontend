@@ -27,4 +27,5 @@ export default antfu({
   stylistic: {
     semi: true,
   },
+  unocss: true
 });
