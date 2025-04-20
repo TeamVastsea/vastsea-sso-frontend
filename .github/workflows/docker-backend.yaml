@@ -3,8 +3,8 @@ name: Build And Publish
 on:
   push:
     tags:
-      # 当且仅当推送 [a-zA-Z0-9]*\.[a-zA-Z0-9]*\.[a-zA-Z0-9]*\.backend 的时候会构建后端并发布
-      - "*.*.*.backend"
+      - "*.*.*-backend"
+      - "*.*.*-backend-.*"
 
 jobs:
   build_test:
