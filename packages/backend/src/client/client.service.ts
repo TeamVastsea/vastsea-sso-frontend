@@ -156,8 +156,10 @@ export class ClientService {
     queryAll?: boolean,
   ) {
     const total = !queryAll
-      ? this.redis.get(ACCOUNT_ASSIGN_CLIENT_TOTAL(accountId)).then(BigInt)
-      : this.redis.get(CLIENT_TOTAL()).then(BigInt);
+      ? this.redis
+          .get(ACCOUNT_ASSIGN_CLIENT_TOTAL(accountId))
+          .then((val) => BigInt(val ?? 0))
+      : this.redis.get(CLIENT_TOTAL()).then((val) => BigInt(val ?? 0));
     const datas = this.prisma.client.findMany({
       where: {
         id: {

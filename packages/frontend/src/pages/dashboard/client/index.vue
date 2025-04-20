@@ -44,8 +44,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="size-full flex flex-col gap-2">
-    <div class="h-fit basis-auto shrink-0 grow-0">
+  <div class="flex flex-col gap-2 size-full">
+    <div class="shrink-0 grow-0 basis-auto h-fit">
       <tiny-button @click="showModal(createClientForm)">
         注册客户端
       </tiny-button>

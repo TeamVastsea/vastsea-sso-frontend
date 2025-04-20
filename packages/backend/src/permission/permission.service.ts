@@ -233,17 +233,21 @@ export class PermissionService {
     clientId?: string,
     isSuper?: boolean,
   ) {
+    if (!isSuper && !clientId) {
+      throw new HttpException('参数错误', HttpStatus.BAD_REQUEST);
+    }
     const total = (
-      isSuper
+      !clientId && isSuper
         ? this.redis.get(PERMISSION_TOTAL)
         : this.redis.get(CLIENT_PERMISSION_TOTAL(clientId))
-    ).then(BigInt);
+    ).then((val) => BigInt(val ?? 0));
+
     const data = this.prisma.permission.findMany({
       where: {
         id: {
           gt: preId,
         },
-        clientId: isSuper ? undefined : clientId,
+        clientId: isSuper && !clientId ? undefined : clientId,
       },
       take: size,
     });
@@ -257,6 +261,7 @@ export class PermissionService {
     const roles = await this.prisma.account.findFirst({
       where: { id: account },
       select: {
+        email: true,
         role: {
           where: {
             clientId,
