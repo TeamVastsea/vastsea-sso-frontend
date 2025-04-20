@@ -69,27 +69,25 @@ watch(values, () => {
 </script>
 
 <template>
-  <combobox-root v-model="values" class="relative" :multiple="multiple" :default-open="defaultOpen" @update:model-value="(value) => onSelect(value)" >
+  <combobox-root v-model="values" class="relative" :multiple="multiple" :default-open="defaultOpen" @update:model-value="(value) => onSelect(value)">
     <combobox-anchor class="w-full">
-      <combobox-trigger class="w-full h-40px cursor-pointer">
+      <combobox-trigger class="h-40px w-full cursor-pointer">
         <slot name="trigger">
-            <div
-              class="
-                w-full h-full bg-zinc-50 border border-solid border-zinc-300 rounded-md
-                outline-size-0 py-0.5 px-2 cursor-pointer flex flex-wrap gap-2
-                dark:bg-zinc-950 dark:border-zinc-800 dark:text-zinc-100 items-center"
-            >
-              <div v-for="tag, idx in modelValue" :key="idx" class="w-fit h-full bg-blue-500 text-white px-2 py-1 rounded flex gap-0.5 items-center">
-                <span class="text-sm">{{ displayBehavior?.(tag as any) }}</span>
-                <div class="i-material-symbols:close" @click.stop="onRemove(tag)" />
-              </div>
+          <div
+            class="px-2 py-0.5 outline-size-0 border border-zinc-300 rounded-md border-solid bg-zinc-50 flex flex-wrap gap-2 h-full w-full cursor-pointer items-center dark:text-zinc-100 dark:border-zinc-800 dark:bg-zinc-950"
+          >
+            <div v-for="tag, idx in modelValue" :key="idx" class="text-white px-2 py-1 rounded bg-blue-500 flex gap-0.5 h-full w-fit items-center">
+              <span class="text-sm">{{ displayBehavior?.(tag as any) }}</span>
+              <div class="i-material-symbols:close" @click.stop="onRemove(tag)" />
             </div>
-          </slot>
+            <span v-if="!modelValue?.length" class="text-sm text-zinc-700 dark:text-zinc-300">{{ props.placeholder }}</span>
+          </div>
+        </slot>
       </combobox-trigger>
     </combobox-anchor>
-    <combobox-content class="z-10 w-[var(--reka-combobox-trigger-width)] h-[200px]" position="popper" :side-offset="16">
-      <div v-infinite-scroll="[onScrollBottom, { distance: 10 }]" class="w-full h-full overflow-auto">
-        <combobox-viewport class="bg-white flex flex-col gap-1 dark:bg-zinc-800 py-2 rounded overflow-auto">
+    <combobox-content class="h-[200px] w-[var(--reka-combobox-trigger-width)] z-10" position="popper" :side-offset="16">
+      <div v-infinite-scroll="[onScrollBottom, { distance: 10 }]" class="h-full w-full shadow overflow-auto">
+        <combobox-viewport class="py-2 rounded bg-white flex flex-col gap-1 overflow-auto dark:bg-zinc-800">
           <slot>
             <select-option v-for="option of renderOptions" :key="option.label" :label="option.label" :value="option.value" />
           </slot>
