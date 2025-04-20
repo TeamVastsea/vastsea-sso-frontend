@@ -1,0 +1,19 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: dockerfile
+    volumes:
+      - ./keys:/app/backend/keys
+      - ./config.toml:/app/backend/config.toml
+    environment:
+      DATABASE_URL: "file:./dev.db"
+      REDIRECT: "http://example.org"
+      VERSION: "1.0.0"
+      APP_NAME: "TEST_SSO"
+      CLIENT_ID: "SAJDOSAJDIAS"
+      CLIENT_SECRET: "HGIOAHGIOJASF"
+      REDIS_CLUSTER: false
+      COMMON_ERROR_REDIRECT: ""
+      SWAGGER_TITLE: ""
+      SWAGGER_DESC: ""
