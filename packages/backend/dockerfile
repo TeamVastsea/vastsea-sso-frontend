@@ -1,0 +1,55 @@
+# 
+# 开发阶段暂时不考虑 pgsql
+# CLIENT_ID             auth-server client-id 如果要部署集群所有节点应当相同
+# CLIENT_SECRET         auth-server client-id 如果要部署集群所有节点应当相同
+# REDIRECT              auth-server 前端重定向位置 (暂未使用, 日后会自举OAuth)
+# REDIS_CLUSTER         auth-server redis是否启用集群, 开启此项时请确保redis集群模式为Cluster,
+#                       且需要确保节点间可正常通信
+# SWAGGER_TITLE
+# SWAGGER_DESC
+# VERSION               SWAGGER 版本号
+# COMMON_ERROR_REDIRECT 通用错误重定向位置, 指向的应当是前端某一个页面
+# APP_NAME              JWT 颁发时 issuer 参数值. 如果要部署集群所有节点该值应当相同
+
+FROM node:current-alpine3.21 as builder
+
+WORKDIR /app/backend
+
+ADD . .
+RUN npm i -g pnpm && \
+    pnpm i --prefer-offline
+
+ENV DATABASE_URL          = ""
+ENV NODE_ENV              = "production"
+ENV REDIRECT              = ""
+ENV VERSION               = ""
+ENV APP_NAME              = ""
+ENV CLIENT_ID             = "" 
+ENV CLIENT_SECRET         = "" 
+ENV REDIS_CLUSTER         = ""
+ENV SWAGGER_TITLE         = ""
+ENV SWAGGER_DESC          = ""
+ENV COMMON_ERROR_REDIRECT = ""
+
+
+RUN npm i -g pnpm &&  \
+    pnpm i --prefer-offline && \
+    pnpm build
+
+FROM node:current-alpine3.21 as runner
+
+WORKDIR /app/backend
+
+COPY --from=builder /app/backend/node_modules ./node_modules
+COPY --from=builder /app/backend/package*.json ./
+COPY --from=builder /app/backend/dist ./dist
+
+RUN npm i -g pnpm && \
+    pnpm prisma migrate && \
+
+EXPOSE 3000
+
+VOLUME ["/app/backend/keys","/app/backend/config.toml"]
+
+CMD [ "node", "dist/main.js" ]
+
