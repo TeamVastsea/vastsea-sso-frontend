@@ -240,15 +240,14 @@ export class PermissionService {
       !clientId && isSuper
         ? this.redis.get(PERMISSION_TOTAL)
         : this.redis.get(CLIENT_PERMISSION_TOTAL(clientId))
-    )
-    .then(val => BigInt(val ?? 0));
-    
+    ).then((val) => BigInt(val ?? 0));
+
     const data = this.prisma.permission.findMany({
       where: {
         id: {
           gt: preId,
         },
-        clientId: (isSuper && !clientId) ? undefined : clientId,
+        clientId: isSuper && !clientId ? undefined : clientId,
       },
       take: size,
     });
@@ -262,6 +261,7 @@ export class PermissionService {
     const roles = await this.prisma.account.findFirst({
       where: { id: account },
       select: {
+        email: true,
         role: {
           where: {
             clientId,

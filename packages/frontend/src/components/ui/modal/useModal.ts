@@ -1,5 +1,5 @@
 import type { VNode } from 'vue';
-import { getCurrentInstance, h, nextTick, render } from 'vue';
+import { getCurrentInstance, h, render } from 'vue';
 import ModalContent from './content.vue';
 import Modal from './index.vue';
 

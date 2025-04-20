@@ -166,26 +166,27 @@ export class AppModule implements OnModuleInit {
     }
     console.clear();
     this.logger.log('管理员创建成功');
-    const client = !__TEST__
-      ? await this.client.createClient({
+    let client = await this.prisma.client.findFirst({
+      where: {
+        clientId: process.env.CLIENT_ID,
+      },
+    });
+    if (!client) {
+      client = await this.prisma.client.create({
+        data: {
+          id: await this.redis.incr(ID_COUNTER.CLIENT),
           name: 'AuthServer',
           redirect: process.env.REDIRECT,
-          administrator: [dbAdminId],
-        })
-      : await this.prisma.client.create({
-          data: {
-            id: await this.redis.incr(ID_COUNTER.CLIENT),
-            name: 'AuthServer',
-            redirect: process.env.REDIRECT,
-            administrator: {
-              connect: {
-                id: dbAdminId,
-              },
+          administrator: {
+            connect: {
+              id: dbAdminId,
             },
-            clientId: process.env.CLIENT_ID,
-            clientSecret: process.env.CLIENT_SECRET,
           },
-        });
+          clientId: process.env.CLIENT_ID,
+          clientSecret: process.env.CLIENT_SECRET,
+        },
+      });
+    }
     for (const p of BUILT_IN_PERMISSIONS) {
       await this.permission.createPermission(
         {

@@ -11,6 +11,12 @@ export interface Permission {
   id: string;
   clientPK: string;
 }
+export interface CreatePermission {
+  name: string;
+  desc: string;
+  clientId: string;
+  active: boolean;
+}
 export type PermissionList = List<Permission>;
 export interface UsePermission {
   size: number;
@@ -32,7 +38,7 @@ export function usePermission(
   const preId = ref<string | undefined>();
 
   // page -> preId;
-  const pagePreId = new Map<number,string>();
+  const pagePreId = new Map<number, string>();
 
   const getPermissionList = (clientId?: string, preId?: string) => {
     loading.value = true;
@@ -50,26 +56,59 @@ export function usePermission(
         loading.value = false;
       });
   };
-
-  const clickNext = (page: number) => {
-    if (!permissionList.value){
-      return;
-    }
-    const id = permissionList.value[permissionList.value.length-1].id;
-    preId.value = id.toString();
-    pagePreId.set(page,preId.value);
+  const fetchPermissionInfo = (id: string) => {
+    return instance.get<unknown, Permission>(`/permission/${id}`);
+  };
+  const createPermission = (data: CreatePermission) => {
+    loading.value = true;
+    return fetcher.post<unknown, Permission>(`/permission`, {
+      name: data.name,
+      desc: data.desc,
+      clientId: unref(data.clientId),
+      active: data.active,
+    } satisfies CreatePermission)
+      .then((permission) => {
+        permissionList.value?.push(permission);
+        permissionTotal.value = `${BigInt(permissionTotal.value) + 1n}`;
+      })
+      .finally(() => {
+        loading.value = false;
+      });
+  };
+  const updatePermission = (id: string, data: Partial<CreatePermission>) => {
+    loading.value = true;
+    return fetcher.patch(`/permission/${id}`, {
+      name: unref(data.name),
+      desc: unref(data.desc),
+      active: unref(data.active),
+      clientId: data.clientId
+    } satisfies Partial<CreatePermission>)
+    .finally(() => loading.value = false)
   }
 
+  const clickNext = (page: number) => {
+    if (!permissionList.value) {
+      return;
+    }
+    const id = permissionList.value[permissionList.value.length - 1].id;
+    preId.value = id.toString();
+    pagePreId.set(page, preId.value);
+  };
+
   const clickPrev = (cur: number) => {
-    if(!permissionList.value){
+    if (!permissionList.value) {
       return;
     }
     preId.value = pagePreId.get(cur);
-  }
-  const resetPreId= () => preId.value = undefined;
-  const setSize = (newSize: number) => permissionListPageSize.value = newSize;
+  };
+  const resetPreId = () => preId.value = undefined;
+  const setSize = (newSize: number) => {
+    permissionListPageSize.value = newSize;
+    pagePreId.clear();
+    preId.value = undefined;
+  };
   watch(() => _type, () => {
     type.value = unref(_type);
   });
-  return { getPermissionList, clickNext,clickPrev, resetPreId, setSize, permissionList, permissionTotal, loading,permissionListPageSize, preId: readonly(preId)};
+  return { getPermissionList, clickNext, clickPrev, resetPreId, setSize, createPermission, fetchPermissionInfo,updatePermission,permissionList, permissionTotal, loading, permissionListPageSize, preId: readonly(preId) };
 }

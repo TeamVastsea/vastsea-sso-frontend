@@ -6,7 +6,6 @@ import { vInfiniteScroll } from '@vueuse/components';
 import {
   ComboboxAnchor,
   ComboboxContent,
-  ComboboxPortal,
   ComboboxRoot,
   ComboboxTrigger,
   ComboboxViewport,
@@ -71,10 +70,10 @@ watch(values, () => {
 <template>
   <combobox-root v-model="values" class="relative" :multiple="multiple" :default-open="defaultOpen" @update:model-value="(value) => onSelect(value)">
     <combobox-anchor class="w-full">
-      <combobox-trigger class="h-40px w-full cursor-pointer">
+      <combobox-trigger class="group h-40px w-full">
         <slot name="trigger">
           <div
-            class="px-2 py-0.5 outline-size-0 border border-zinc-300 rounded-md border-solid bg-zinc-50 flex flex-wrap gap-2 h-full w-full cursor-pointer items-center dark:text-zinc-100 dark:border-zinc-800 dark:bg-zinc-950"
+            class="px-2 py-0.5 outline-size-0 border border-zinc-300 rounded-md border-solid bg-zinc-50 flex flex-wrap gap-2 h-full w-full cursor-pointer items-center dark:text-zinc-100 dark:border-zinc-800 dark:bg-zinc-950 group-data-[disabled]:cursor-not-allowed"
           >
             <div v-for="tag, idx in modelValue" :key="idx" class="text-white px-2 py-1 rounded bg-blue-500 flex gap-0.5 h-full w-fit items-center">
               <span class="text-sm">{{ displayBehavior?.(tag as any) }}</span>
@@ -86,8 +85,8 @@ watch(values, () => {
       </combobox-trigger>
     </combobox-anchor>
     <combobox-content class="h-[200px] w-[var(--reka-combobox-trigger-width)] z-10" position="popper" :side-offset="16">
-      <div v-infinite-scroll="[onScrollBottom, { distance: 10 }]" class="h-full w-full shadow overflow-auto">
-        <combobox-viewport class="py-2 rounded bg-white flex flex-col gap-1 overflow-auto dark:bg-zinc-800">
+      <div v-infinite-scroll="[onScrollBottom, { distance: 10 }]" class="bg-white h-full w-full shadow overflow-auto dark:bg-zinc-800">
+        <combobox-viewport class="py-2 rounded flex flex-col gap-1 overflow-auto">
           <slot>
             <select-option v-for="option of renderOptions" :key="option.label" :label="option.label" :value="option.value" />
           </slot>
