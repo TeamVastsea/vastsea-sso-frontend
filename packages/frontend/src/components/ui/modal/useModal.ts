@@ -33,6 +33,7 @@ export function useModal() {
       return;
     }
     render(null, cur.anchor);
+    cur.anchor.remove();
   };
   const createModal = (
     { content, onHidden, onDestory }: CreateModalOptions,
