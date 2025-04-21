@@ -1,8 +1,19 @@
 import type { CommonComposablesProps } from '@/types/common-composables';
 import type { MaybeRef } from 'vue';
-import { Roles } from '@opentiny/vue';
-import { readonly, ref, unref, watch } from 'vue';
+import type { Permission } from './usePermission';
+import { ref, unref, watch } from 'vue';
 import instance from './axios';
+
+export interface RoleInfoItem {
+  id: string;
+  name: string;
+  desc: string;
+  clientId: string;
+  clientPk: string;
+  permission: Permission[];
+  parent: Pick<MininalRole, 'id' | 'name' | 'clientId'>[];
+  children: Pick<MininalRole, 'id' | 'name' | 'clientId'>[];
+}
 
 export interface CreateRole {
   clientId: string;
@@ -11,6 +22,7 @@ export interface CreateRole {
   name: string;
   permissions: string[];
 }
+
 export interface MininalRole {
   clientId: string;
   id: string;
@@ -44,12 +56,15 @@ export function useRole({
   const createRole = (data: MaybeRef<CreateRole>) => {
     return fetcher.post<never, MininalRole>('/role', unref(data));
   };
-  const getRoleList = ({all,clientId}:{all?:boolean,clientId?:string}={all:false, clientId: undefined}) => {
+  const getRoleInfo = (roleId: string) => {
+    return fetcher.get<RoleInfoItem>(`/role/${roleId}`);
+  };
+  const getRoleList = ({ all, clientId }: { all?: boolean; clientId?: string } = { all: false, clientId: undefined }) => {
     return fetcher.get<unknown, List<MininalRole>>(`/role`, {
       params: {
         preId: unref(preId),
         size: all ? undefined : unref(roleListPageSize),
-        clientId: clientId,
+        clientId,
       },
     })
       .then((resp) => {
@@ -57,9 +72,9 @@ export function useRole({
           roleList.value = resp.data;
         }
         if (type === 'scroll') {
-          const newData= resp.data.filter((resp)=>{
-            return !roleList.value.map(role => role.id).includes(resp.id)
-          })
+          const newData = resp.data.filter((resp) => {
+            return !roleList.value.map(role => role.id).includes(resp.id);
+          });
           roleList.value.push(...newData);
         }
         roleTotal.value = resp.total.toString();
@@ -89,5 +104,5 @@ export function useRole({
   watch([preId, roleListPageSize, curPage, clientId], () => {
     getRoleList();
   }, { deep: true });
-  return { roleList, roleTotal, fetcher, preId, roleListPageSize, curPage, clientId, setPage, createRole, getRoleList, setSize, setClientId };
+  return { roleList, roleTotal, fetcher, preId, roleListPageSize, curPage, clientId, setPage, createRole, getRoleList, setSize, setClientId, getRoleInfo };
 }

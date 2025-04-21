@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import type { MininalRole } from '@/composables';
 import ClientSelect from '@/components/client-select.vue';
 import { GeneralLayout, useModal } from '@/components/ui';
-import { useRole, type MininalRole } from '@/composables';
+import { useRole } from '@/composables';
 import { TinyGrid, TinyGridColumn, TinyPager } from '@opentiny/vue';
 import { h, onMounted, ref, watch } from 'vue';
 import AddRoleForm from './components/add-role-form.vue';
+import RoleForm from './components/role-form.vue';
 
 const { createModal, removeCurrent } = useModal();
 const values = ref<{ clientId: string; name: string }[]>([]);
@@ -13,13 +15,21 @@ const onCreateSuccess = (roles: MininalRole[]) => {
   roleList.value.push(...roles);
   removeCurrent();
   // TODO: notify.
-}
+};
 const showCreateRoleModal = () => {
   createModal({
-    content: h(AddRoleForm, {onOk:onCreateSuccess}),
+    content: h(AddRoleForm, { onOk: onCreateSuccess }),
     onHidden() {
       removeCurrent();
     },
+  });
+};
+const renderModal = <C extends new (...args: any) => any>(
+  comp: C,
+  props?: InstanceType<C>['$props'],
+) => {
+  createModal({
+    content: h(comp, props),
   });
 };
 
@@ -59,8 +69,8 @@ onMounted(() => {
         </tiny-grid-column>
         <tiny-grid-column title="action">
           <template #default="{ row }">
-            <tiny-button>
-              修改
+            <tiny-button @click="() => renderModal(RoleForm, { roleId: row.id })">
+              详情
             </tiny-button>
           </template>
         </tiny-grid-column>
@@ -72,8 +82,8 @@ onMounted(() => {
         :current-page="curPage"
         :total="Number.parseInt(roleTotal ?? '0')"
         mode="simple"
-        @next-click="(cur)=>setPage(cur,'next')"
-        @prev-click="(cur)=>setPage(cur,'prev')"
+        @next-click="(cur) => setPage(cur, 'next')"
+        @prev-click="(cur) => setPage(cur, 'prev')"
         @size-change="setSize"
       />
     </div>
