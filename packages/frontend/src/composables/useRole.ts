@@ -11,7 +11,7 @@ export interface RoleInfoItem {
   clientId: string;
   clientPk: string;
   permission: Permission[];
-  parent: Pick<MininalRole, 'id' | 'name' | 'clientId'>[];
+  parents: Pick<MininalRole, 'id' | 'name' | 'clientId'>[];
   children: Pick<MininalRole, 'id' | 'name' | 'clientId'>[];
 }
 
@@ -57,7 +57,7 @@ export function useRole({
     return fetcher.post<never, MininalRole>('/role', unref(data));
   };
   const getRoleInfo = (roleId: string) => {
-    return fetcher.get<RoleInfoItem>(`/role/${roleId}`);
+    return fetcher.get<unknown, RoleInfoItem>(`/role/${roleId}`);
   };
   const getRoleList = ({ all, clientId }: { all?: boolean; clientId?: string } = { all: false, clientId: undefined }) => {
     return fetcher.get<unknown, List<MininalRole>>(`/role`, {
