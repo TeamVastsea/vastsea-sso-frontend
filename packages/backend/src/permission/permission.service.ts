@@ -232,11 +232,12 @@ export class PermissionService {
     preId?: bigint,
     clientId?: string,
     isSuper?: boolean,
+    name?: string,
   ) {
     if (!isSuper && !clientId) {
       throw new HttpException('参数错误', HttpStatus.BAD_REQUEST);
     }
-    const total = (
+    let total = (
       !clientId && isSuper
         ? this.redis.get(PERMISSION_TOTAL)
         : this.redis.get(CLIENT_PERMISSION_TOTAL(clientId))
@@ -248,9 +249,21 @@ export class PermissionService {
           gt: preId,
         },
         clientId: isSuper && !clientId ? undefined : clientId,
+        name: {
+          contains: name,
+        },
       },
       take: size,
     });
+    if (name) {
+      total = Promise.resolve(
+        BigInt(
+          (await this.prisma.permission.count({
+            where: { name: { contains: name } },
+          })) ?? 0,
+        ),
+      );
+    }
     return {
       total: await total,
       data: await data,

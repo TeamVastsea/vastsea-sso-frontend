@@ -7,8 +7,8 @@ import { usePermission } from '@/composables';
 import { TinyButton, TinyGrid, TinyGridColumn, TinyPager } from '@opentiny/vue';
 import { watchDebounced } from '@vueuse/core';
 import { h, onMounted, ref, unref } from 'vue';
-import AddPermissionForm from './components/permission-form.vue';
 import { useRouter } from 'vue-router';
+import AddPermissionForm from './components/permission-form.vue';
 
 const values = ref<{ clientId: string; name: string }[]>([]);
 
@@ -47,16 +47,18 @@ const router = useRouter();
 const createPermission = (permission: CreatePermission) => {
   create(permission).then(removeCurrent);
 };
-const updatePermission = (id:string, permission: Partial<CreatePermission>) => {
+const updatePermission = (id: string, permission: Partial<CreatePermission>) => {
   update(id, permission)
-  .then(()=>{router.go(0)})
+    .then(() => {
+      router.go(0);
+    });
 };
 const openUpdateModal = (id: string) => {
   fetchPermissionInfo(id)
     .then((permission) => {
       renderModal(
         AddPermissionForm,
-        { title: '修改权限',  submitBehavior: (data)=>updatePermission(id,data), permission },
+        { title: '修改权限', submitBehavior: data => updatePermission(id, data), permission },
       );
     });
 };
@@ -95,13 +97,12 @@ onMounted(() => {
     <div class="flex shrink-0 grow-0 basis-auto gap-2 h-fit items-center">
       <div class="flex gap-2 w-full">
         <div
-          class="hover:bg-zinc-200 px-3 flex items-center rounded cursor-pointer transition dark:hover:bg-zinc-800 "
+          class="px-3 rounded flex cursor-pointer transition items-center hover:bg-zinc-200 dark:hover:bg-zinc-800"
           @click="() => renderModal(AddPermissionForm, { title: '添加权限', readonly: false, submitBehavior: createPermission })"
         >
-          <div class="i-material-symbols:add">
+          <div class="i-material-symbols:add" />
         </div>
-        </div>
-        <div class="max-w-[400px] min-w-[200px] h-full">
+        <div class="h-full max-w-[400px] min-w-[200px]">
           <client-select v-model="values" />
         </div>
       </div>

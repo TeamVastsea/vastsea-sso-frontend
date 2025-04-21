@@ -174,32 +174,51 @@ export class RoleService {
       include,
     });
   }
-  findRoleList(size: number, preId?: bigint, clientId?: string, all?: boolean) {
+  findRoleList(
+    size: number,
+    preId?: bigint,
+    clientId?: string,
+    all?: boolean,
+    name?: string,
+  ) {
     if (!all && !clientId) {
       throw new HttpException('参数错误', HttpStatus.BAD_REQUEST);
     }
-    const rawKey = all
-      ? this.redis.get(ROLE_TOTAL)
-      : this.redis.get(CLIENT_ROLE_TOTAL(clientId));
-    const total = rawKey.then(BigInt);
+    const rawKey =
+      all && !clientId
+        ? this.redis.get(ROLE_TOTAL)
+        : this.redis.get(CLIENT_ROLE_TOTAL(clientId));
+    let total = rawKey.then((val) => {
+      return BigInt(val ?? 0);
+    });
     const data = this.prisma.role.findMany({
       where: {
         id: {
           gt: preId,
         },
-        clientId: all ? undefined : clientId,
+        clientId: all && !clientId ? undefined : clientId,
+        name: {
+          contains: name,
+        },
       },
       take: size,
     });
-    return data
-      .then((data) => {
-        return {
-          data,
-        };
-      })
-      .then(({ data }) => {
-        return total.then((total) => ({ data, total }));
+    if (name) {
+      total = this.prisma.role
+        .count({
+          where: {
+            name: {
+              contains: name,
+            },
+          },
+        })
+        .then((val) => BigInt(val ?? 0));
+    }
+    return data.then((data) => {
+      return total.then((total) => {
+        return { data, total };
       });
+    });
   }
   /**
    *

@@ -41,8 +41,9 @@ const onSelect = (value: AcceptableValue) => {
     values.value = Array.isArray(value) ? value : [value];
     return;
   }
-  if (!values.value.includes(value)) {
-    values.value.push(value);
+  const selectedValue = Array.isArray(value) ? value[0] : value;
+  if (!values.value.includes(selectedValue)) {
+    values.value.push(selectedValue);
   }
 };
 const onRemove = (value: AcceptableValue) => {
@@ -63,7 +64,7 @@ watch(options, () => {
   renderOptions.value = options.value ?? [];
 }, { immediate: true });
 watch(values, () => {
-  modelValue.value = values.value;
+  modelValue.value = values.value.filter(val => val !== undefined);
 }, { deep: true });
 </script>
 

@@ -15,7 +15,6 @@ export const createRole = z.object({
     .array(z.bigint({ coerce: true }))
     .default([])
     .describe('角色的权限'),
-  isDefault: z.boolean().default(false),
 });
 
 export class CreateRole extends createZodDto(createRole) {}

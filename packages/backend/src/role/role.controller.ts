@@ -96,7 +96,26 @@ export class RoleController {
     rhs: { op: Operator.HAS, expr: 'ROLE::QUERY::INFO::*' },
   })
   findRoleInfo(@Param('id', BigIntPipe) id: bigint) {
-    return this.roleService.findRole({ id });
+    return this.roleService.findRole(
+      { id },
+      {
+        permission: true,
+        parents: {
+          select: {
+            id: true,
+            name: true,
+            clientId: true,
+          },
+        },
+        children: {
+          select: {
+            id: true,
+            name: true,
+            clientId: true,
+          },
+        },
+      },
+    );
   }
 
   @Auth()
@@ -111,10 +130,16 @@ export class RoleController {
     rhs: { op: Operator.HAS, expr: 'ROLE::QUERY::LIST::*' },
   })
   findRoleList(
-    @Param('clientId') clientId: string,
-    @Query('preId', BigIntPipe) preId: bigint,
-    @Query('size', ParseIntPipe) size: number,
+    @Query('clientId') clientId: string,
+    @Query('preId', new BigIntPipe({ optional: true })) preId: bigint,
+    @Query('size', new ParseIntPipe({optional: true})) size: number,
+    @PermissionJudge({
+      op: Operator.HAS,
+      expr: '*',
+    })
+    getAll: boolean,
+    @Query('name') name?: string,
   ) {
-    return this.roleService.findRoleList(size, preId, clientId);
+    return this.roleService.findRoleList(size, preId, clientId, getAll, name);
   }
 }
