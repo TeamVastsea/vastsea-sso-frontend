@@ -25,12 +25,21 @@ export const dashboardHomeChildren: RouteRecordRaw[] = [
   {
     name: 'PermissionManage',
     path: 'permission',
-    component: ()=>import('@/pages/dashboard/permission/index.vue'),
-    meta:{
-      auth:true,
-      title: '权限管理'
-    }
-  }
+    component: () => import('@/pages/dashboard/permission/index.vue'),
+    meta: {
+      auth: true,
+      title: '权限管理',
+    },
+  },
+  {
+    name: 'RoleManage',
+    path: 'role',
+    component: () => import('@/pages/dashboard/role/index.vue'),
+    meta: {
+      auth: true,
+      title: '角色管理',
+    },
+  },
 ];
 
 const routes: RouteRecordRaw[] = [

@@ -36,19 +36,25 @@ export function usePermission(
   const type = ref(unref(_type));
   const loading = ref(false);
   const preId = ref<string | undefined>();
+  const curPage = ref(1);
 
   // page -> preId;
   const pagePreId = new Map<number, string>();
 
-  const getPermissionList = (clientId?: string, preId?: string) => {
+  const getPermissionList = (clientId?: string, preId?: string, all?: boolean) => {
     loading.value = true;
-    return fetcher.get<never, PermissionList>('/permission', { params: { clientId, preId, size: unref(permissionListPageSize) } })
+    return fetcher.get<never, PermissionList>('/permission', { params: { clientId, preId, size: all ? undefined : unref(permissionListPageSize) } })
       .then((resp) => {
-        if (unref(type) === 'page') {
+        if (!permissionList.value) {
           permissionList.value = resp.data;
         }
-        if (unref(type) === 'scroll') {
-          permissionList.value = resp.data;
+        else {
+          if (unref(type) === 'page') {
+            permissionList.value = resp.data;
+          }
+          if (unref(type) === 'scroll') {
+            permissionList.value.push(...resp.data.filter((permission) => !permissionList.value?.map(permission => permission.id).includes(permission.id)));
+          }
         }
         permissionTotal.value = resp.total.toString();
       })
@@ -56,6 +62,12 @@ export function usePermission(
         loading.value = false;
       });
   };
+
+  const search = (name: string, clientId: string) => {
+    return fetcher.get<never, PermissionList>('/permission', { params: { name, clientId } })
+      .then(resp => resp.data);
+  };
+
   const fetchPermissionInfo = (id: string) => {
     return instance.get<unknown, Permission>(`/permission/${id}`);
   };
@@ -81,10 +93,10 @@ export function usePermission(
       name: unref(data.name),
       desc: unref(data.desc),
       active: unref(data.active),
-      clientId: data.clientId
+      clientId: data.clientId,
     } satisfies Partial<CreatePermission>)
-    .finally(() => loading.value = false)
-  }
+      .finally(() => loading.value = false);
+  };
 
   const clickNext = (page: number) => {
     if (!permissionList.value) {
@@ -93,6 +105,7 @@ export function usePermission(
     const id = permissionList.value[permissionList.value.length - 1].id;
     preId.value = id.toString();
     pagePreId.set(page, preId.value);
+    curPage.value = page;
   };
 
   const clickPrev = (cur: number) => {
@@ -107,8 +120,16 @@ export function usePermission(
     pagePreId.clear();
     preId.value = undefined;
   };
+  const loadMore = (clientId: string) => {
+    preId.value = pagePreId.get(curPage.value);
+    clickNext(curPage.value + 1);
+    getPermissionList(clientId, preId.value);
+  };
+  const resetPage = () => {
+    curPage.value = 1;
+  };
   watch(() => _type, () => {
     type.value = unref(_type);
   });
-  return { getPermissionList, clickNext, clickPrev, resetPreId, setSize, createPermission, fetchPermissionInfo,updatePermission,permissionList, permissionTotal, loading, permissionListPageSize, preId: readonly(preId) };
+  return { resetPage, search, loadMore, getPermissionList, clickNext, clickPrev, resetPreId, setSize, createPermission, fetchPermissionInfo, updatePermission, permissionList, permissionTotal, loading, permissionListPageSize, preId: readonly(preId) };
 }

@@ -4,7 +4,7 @@ import { useClientList } from '@/composables';
 import { noop } from '@vueuse/core';
 import { computed, onMounted, ref, watch } from 'vue';
 
-const { placeholder = '筛选的客户端' } = defineProps<{ placeholder?: string }>();
+const { placeholder = '筛选的客户端', multiple = false } = defineProps<{ placeholder?: string; multiple?: boolean }>();
 
 const modelValue = defineModel<{ clientId: string; name: string }[]>();
 
@@ -22,7 +22,7 @@ const selectOptions = computed(() => {
 });
 
 watch(values, () => {
-  modelValue.value = values.value;
+  modelValue.value = values.value.filter(value => value !== undefined);
 }, { deep: true });
 
 onMounted(() => {
@@ -33,6 +33,7 @@ onMounted(() => {
 <template>
   <ui-select
     v-model="values"
+    :multiple="multiple"
     :placeholder="placeholder"
     :options="selectOptions"
     :display-behavior="(val) => val.name"

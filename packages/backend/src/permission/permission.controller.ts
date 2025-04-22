@@ -239,6 +239,7 @@ export class PermissionController {
     @Query('clientId') clientId: string,
     @Query('preId', new BigIntPipe({ optional: true })) preId: bigint,
     @Query('size', new DefaultValuePipe(20), ParseIntPipe) size: number,
+    @Query('name') name: string,
     @PermissionJudge({
       lhs: { op: Operator.HAS, expr: '*' },
       op: Operator.OR,
@@ -251,6 +252,7 @@ export class PermissionController {
       preId,
       clientId,
       isSuper,
+      name,
     );
   }
 }

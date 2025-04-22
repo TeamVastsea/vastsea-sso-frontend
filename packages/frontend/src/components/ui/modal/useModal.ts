@@ -5,7 +5,7 @@ import Modal from './index.vue';
 
 export interface ModalInstance {
   modal: VNode;
-  anchor: HTMLDivElement;
+  anchor: HTMLElement;
 }
 let instances: ModalInstance[] = [];
 
@@ -15,8 +15,42 @@ export interface CreateModalOptions {
   onDestory?: (vnode: VNode) => void;
 }
 
+const ANCHOR_SYMBOl = Symbol('anchor');
+let flag = false;
+let x: number = 0;
+let y: number = 0;
 export function useModal() {
   const appContext = getCurrentInstance()?.appContext;
+  const isAnchor = (el: Element): el is HTMLElement & { anchor: symbol } => Object.keys(el).includes('anchor') && (el as any).anchor === ANCHOR_SYMBOl;
+  const createAnchor = () => {
+    const bodyChildren = document.body.children;
+    if (Array.from(bodyChildren).some(isAnchor)) {
+      return Array.from(bodyChildren).filter(isAnchor)[0];
+    }
+    const anchor: HTMLDivElement = document.createElement('div');
+    anchor.style.position = 'fixed';
+    anchor.style.display = 'none';
+    anchor.style.top = '0';
+    anchor.style.bottom = '0';
+    anchor.style.width = '100vw';
+    anchor.style.height = '100vh';
+    anchor.style.zIndex = '10';
+    Object.defineProperty(anchor, 'anchor', { value: ANCHOR_SYMBOl });
+    return anchor;
+  };
+  const anchor = createAnchor();
+  const bodyChildren = document.body.children;
+  if (!flag) {
+    flag = true;
+    document.body.addEventListener('mousemove', (ev) => {
+      const e = ev as MouseEvent;
+      x = e.pageX;
+      y = e.pageY;
+    });
+  }
+  if (!Array.from(bodyChildren).some(isAnchor)) {
+    document.body.appendChild(anchor);
+  }
   const getCurrentModal = () => {
     return instances[0];
   };
@@ -26,6 +60,7 @@ export function useModal() {
   const remove = (instance: ModalInstance) => {
     const { anchor } = instance;
     render(null, anchor);
+    anchor.style.display = 'none';
   };
   const removeCurrent = () => {
     const cur = getCurrentModal();
@@ -33,24 +68,18 @@ export function useModal() {
       return;
     }
     render(null, cur.anchor);
+    cur.anchor.style.display = 'none';
   };
   const createModal = (
     { content, onHidden, onDestory }: CreateModalOptions,
   ) => {
-    const anchor = document.createElement('div');
-    anchor.style.position = 'fixed';
-    anchor.style.display = 'block';
-    anchor.style.top = '0';
-    anchor.style.bottom = '0';
-    anchor.style.width = '100vw';
-    anchor.style.height = '100vh';
-    anchor.style.zIndex = '10';
-    document.body.appendChild(anchor);
     const modal = h(
       Modal,
       {
         to: anchor,
         modelValue: true,
+        initX: x,
+        initY: y,
         onVnodeUnmounted(vnode) {
           onDestory?.(vnode);
         },
@@ -62,7 +91,7 @@ export function useModal() {
           onHidden?.(instance);
           setTimeout(() => {
             instance.forEach((instance) => {
-              instance.anchor.remove();
+              // instance.anchor.remove();
               remove(instance);
             });
             instances = instances.filter(_instance => !instance.includes(_instance));
@@ -81,6 +110,7 @@ export function useModal() {
       return;
     }
     modal.appContext = appContext;
+    anchor.style.display = 'block';
     render(modal, anchor);
     instances.push({ modal, anchor });
   };

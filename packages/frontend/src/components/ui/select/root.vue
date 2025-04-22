@@ -41,8 +41,9 @@ const onSelect = (value: AcceptableValue) => {
     values.value = Array.isArray(value) ? value : [value];
     return;
   }
-  if (!values.value.includes(value)) {
-    values.value.push(value);
+  const selectedValue = Array.isArray(value) ? value[0] : value;
+  if (!values.value.includes(selectedValue)) {
+    values.value.push(selectedValue);
   }
 };
 const onRemove = (value: AcceptableValue) => {
@@ -63,7 +64,7 @@ watch(options, () => {
   renderOptions.value = options.value ?? [];
 }, { immediate: true });
 watch(values, () => {
-  modelValue.value = values.value;
+  modelValue.value = values.value.filter(val => val !== undefined);
 }, { deep: true });
 </script>
 
@@ -85,8 +86,8 @@ watch(values, () => {
       </combobox-trigger>
     </combobox-anchor>
     <combobox-content class="h-[200px] w-[var(--reka-combobox-trigger-width)] z-10" position="popper" :side-offset="16">
-      <div v-infinite-scroll="[onScrollBottom, { distance: 10 }]" class="bg-white h-full w-full shadow overflow-auto dark:bg-zinc-800">
-        <combobox-viewport class="py-2 rounded flex flex-col gap-1 overflow-auto">
+      <div v-infinite-scroll="[onScrollBottom, { distance: 10 }]" class="bg-white h-fit w-full shadow overflow-auto dark:bg-zinc-800">
+        <combobox-viewport class="rounded flex flex-col gap-1 overflow-auto">
           <slot>
             <select-option v-for="option of renderOptions" :key="option.label" :label="option.label" :value="option.value" />
           </slot>
