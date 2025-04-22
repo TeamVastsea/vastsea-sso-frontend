@@ -22,7 +22,7 @@ import { AccountService } from './account/account.service';
 import { randomBytes } from 'crypto';
 import { AutoRedis } from '@app/decorator';
 import Redis, { Cluster } from 'ioredis';
-import { ID_COUNTER } from '@app/constant';
+import { CLIENT_TOTAL, ID_COUNTER } from '@app/constant';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { RequireClientPairGuard } from '@app/guard';
 import { ClientService } from './client/client.service';
@@ -186,6 +186,7 @@ export class AppModule implements OnModuleInit {
           clientSecret: process.env.CLIENT_SECRET,
         },
       });
+      await this.redis.incr(CLIENT_TOTAL());
     }
     for (const p of BUILT_IN_PERMISSIONS) {
       await this.permission.createPermission(

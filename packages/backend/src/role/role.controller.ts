@@ -132,7 +132,7 @@ export class RoleController {
   findRoleList(
     @Query('clientId') clientId: string,
     @Query('preId', new BigIntPipe({ optional: true })) preId: bigint,
-    @Query('size', new ParseIntPipe({optional: true})) size: number,
+    @Query('size', new ParseIntPipe({ optional: true })) size: number,
     @PermissionJudge({
       op: Operator.HAS,
       expr: '*',
