@@ -46,7 +46,7 @@ const onClickSubmit = () => {
   }
 
   form.value.validate()
-    .then((ok) => {
+    .then((ok: boolean) => {
       if (!ok) {
         return;
       }
