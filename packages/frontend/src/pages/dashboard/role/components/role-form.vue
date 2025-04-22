@@ -66,7 +66,7 @@ onMounted(() => {
           展示继承关系
         </tiny-button>
       </tiny-form-item>
-      <tiny-form-item v-if="!readonlyField.length">
+      <tiny-form-item v-if="!readonlyField.length && !readonlyAll">
         <tiny-button type="primary">
           提交修改
         </tiny-button>
