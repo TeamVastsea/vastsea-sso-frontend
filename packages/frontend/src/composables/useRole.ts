@@ -80,7 +80,7 @@ export function useRole({
         roleTotal.value = resp.total.toString();
       });
   };
-  const updateRole = (id: string, data: Partial<CreateRole>) => {
+  const updateRole = (id: string, data: Partial<CreateRole & { active: boolean }>) => {
     return fetcher.patch<never, MininalRole>(`/role/${id}`, data);
   };
   const setPage = (page: number, type: 'next' | 'prev') => {

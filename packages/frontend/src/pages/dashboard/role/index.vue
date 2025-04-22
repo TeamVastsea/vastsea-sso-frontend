@@ -45,6 +45,21 @@ const onUpdate = (id: string, info: Partial<CreateRole>) => {
       });
     });
 };
+
+const updateActive = (id: string, clientId: string, active: boolean) => {
+  updateRole(id, { active, clientId })
+    .then((resp) => {
+      roleList.value = roleList.value.map((role) => {
+        if (role.id !== resp.id) {
+          return role;
+        }
+        return {
+          ...role,
+          ...resp,
+        };
+      });
+    });
+};
 watch(values, () => {
   setClientId(values.value[0]?.clientId);
 }, { deep: true });
@@ -86,6 +101,9 @@ onMounted(() => {
             </tiny-button>
             <tiny-button @click="() => renderModal(RoleForm, { roleId: row.id, readonlyAll: false, readonlyField: ['id'], submitBehavior: onUpdate })">
               修改
+            </tiny-button>
+            <tiny-button @click="() => updateActive(row.id, row.clientId, !row.active)">
+              {{ row.active ? '禁用' : '启用' }}
             </tiny-button>
           </template>
         </tiny-grid-column>
