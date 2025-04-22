@@ -136,6 +136,18 @@ export class RoleService {
           .catch((err) => {
             throw err;
           });
+    const targetRoles = data.parent
+      ? await this.prisma.role.findMany({
+          where: {
+            id: {
+              in: data.parent,
+            },
+          },
+          select: {
+            id: true,
+          },
+        })
+      : undefined;
     return this.prisma.role
       .update({
         where: {
@@ -146,7 +158,14 @@ export class RoleService {
           desc: data.desc,
           permission: (await permissions)
             ? {
+                set: [],
                 connect: await permissions,
+              }
+            : undefined,
+          parents: targetRoles
+            ? {
+                set: [],
+                connect: targetRoles,
               }
             : undefined,
           client: targetClient
@@ -157,6 +176,10 @@ export class RoleService {
               }
             : undefined,
           clientId: targetClient.clientId,
+          active: data.active,
+        },
+        include: {
+          parents: true,
         },
       })
       .then((role) => role);
