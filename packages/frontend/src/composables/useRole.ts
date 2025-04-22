@@ -80,6 +80,9 @@ export function useRole({
         roleTotal.value = resp.total.toString();
       });
   };
+  const updateRole = (id: string, data: Partial<CreateRole>) => {
+    return fetcher.patch<never, MininalRole>(`/role/${id}`, data);
+  };
   const setPage = (page: number, type: 'next' | 'prev') => {
     curPage.value = page;
     if (type === 'next') {
@@ -104,5 +107,5 @@ export function useRole({
   watch([preId, roleListPageSize, curPage, clientId], () => {
     getRoleList();
   }, { deep: true });
-  return { roleList, roleTotal, fetcher, preId, roleListPageSize, curPage, clientId, setPage, createRole, getRoleList, setSize, setClientId, getRoleInfo };
+  return { roleList, roleTotal, fetcher, preId, roleListPageSize, curPage, clientId, setPage, createRole, getRoleList, setSize, setClientId, getRoleInfo, updateRole };
 }

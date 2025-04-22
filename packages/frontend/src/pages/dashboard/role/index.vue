@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { MininalRole } from '@/composables';
+import type { CreateRole, MininalRole } from '@/composables';
 import ClientSelect from '@/components/client-select.vue';
 import { GeneralLayout, useModal } from '@/components/ui';
 import { useRole } from '@/composables';
@@ -10,11 +10,10 @@ import RoleForm from './components/role-form.vue';
 
 const { createModal, removeCurrent } = useModal();
 const values = ref<{ clientId: string; name: string }[]>([]);
-const { setClientId, setPage, setSize, getRoleList, roleList, roleListPageSize, curPage, roleTotal } = useRole();
+const { setClientId, setPage, setSize, getRoleList, updateRole, roleList, roleListPageSize, curPage, roleTotal } = useRole();
 const onCreateSuccess = (roles: MininalRole[]) => {
   roleList.value.push(...roles);
   removeCurrent();
-  // TODO: notify.
 };
 const showCreateRoleModal = () => {
   createModal({
@@ -32,7 +31,20 @@ const renderModal = <C extends new (...args: any) => any>(
     content: h(comp, props),
   });
 };
-
+const onUpdate = (id: string, info: Partial<CreateRole>) => {
+  updateRole(id, info)
+    .then((resp) => {
+      roleList.value = roleList.value.map((role) => {
+        if (role.id !== resp.id) {
+          return role;
+        }
+        return {
+          ...role,
+          ...resp,
+        };
+      });
+    });
+};
 watch(values, () => {
   setClientId(values.value[0]?.clientId);
 }, { deep: true });
@@ -69,8 +81,11 @@ onMounted(() => {
         </tiny-grid-column>
         <tiny-grid-column title="action">
           <template #default="{ row }">
-            <tiny-button @click="() => renderModal(RoleForm, { roleId: row.id, readonlyAll:true, })">
+            <tiny-button @click="() => renderModal(RoleForm, { roleId: row.id, readonlyAll: true })">
               详情
+            </tiny-button>
+            <tiny-button @click="() => renderModal(RoleForm, { roleId: row.id, readonlyAll: false, readonlyField: ['id'], submitBehavior: onUpdate })">
+              修改
             </tiny-button>
           </template>
         </tiny-grid-column>

@@ -1,18 +1,19 @@
 <script lang="ts" setup>
-import type { RoleInfoItem } from '@/composables';
+import type { CreateRole, RoleInfoItem } from '@/composables';
 import { usePermission, useRole } from '@/composables';
 import { TinyButton, TinyForm, TinyFormItem, TinyInput, TinyModal, TinySelect } from '@opentiny/vue';
 import { useToggle } from '@vueuse/core';
-import { computed, onMounted, readonly, ref, watch } from 'vue';
+import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
 import RelationGraph from './relation-graph.vue';
 
-const { roleId, readonlyField=[],readonlyAll } = defineProps<{
+const { roleId, readonlyField = [], readonlyAll, submitBehavior } = defineProps<{
   roleId: string;
   readonlyField?: string[];
-  readonlyAll?: boolean
+  readonlyAll?: boolean;
+  submitBehavior?: (id: string, info: Partial<CreateRole>) => void;
 }>();
-const {getPermissionList, permissionList,loading} = usePermission();
-const { getRoleInfo } = useRole();
+const { getPermissionList, permissionList, loading } = usePermission();
+const { getRoleInfo, getRoleList, roleList } = useRole();
 const roleInfo = ref<RoleInfoItem | null>(null);
 const showRelationGraph = ref(false);
 const toggleRelationGraphVisibility = useToggle(showRelationGraph);
@@ -28,46 +29,83 @@ const roleInfoPermissionOptions = computed(() => {
     };
   });
 });
-watch(roleInfo, ()=>{
+const roleSelect = computed(() => {
+  return roleList.value.map((role) => {
+    return {
+      label: role.desc || role.name,
+      value: role.id,
+    };
+  });
+});
+const form = useTemplateRef<Form>('form');
+const roleParents = ref<string[]>([]);
+
+const onClickSubmit = () => {
+  if (!form.value) {
+    return;
+  }
+
+  form.value.validate()
+    .then((ok) => {
+      if (!ok) {
+        return;
+      }
+      submitBehavior?.(roleInfo.value?.id ?? '', {
+        name: roleInfo.value?.name,
+        desc: roleInfo.value?.desc,
+        permissions: roleInfoPermissionId.value,
+        parent: roleParents.value,
+        clientId: roleInfo.value?.clientId,
+      });
+    })
+    .catch(() => {});
+};
+
+watch(roleInfo, () => {
   if (!roleInfo.value) {
     return [];
   }
   roleInfoPermissionId.value = roleInfo.value.permission.map(permission => permission.id);
-})
+  roleParents.value = roleInfo.value.parents.map(role => role.id);
+}, { deep: true });
 onMounted(() => {
   getRoleInfo(roleId)
     .then((info) => {
       roleInfo.value = info;
-      return info
+      return info;
     })
     .then((info) => {
       getPermissionList(info.clientId, undefined, true);
-    })
+      getRoleList({ all: true, clientId: info.clientId });
+    });
 });
 </script>
 
 <template>
   <div class="h-full w-full">
-    <tiny-form v-if="roleInfo" label-position="top" :display-only="readonlyAll">
+    <tiny-form v-if="roleInfo" ref="form" :model="roleInfo" label-position="top" :display-only="readonlyAll">
       <tiny-form-item label="Role Id">
-        <tiny-input v-model="roleInfo.id" :readonly="readonlyField.includes('id')" />
+        <tiny-input v-model="roleInfo.id" :disabled="readonlyField.includes('id')" />
       </tiny-form-item>
       <tiny-form-item label="Role Name">
-        <tiny-input v-model="roleInfo.name" :readonly="readonlyField.includes('name')"/>
+        <tiny-input v-model="roleInfo.name" :disabled="readonlyField.includes('name')" />
       </tiny-form-item>
       <tiny-form-item label="Role Desc">
-        <tiny-input v-model="roleInfo.desc" :readonly="readonlyField.includes('desc')"/>
+        <tiny-input v-model="roleInfo.desc" :disabled="readonlyField.includes('desc')" />
       </tiny-form-item>
       <tiny-form-item label="Role Permissions">
-        <tiny-select :loading="loading" v-model="roleInfoPermissionId" :options="roleInfoPermissionOptions" multiple tag-selectable :readonly="readonlyField.includes('permission')" />
+        <tiny-select v-model="roleInfoPermissionId" :loading="loading" :options="roleInfoPermissionOptions" multiple tag-selectable :disabled="readonlyField.includes('permission')" />
       </tiny-form-item>
-      <tiny-form-item label="Parent">
+      <tiny-form-item label="Role Parents">
+        <tiny-select v-model="roleParents" :loading="loading" :options="roleSelect" multiple tag-selectable :disabled="readonlyField.includes('role-parent')" />
+      </tiny-form-item>
+      <tiny-form-item label="RelationGraph">
         <tiny-button @click="toggleRelationGraphVisibility()">
           展示继承关系
         </tiny-button>
       </tiny-form-item>
-      <tiny-form-item v-if="!readonlyField.length && !readonlyAll">
-        <tiny-button type="primary">
+      <tiny-form-item v-if="!readonlyField.length || !readonlyAll">
+        <tiny-button type="primary" @click="onClickSubmit">
           提交修改
         </tiny-button>
       </tiny-form-item>
