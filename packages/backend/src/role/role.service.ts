@@ -48,10 +48,11 @@ export class RoleService {
       .catch((err) => {
         throw new HttpException('服务器繁忙', HttpStatus.TOO_MANY_REQUESTS);
       });
+    const id = await this.cnt.incr(ID_COUNTER.ROLE);
     return this.prisma.role
       .create({
         data: {
-          id: await this.cnt.incr(ID_COUNTER.ROLE),
+          id,
           name: data.name,
           desc: data.desc,
           permission: {

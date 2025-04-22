@@ -1,7 +1,8 @@
 <script lang="ts" setup>
-import type { Edge, Node } from '@vue-flow/core';
-import {VueFlow} from '@vue-flow/core';
-import { ref, toRefs, watch } from 'vue';
+import { relationNode,bezierEdge } from '@/components/ui';
+import { useRoleRelationGraph } from '@/composables/useRoleRelationGraph';
+import { VueFlow } from '@vue-flow/core';
+import { onMounted } from 'vue';
 
 export interface RelationNode {
   id: string;
@@ -9,50 +10,26 @@ export interface RelationNode {
   to?: string;
 }
 const props = defineProps<{
-  nodes: RelationNode[];
+  roleId: string;
 }>();
 
-const { nodes:_nodes } = toRefs(props);
+const { fetch, onClickExpand, nodes, edges } = useRoleRelationGraph();
 
-const relationNodeMap = new Map<string, Node>();
-
-const nodes = ref<Node[]>([]);
-
-const edges = ref<Edge[]>([]);
-
-watch(_nodes, () => {
-  console.log(_nodes.value)
-  if(!_nodes.value){
-    return;
-  }
-  for (const node of _nodes.value) {
-    if (relationNodeMap.has(node.id)) {
-      continue;
-    }
-    const flowNode = {
-      id: node.id,
-      data: {
-        label: node.label,
-      },
-      position: {
-        x: 200,
-        y: 200,
-      },
-    };
-    relationNodeMap.set(node.id, flowNode);
-    nodes.value.push(flowNode);
-    edges.value.push({
-      id: `${node.id} -> ${node.to}`,
-      source: node.id,
-      target: node.to ?? '',
-    });
-  }
-}, { immediate: true, deep: true });
+onMounted(() => {
+  fetch(props.roleId);
+});
 </script>
 
 <template>
-  <div class="size-full">
-    <vue-flow :nodes="nodes" :edges="edges" />
+  <div class="size-full" style="width: 100%;height: 100%;">
+    <vue-flow :nodes="nodes" :edges="edges">
+      <template #node-custom="customProps">
+        <relation-node v-bind="customProps" @expand="onClickExpand" />
+      </template>
+      <template #edge-custom="customEdgeProps">
+        <bezier-edge v-bind="customEdgeProps"/>
+      </template>
+    </vue-flow>
   </div>
 </template>
 

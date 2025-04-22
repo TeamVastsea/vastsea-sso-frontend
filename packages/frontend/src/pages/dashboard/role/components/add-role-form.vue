@@ -99,7 +99,7 @@ watch(clientId, () => {
         <tiny-input v-model="formData.desc" />
       </tiny-form-item>
       <tiny-form-item label="目标客户端" >
-        <client-select v-model="client" multiple />
+        <client-select v-model="client" />
       </tiny-form-item>
       <tiny-form-item label="权限" required prop="permissions">
         <tiny-select multiple v-model="formData.permissions">

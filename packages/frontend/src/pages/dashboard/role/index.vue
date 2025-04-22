@@ -69,7 +69,7 @@ onMounted(() => {
         </tiny-grid-column>
         <tiny-grid-column title="action">
           <template #default="{ row }">
-            <tiny-button @click="() => renderModal(RoleForm, { roleId: row.id })">
+            <tiny-button @click="() => renderModal(RoleForm, { roleId: row.id, readonlyAll:true, })">
               详情
             </tiny-button>
           </template>

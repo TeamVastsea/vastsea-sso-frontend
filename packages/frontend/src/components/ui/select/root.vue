@@ -86,8 +86,8 @@ watch(values, () => {
       </combobox-trigger>
     </combobox-anchor>
     <combobox-content class="h-[200px] w-[var(--reka-combobox-trigger-width)] z-10" position="popper" :side-offset="16">
-      <div v-infinite-scroll="[onScrollBottom, { distance: 10 }]" class="bg-white h-full w-full shadow overflow-auto dark:bg-zinc-800">
-        <combobox-viewport class="py-2 rounded flex flex-col gap-1 overflow-auto">
+      <div v-infinite-scroll="[onScrollBottom, { distance: 10 }]" class="bg-white h-fit w-full shadow overflow-auto dark:bg-zinc-800">
+        <combobox-viewport class="rounded flex flex-col gap-1 overflow-auto">
           <slot>
             <select-option v-for="option of renderOptions" :key="option.label" :label="option.label" :value="option.value" />
           </slot>
