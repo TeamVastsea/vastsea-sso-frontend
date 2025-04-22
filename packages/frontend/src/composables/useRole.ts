@@ -105,7 +105,7 @@ export function useRole({
     clientId.value = target;
   };
   watch([preId, roleListPageSize, curPage, clientId], () => {
-    getRoleList();
+    getRoleList({ clientId: unref(clientId) });
   }, { deep: true });
   return { roleList, roleTotal, fetcher, preId, roleListPageSize, curPage, clientId, setPage, createRole, getRoleList, setSize, setClientId, getRoleInfo, updateRole };
 }

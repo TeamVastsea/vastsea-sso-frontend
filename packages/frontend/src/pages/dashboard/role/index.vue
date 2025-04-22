@@ -10,10 +10,10 @@ import RoleForm from './components/role-form.vue';
 
 const { createModal, removeCurrent } = useModal();
 const values = ref<{ clientId: string; name: string }[]>([]);
-const { setClientId, setPage, setSize, getRoleList, updateRole, roleList, roleListPageSize, curPage, roleTotal } = useRole();
+const { setClientId, setPage, setSize, getRoleList, updateRole, roleList, roleListPageSize, curPage, roleTotal, preId } = useRole();
 const onCreateSuccess = (roles: MininalRole[]) => {
   roleList.value.push(...roles);
-  removeCurrent();
+  // removeCurrent();
 };
 const showCreateRoleModal = () => {
   createModal({
@@ -61,6 +61,9 @@ const updateActive = (id: string, clientId: string, active: boolean) => {
     });
 };
 watch(values, () => {
+  curPage.value = 1;
+  roleList.value = [];
+  preId.value = undefined;
   setClientId(values.value[0]?.clientId);
 }, { deep: true });
 
