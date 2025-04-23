@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import type { RendererElement } from 'vue';
-import { useEventListener, useMouse, useToggle } from '@vueuse/core';
-import { onMounted, onUnmounted, reactive, ref, unref, watch } from 'vue';
+import { useMouse, useToggle } from '@vueuse/core';
+import { reactive, ref, unref, watch } from 'vue';
 import { useProvideModalContext } from './constant';
 
-const { initX, initY } = defineProps<{ to?: string | RendererElement; initX: number; initY: number }>();
+const { initX = 0, initY = 0 } = defineProps<{ to?: string | RendererElement; initX?: number; initY?: number }>();
 const emits = defineEmits<{
   hidden: [];
 }>();

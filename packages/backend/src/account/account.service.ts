@@ -50,6 +50,9 @@ export class AccountService {
             nick: profile.nick,
           },
         },
+        role: {
+          connect: body.role.map((id) => ({ id })),
+        },
       },
       include: {
         profile: true,
@@ -100,6 +103,12 @@ export class AccountService {
             },
           },
           active: data.active,
+          role: data.role
+            ? {
+                set: [],
+                connect: data.role.map((id) => ({ id })),
+              }
+            : undefined,
         },
         include: {
           profile: true,
