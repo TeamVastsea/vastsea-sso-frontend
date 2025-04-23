@@ -4,7 +4,7 @@ import { PermissionExpr, Operator } from '@app/decorator';
 export const permissionJudge = (
   userPermission: string[],
   node: PermissionExpr,
-) => {
+): boolean => {
   if (typeof node === 'boolean') {
     return node;
   }

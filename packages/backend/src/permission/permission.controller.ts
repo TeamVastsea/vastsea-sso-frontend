@@ -27,6 +27,9 @@ import {
   Operator,
   Permission,
   Auth,
+  RequireClientPair,
+  RequiredClientAdministrator,
+  permissionJudge,
 } from '@app/decorator';
 import {
   ApiTags,
@@ -35,9 +38,15 @@ import {
   ApiOkResponse,
   ApiParam,
   ApiCreatedResponse,
+  ApiResponse,
 } from '@nestjs/swagger';
 import { UpdatePermission } from './dto/update-permission';
-import { PermissionEntry, PermissionList } from './entries/permission.entries';
+import {
+  JudgePermissionResp,
+  PermissionEntry,
+  PermissionList,
+} from './entries/permission.entries';
+import { JudgePermission } from './dto/valid-permission';
 @ApiTags('权限')
 @Controller('permission')
 export class PermissionController {
@@ -254,5 +263,36 @@ export class PermissionController {
       isSuper,
       name,
     );
+  }
+
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    type: JudgePermissionResp,
+  })
+  @RequireClientPair()
+  @Post('/judge')
+  judgePermission(
+    @Query('id', BigIntPipe) id: bigint,
+    @Query('clientId') clientId: string,
+    @Body() body: JudgePermission,
+  ) {
+    return this.permissionService
+      .getAccountPermission(id, clientId)
+      .then((permissions) => {
+        let pass = false;
+        if (!permissions) {
+          return { pass };
+        }
+        try {
+          if (Array.isArray(body.expr)) {
+            pass = body.expr.every((p) => permissions.includes(p));
+          } else {
+            pass = permissionJudge(permissions, body.expr);
+          }
+        } catch {
+          pass = false;
+        }
+        return { pass };
+      });
   }
 }
