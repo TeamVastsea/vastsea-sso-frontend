@@ -13,7 +13,6 @@ import { CreateClient } from '../src/client/dto/create-client';
 import { login } from './utils/login';
 import { createClient } from './utils/create-client';
 import { UpdateClient } from 'src/client/dto/update-client';
-import { PrismaClient } from '@prisma/client';
 import { removePermission } from './utils/remove-permission';
 
 describe('Client E2E test', () => {
@@ -283,6 +282,53 @@ describe('Client E2E test', () => {
         .auth(access_token, { type: 'bearer' })
         .query({ size: 20 });
       expect(statusCode).toBe(HttpStatus.FORBIDDEN);
+    });
+  });
+  describe('Get client public info', () => {
+    it('fail. not found', async () => {
+      const { statusCode } = await request(app.getHttpServer()).get(
+        `/client/pub-info/abcde`,
+      );
+      expect(statusCode).toBe(HttpStatus.NOT_FOUND);
+    });
+    it('fail. client stopped', async () => {
+      const client = await createClient(
+        {
+          name: 'Test Client',
+          desc: 'Test Client',
+          redirect: 'http://exmaple.com',
+        },
+        app,
+      );
+      const { access_token } = await login(
+        'admin@no-reply.com',
+        'admin',
+        process.env.CLIENT_ID,
+        app,
+      );
+      const { statusCode: s1 } = await request(app.getHttpServer())
+        .delete(`/client/${client.id}`)
+        .auth(access_token, { type: 'bearer' });
+      expect(s1).toBe(HttpStatus.OK);
+      const { statusCode } = await request(app.getHttpServer()).get(
+        `/client/pub-info/${client.clientId}`,
+      );
+      expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
+    });
+    it('success', async () => {
+      const c1 = await createClient(
+        {
+          name: 'test-client',
+          desc: 'test-client',
+          redirect: 'http://example.org',
+        },
+        app,
+      );
+      const { statusCode, body } = await request(app.getHttpServer()).get(
+        `/client/pub-info/${c1.clientId}`,
+      );
+      expect(statusCode).toBe(HttpStatus.OK);
+      expect(body.redirect).toBe('http://example.org');
     });
   });
 });

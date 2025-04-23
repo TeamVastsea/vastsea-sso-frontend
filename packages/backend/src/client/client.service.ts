@@ -14,7 +14,6 @@ import { UpdateClient } from './dto/update-client';
 import { isEmpty, isNil } from 'ramda';
 import { AutoRedis } from '@app/decorator';
 import Redis, { Cluster } from 'ioredis';
-import { Client, Prisma } from '@prisma/client';
 
 @Injectable()
 export class ClientService {
@@ -28,7 +27,7 @@ export class ClientService {
   ) {}
 
   async createClient(data: CreateClient) {
-    const accountList = await this.getValidManager(data.administrator);
+    const accountList = await this.getValidManager(data.administrator ?? []);
     const client = await this.findClient({ name: data.name });
     if (client) {
       throw new HttpException('客户端已存在', HttpStatus.CONFLICT);
@@ -157,7 +156,7 @@ export class ClientService {
   ) {
     const total = !queryAll
       ? this.redis
-          .get(ACCOUNT_ASSIGN_CLIENT_TOTAL(accountId))
+          .get(ACCOUNT_ASSIGN_CLIENT_TOTAL(accountId!))
           .then((val) => BigInt(val ?? 0))
       : this.redis.get(CLIENT_TOTAL()).then((val) => BigInt(val ?? 0));
     const datas = this.prisma.client.findMany({
@@ -200,11 +199,11 @@ export class ClientService {
     });
   }
   getClientPair() {
-    const rawClientId = `${Date.now()}::${randomBytes(256).toString('base64')}::clientId`;
+    const rawClientId = `${Date.now()}::${randomBytes(256).toString('base64url')}::clientId`;
     const rawClientSecret = `${Date.now()}::${randomBytes(512).toString('base64')}::clientSecret`;
     const clientId = createHash('sha512')
       .update(rawClientId)
-      .digest('base64')
+      .digest('base64url')
       .slice(0, 32);
     const clientSecret = createHash('sha512')
       .update(rawClientSecret)
