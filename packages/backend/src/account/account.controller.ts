@@ -14,7 +14,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { AccountService } from './account.service';
-import { CreateAccount } from './dto/create-account';
+import { CreateAccount, RegisterAccount } from './dto/create-account';
 import {
   Auth,
   BigIntPipe,
@@ -38,6 +38,13 @@ export class AccountController {
     };
   }
 
+  @Post('/register')
+  async register(@Body() body: RegisterAccount) {
+    const mailCode = await this.accountService.getEmailCode(body.email);
+    await this.accountService.verifyCode(body.email, body.code, mailCode);
+    return this.accountService.createAccount(body);
+  }
+
   @Auth()
   @Permission(['ACCOUNT::ADD'])
   @Post('')
@@ -52,7 +59,11 @@ export class AccountController {
   ) {
     if (!force) {
       const emailCode = await this.accountService.getEmailCode(body.email);
-      await this.accountService.verifyCode(body.email, body.code, emailCode);
+      await this.accountService.verifyCode(
+        body.email,
+        body.code ?? '',
+        emailCode,
+      );
     }
     return this.accountService.createAccount(body);
   }
