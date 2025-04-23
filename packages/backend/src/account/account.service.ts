@@ -99,9 +99,9 @@ export class AccountService {
           password,
           profile: {
             update: {
-              nick: data.profile.nick,
-              desc: data.profile.desc,
-              avatar: data.profile.avatar,
+              nick: data.profile?.nick,
+              desc: data.profile?.desc,
+              avatar: data.profile?.avatar,
             },
           },
           active: data.active,
@@ -128,7 +128,7 @@ export class AccountService {
   }
 
   async getAccountList(preId?: bigint, size: number = 20) {
-    const total = this.redis.get(ACCOUNT_TOTAL).then(BigInt);
+    const total = this.redis.get(ACCOUNT_TOTAL).then((val) => BigInt(val ?? 0));
     const data = this.prisma.account.findMany({
       where: {
         id: {
@@ -220,9 +220,9 @@ export class AccountService {
         ? Promise.resolve()
         : this.mail.sendMail({
             to: email,
-            from: this.config.get('email.email'),
+            from: this.config.get('email.email') ?? 'admin@no-reply.com',
             subject: '欢迎注册',
-            text: `验证码: ${code}\n有效期 ${Math.floor(this.config.get('cache.ttl.auth.emailCode') / 60)} 分钟
+            text: `验证码: ${code}\n有效期 ${Math.floor(this.config.get('cache.ttl.auth.emailCode') ?? 0 / 60)} 分钟
           `,
           })
     )
@@ -230,7 +230,7 @@ export class AccountService {
       .then(() =>
         this.redis.expire(
           AUTH_EMAIL_CODE(email),
-          this.config.get('cache.ttl.auth.emailCode'),
+          this.config.get('cache.ttl.auth.emailCode') ?? 60 * 60,
         ),
       )
       .then(() => this.redis.ttl(AUTH_EMAIL_CODE(email)))

@@ -10,6 +10,8 @@ import {
 import { createUser } from './utils/create-user';
 import { login } from './utils/login';
 import request from 'supertest';
+import { AUTH_EMAIL_CODE } from '@app/constant';
+import { RegisterAccount } from 'src/account/dto/create-account';
 
 describe('Auth E2E test', () => {
   let app: INestApplication;
@@ -30,6 +32,54 @@ describe('Auth E2E test', () => {
   });
   afterEach(async () => {
     await redis.flushall();
+  });
+  describe('Register', () => {
+    it('Fail, invalid code', async () => {
+      await request(app.getHttpServer()).post(
+        '/account/mail-code?email=test2@no-reply.com',
+      );
+      const { statusCode } = await request(app.getHttpServer())
+        .post('/account/register')
+        .send({
+          email: 'test2@no-reply.com',
+          code: 'abcd',
+          password: '123456789',
+          profile: {
+            nick: 'This is Nick',
+          },
+        });
+      expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
+    });
+    it('Fail, mail-code not send yet', async () => {
+      const { statusCode } = await request(app.getHttpServer())
+        .post('/account/register')
+        .send({
+          email: 'test2@no-reply.com',
+          code: 'abcd',
+          password: '123456789',
+          profile: {
+            nick: 'This is Nick',
+          },
+        });
+      expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
+    });
+    it('Success', async () => {
+      await request(app.getHttpServer()).post(
+        '/account/mail-code?email=test2@no-reply.com',
+      );
+      const code = await redis.get(AUTH_EMAIL_CODE(`test2@no-reply.com`));
+      const { statusCode } = await request(app.getHttpServer())
+        .post('/account/register')
+        .send({
+          email: 'test2@no-reply.com',
+          code,
+          password: '123456789',
+          profile: {
+            nick: 'This is Nick',
+          },
+        });
+      expect(statusCode).toBe(HttpStatus.CREATED);
+    });
   });
   it('Create User Account Success', async () => {
     await createUser(app, redis, 'test2@no-reply.com', 'test');

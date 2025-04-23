@@ -14,3 +14,11 @@ export const createAccount = z.object({
 });
 
 export class CreateAccount extends createZodDto(createAccount) {}
+export class RegisterAccount extends createZodDto(
+  createAccount.merge(
+    z.object({
+      role: z.never().nullish(),
+      code: z.string(),
+    }),
+  ),
+) {}
