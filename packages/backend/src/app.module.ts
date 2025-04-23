@@ -161,6 +161,7 @@ export class AppModule implements OnModuleInit {
           profile: {
             nick: 'Admin',
           },
+          role: [],
         })
       ).id;
     }

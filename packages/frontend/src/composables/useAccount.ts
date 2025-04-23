@@ -13,13 +13,17 @@ export interface CreateAccountMininalDto {
     // TODO: BACKEND UPLOAD ENDPOINT
     avatar: string | null;
   };
+  role: string[];
 }
 export interface MininalRoleInfo {
   name: string;
   desc: string;
   id: bigint;
 }
-export interface Account extends CreateAccountMininalDto {
+
+type AccountType = Omit<CreateAccountMininalDto, 'role'> & { role: MininalRoleInfo[] };
+
+export interface Account extends AccountType {
   active: boolean;
   role: MininalRoleInfo[];
 }
@@ -34,6 +38,7 @@ export function useAccount(
       desc: '',
       avatar: '',
     },
+    role: [],
   });
   const account: Ref<Account> = ref({
     email: '',
@@ -70,6 +75,7 @@ export function useAccount(
   const updateAccount = (
     valid: () => Promise<boolean>,
     id: bigint,
+    data: Partial<CreateAccountMininalDto>,
   ) => {
     return valid()
       .then((ok) => {
@@ -77,7 +83,7 @@ export function useAccount(
           return;
         }
         return fetcher.patch(`/account/${id}`, SuperJSON.serialize({
-          ...account.value,
+          ...data,
           id: undefined,
         }).json);
       });

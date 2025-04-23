@@ -10,6 +10,7 @@ export const createAccount = z.object({
     desc: z.string().optional().describe('个人简介'),
     avatar: z.string().optional().describe('头像'),
   }),
+  role: z.array(z.bigint({ coerce: true })).optional(),
 });
 
 export class CreateAccount extends createZodDto(createAccount) {}

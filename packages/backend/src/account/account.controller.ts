@@ -16,7 +16,6 @@ import {
 import { AccountService } from './account.service';
 import { CreateAccount } from './dto/create-account';
 import {
-  Account,
   Auth,
   BigIntPipe,
   Operator,
@@ -40,6 +39,7 @@ export class AccountController {
   }
 
   @Auth()
+  @Permission(['ACCOUNT::ADD'])
   @Post('')
   async createAccount(
     @Body() body: CreateAccount,
