@@ -36,7 +36,7 @@
   - [x] 获取权限列表
   - [x] 获取某个权限信息
   - [x] 权限绑定
-  - [ ] 权限校验 (客户端级别)
+  - [x] 权限校验 (客户端级别)
 
 ## ROADMAP
 
@@ -46,11 +46,11 @@ gantt
     dateFormat YYYY-MM-DD
     excludes    weekends
     section 功能完善
-        账号管理 : base, 2025-04-23, 1d
-        权限校验 : after base, 12h
+        账号管理 : done, base, 2025-04-23, 1d
+        权限校验 : done, after base, 12h
     section 登录
         注册模块 :   a2, 2025-04-24,2025-04-26
-        登录注册页 : after a2, 2025-04-26,2025-04-26
+        登录注册页 : after a2, 2025-04-24,2025-04-26
     section 安全模块
         忘记密码 : after a2, 1d
         修改密码 : after a2, 1d

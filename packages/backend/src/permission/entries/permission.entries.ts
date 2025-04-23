@@ -26,3 +26,8 @@ export class PermissionList {
   })
   data: PermissionEntry[];
 }
+
+export class JudgePermissionResp {
+  @ApiProperty({ description: '是否通过了验证' })
+  pass: boolean;
+}

@@ -5,6 +5,7 @@ import {
   ForbiddenException,
   SetMetadata,
 } from '@nestjs/common';
+import { z } from 'zod';
 
 export enum Operator {
   /**
@@ -90,6 +91,57 @@ export type PermissionExpr =
   | NotExpr
   | boolean;
 export type PermissionArgs = string[] | PermissionExpr;
+
+export const permissionExpr: z.ZodSchema<PermissionExpr> = z
+  .lazy(() => {
+    return z.union([
+      z.boolean(),
+      z
+        .object({
+          expr: permissionExpr,
+          op: z.literal(Operator.NOT),
+        })
+        .describe('对表达式进行取反'),
+      z
+        .object({
+          expr: z.string(),
+          op: z.literal(Operator.HAS),
+        })
+        .describe('判断是否拥有某个权限'),
+      z
+        .object({
+          expr: z.array(z.string()).describe('想要判定的权限列表'),
+          op: z.literal(Operator.SOME),
+        })
+        .describe(
+          '如果权限列表中某一个权限存在于用户权限中, 整个表达式返回true',
+        ),
+      z
+        .object({
+          expr: z.array(z.string()).describe('想要判定的权限列表'),
+          op: z.literal(Operator.EVERY),
+        })
+        .describe(
+          '如果权限列表中所有权限权限都存在于用户权限中, 整个表达式返回true',
+        ),
+      z
+        .object({
+          lhs: permissionExpr.describe('左侧表达式'),
+          rhs: permissionExpr.describe('右侧表达式'),
+          op: z.literal(Operator.OR),
+        })
+        .describe('对左侧表达式与右侧表达式进行逻辑或操作'),
+      z
+        .object({
+          lhs: permissionExpr,
+          rhs: permissionExpr,
+          op: z.literal(Operator.AND),
+        })
+        .describe('对左侧表达式与右侧表达式进行逻辑与操作'),
+    ]);
+  })
+  .describe('权限表达式');
+export const permissionArgsSchema = z.array(z.string()).or(permissionExpr);
 
 const exprToString = (expr: PermissionExpr | string[]) => {
   if (Array.isArray(expr)) {
