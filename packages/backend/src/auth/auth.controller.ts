@@ -97,7 +97,12 @@ export class AuthController {
     }
     const code = this.authService.createCode(clientId);
     const sessionState = this.authService.createSessionState();
-    await this.authService.invokeSessionState(code, clientId, sessionState);
+    await this.authService.invokeSessionState(
+      code,
+      clientId,
+      sessionState,
+      loginHandle.id.toString(),
+    );
     await this.authService.invokeCode(loginHandle.id, code);
     url.searchParams.append('ok', 'true');
     url.searchParams.append('code', code);

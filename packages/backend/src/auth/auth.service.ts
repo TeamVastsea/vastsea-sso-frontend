@@ -11,6 +11,13 @@ import { AccountService } from '../account/account.service';
 import { RoleService } from '../role/role.service';
 import { TokenPayload } from './dto/token-pair.dto';
 import { PermissionService } from '../permission/permission.service';
+import { isNil } from 'ramda';
+
+type SessionMeta = {
+  code: string;
+  clientId: string;
+  userId: string;
+};
 
 @Injectable()
 export class AuthService {
@@ -25,36 +32,50 @@ export class AuthService {
   ) {}
 
   async getCodeBySession(sessionState: string) {
-    const client = await this.redis.get(`AUTH::SESSION::${sessionState}`);
-    if (!client) {
+    const meta = (await this.redis.hgetall(
+      `AUTH::SESSION::${sessionState}::META`,
+    )) as SessionMeta | null;
+    if (isNil(meta)) {
       return {
         ok: false,
         reason: 'session-state 过期',
         state: HttpStatus.FORBIDDEN,
       };
     }
-    const oldCode = await this.redis.get(
-      `AUTH::SESSION::${sessionState}::CODE`,
-    );
-    if (!oldCode) {
-      return {
-        ok: false,
-        reason: 'session-state 不合法',
-        state: HttpStatus.FORBIDDEN,
-      };
-    }
-    const code = this.createCode(client);
-    const codeId = await this.redis.get(`AUTH::${oldCode}`);
-    if (!codeId) {
-      return {
-        ok: false,
-        reason: 'session-state 不合法',
-        state: HttpStatus.FORBIDDEN,
-      };
-    }
-    await this.invokeCode(BigInt(codeId), code);
-    await this.revokeSession(oldCode, client);
-    await this.invokeSessionState(code, client, sessionState);
+    const { clientId, code: oldCode, userId } = meta;
+    const code = this.createCode(clientId);
+    await this.invokeCode(BigInt(userId), code);
+    await this.revokeCode(oldCode);
+    // const client = await this.redis.get(`AUTH::SESSION::${sessionState}`);
+    // if (!client) {
+    //   return {
+    //     ok: false,
+    //     reason: 'session-state 过期',
+    //     state: HttpStatus.FORBIDDEN,
+    //   };
+    // }
+    // const oldCode = await this.redis.get(
+    //   `AUTH::SESSION::${sessionState}::CODE`,
+    // );
+    // if (!oldCode) {
+    //   return {
+    //     ok: false,
+    //     reason: 'session-state 不合法',
+    //     state: HttpStatus.FORBIDDEN,
+    //   };
+    // }
+    // const code = this.createCode(client);
+    // const codeId = await this.redis.get(`AUTH::${oldCode}::${client}`);
+    // if (!codeId) {
+    //   return {
+    //     ok: false,
+    //     reason: 'session-state 不合法',
+    //     state: HttpStatus.FORBIDDEN,
+    //   };
+    // }
+    // await this.invokeCode(BigInt(codeId), code);
+    // await this.revokeSession(oldCode, client);
+    // await this.invokeSessionState(code, client, sessionState);
     return { ok: true, code };
   }
   async login(data: LoginDto) {
@@ -126,7 +147,7 @@ export class AuthService {
   invokeCode(id: bigint, code: string) {
     const multi = this.redis.multi();
     multi.set(`AUTH::${code}`, id.toString());
-    multi.expire(`AUTH::${code}`, this.config.get('cache.ttl.auth.code'));
+    multi.expire(`AUTH::${code}`, this.config.get('cache.ttl.auth.code') ?? -1);
     return multi.exec();
   }
   revokeCode(code: string) {
@@ -138,31 +159,35 @@ export class AuthService {
   createSessionState() {
     return randomUUID();
   }
-  invokeSessionState(code: string, clientId: string, sessionState: string) {
-    const multi = this.redis.multi();
-    const codeToSession = `AUTH::${code}::${clientId}`;
-    const clientToSession = `AUTH::${clientId}::SESSION`;
-    const sessionToClient = `AUTH::SESSION::${sessionState}`;
-    const sessionToCode = `AUTH::SESSION::${sessionState}::CODE`;
-    multi.set(sessionToCode, code);
-    multi.set(clientToSession, sessionState);
-    multi.set(sessionToClient, clientId);
-    multi.set(sessionToCode, code);
-    multi.pexpire(sessionToCode, this.config.get('cache.ttl.auth.code'));
-    multi.pexpire(codeToSession, this.config.get('cache.ttl.auth.code'));
-    multi.pexpire(clientToSession, this.config.get('cache.ttl.auth.code'));
-    multi.pexpire(sessionToClient, this.config.get('cache.ttl.auth.code'));
-    return multi.exec();
+  async invokeSessionState(
+    code: string,
+    clientId: string,
+    sessionState: string,
+    userId: string,
+  ) {
+    const meta: SessionMeta = {
+      code,
+      clientId,
+      userId,
+    };
+
+    await this.redis.hset(`AUTH::SESSION::${sessionState}::META`, meta);
+    await this.redis.set(`AUTH::${code}::${clientId}`, sessionState);
+    await this.redis.pexpire(
+      `AUTH::${code}::${clientId}`,
+      this.config.get('cache.ttl.auth.code') ?? 0,
+    );
+    await this.redis.pexpire(
+      `AUTH::SESSION:${sessionState}::META`,
+      this.config.get('cache.ttl.auth.code') ?? 0,
+    );
+    return;
   }
   async revokeSession(code: string, clientId: string) {
-    const codeToSession = `AUTH::${code}::${clientId}`;
-    const clientToSession = `AUTH::${clientId}::SESSION`;
-    const session = await this.redis.get(clientToSession);
-    if (!session) {
-      return true;
-    }
-    const sessionToClient = `AUTH::SESSION::${session}`;
-    return this.redis.del(codeToSession, clientToSession, sessionToClient);
+    // return this.redis.del(`AUTH::SESSION::${sessions}`)
+    const sessionKey = `AUTH::${code}::${clientId}`;
+    const session = await this.redis.get(sessionKey);
+    return this.redis.del(`AUTH::SESSION::${session}`, sessionKey);
   }
   active(id: bigint) {
     return this.redis.exists(TOKEN_PAIR(id.toString(), 'access'));
