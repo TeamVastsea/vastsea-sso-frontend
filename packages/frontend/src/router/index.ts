@@ -5,7 +5,7 @@ import { setupGuard } from './guards';
 
 const AuthChildren: RouteRecordRaw[] = [
   {
-    name: 'auth.error',
+    name: 'AuthError',
     path: 'error',
     component: () => import('@/pages/auth/error.vue'),
     meta: {

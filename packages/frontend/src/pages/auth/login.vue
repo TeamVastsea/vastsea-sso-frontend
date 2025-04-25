@@ -29,7 +29,7 @@ if (cookie.get('session-state')) {
 
 if (!clientId) {
   router.replace({
-    name: 'auth.error',
+    name: 'AuthError',
     query: {
       reason: ['第三方登录需要CilentId但是没有找到', '这可能不是你的问题', '请尽快联系站点管理员'].toString(),
     },
@@ -43,7 +43,7 @@ if (clientId) {
     })
     .catch((err) => {
       if (err.statusCode === 404) {
-        router.replace({ name: 'auth.error', query: { reason: [err.message].toString() } });
+        router.replace({ name: 'AuthError', query: { reason: '客户端不存在' } });
       }
     });
 }
