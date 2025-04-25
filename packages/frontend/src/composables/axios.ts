@@ -29,7 +29,7 @@ instance.interceptors.response.use((resp) => {
     account.refreshToken = '';
     return;
   }
-  throw err;
+  throw err.response.data;
 });
 
 export const useAxios = () => ({ axios: instance });

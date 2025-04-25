@@ -27,22 +27,42 @@ import { ApiException } from '@nanogiants/nestjs-swagger-api-exception-decorator
 import { ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { AccountOnline } from './dto/account-online-body';
 import { UpdateAccount } from './dto/update-account';
+import { z } from 'zod';
 
 @Controller('account')
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}
   @Post('mail-code')
   async getMailCode(@Query('email') email: string) {
-    return {
-      ttl: await this.accountService.createEmailCode(email),
-    };
+    const parser = z.string().email();
+    return parser
+      .safeParseAsync(email)
+      .then((ret) => {
+        if (ret.success) {
+          return {
+            ttl: this.accountService.createEmailCode(email),
+          };
+        }
+        throw new HttpException('邮箱地址不合法', HttpStatus.BAD_REQUEST);
+      })
+      .then((data) => data.ttl)
+      .then((ttl) => ({ ttl }));
   }
 
   @Post('/register')
   async register(@Body() body: RegisterAccount) {
+    if (!body.usa) {
+      throw new HttpException(
+        `如果您想要使用 ${process.env.APP_NAME} 服务. 请先同意用户使用条款.`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     const mailCode = await this.accountService.getEmailCode(body.email);
     await this.accountService.verifyCode(body.email, body.code, mailCode);
-    return this.accountService.createAccount(body);
+    return this.accountService.createAccount({
+      ...body,
+      role: [],
+    });
   }
 
   @Auth()

@@ -37,6 +37,7 @@ export class AccountService {
     const iterations = 1000;
     const hashPwd = this.hashPwd(password, salt, iterations);
     const id = await this.cnt.incr(ID_COUNTER.ACCOUNT);
+    console.log(id)
     const account = await this.prisma.account.create({
       data: {
         id,
@@ -216,7 +217,7 @@ export class AccountService {
     const code = randomBytes(80).toString('hex').slice(0, 16);
     const setCodeHandle = this.redis.set(AUTH_EMAIL_CODE(email), code);
     return (
-      __TEST__
+      __TEST__ || __DEV__
         ? Promise.resolve()
         : this.mail.sendMail({
             to: email,
@@ -228,13 +229,16 @@ export class AccountService {
     )
       .then(() => setCodeHandle)
       .then(() =>
-        this.redis.expire(
+        this.redis.pexpire(
           AUTH_EMAIL_CODE(email),
-          this.config.get('cache.ttl.auth.emailCode') ?? 60 * 60,
+          this.config.get('cache.ttl.auth.emailCode') ?? 60 * 1000,
         ),
       )
       .then(() => this.redis.ttl(AUTH_EMAIL_CODE(email)))
-      .catch((err) => this.logger.error(err.message, err.stack));
+      .catch((err) => {
+        this.logger.error(err.message, err.stack);
+        throw err;
+      });
   }
   async userOnline(userId: bigint) {
     if (!(await this.getAccountInfo(userId))) {

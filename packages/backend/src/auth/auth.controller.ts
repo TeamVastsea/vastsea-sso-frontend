@@ -17,6 +17,8 @@ import { ClientService } from '../client/client.service';
 import { RefreshToken } from './dto/refresh-token';
 import { JwtService } from '@app/jwt';
 import { PermissionService } from '../permission/permission.service';
+import { RegisterDto } from './dto/register.dto';
+import { AccountService } from '../account/account.service';
 
 @Controller('auth')
 export class AuthController {
@@ -25,6 +27,7 @@ export class AuthController {
     private readonly client: ClientService,
     private readonly permission: PermissionService,
     private readonly jwt: JwtService,
+    private readonly account: AccountService,
   ) {}
 
   @Post('/login')

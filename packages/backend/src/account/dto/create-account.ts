@@ -19,6 +19,7 @@ export class RegisterAccount extends createZodDto(
     z.object({
       role: z.never().nullish(),
       code: z.string(),
+      usa: z.boolean(),
     }),
   ),
 ) {}

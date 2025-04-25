@@ -15,7 +15,8 @@ export default defineConfig({
   define: {
     'process.env': { ...process.env },
     'BASE_URL': JSON.stringify('/api'),
-    MOBILE_WIDTH: 648,
+    'MOBILE_WIDTH': 648,
+    '__AUTH_SERVER__': JSON.stringify('oagoiasdjgioa'),
   },
   resolve: {
     alias: {

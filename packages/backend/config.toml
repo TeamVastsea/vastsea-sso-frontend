@@ -24,7 +24,7 @@ secret=10
 info=10
 list=10
 [cache.ttl.auth]
-emailCode=600
+emailCode=60000
 code=5000
 [cache.ttl.auth.token]
 access=86400000

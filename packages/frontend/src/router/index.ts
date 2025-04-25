@@ -5,6 +5,15 @@ import { setupGuard } from './guards';
 
 const AuthChildren: RouteRecordRaw[] = [
   {
+    name: 'auth.error',
+    path: 'error',
+    component: () => import('@/pages/auth/error.vue'),
+    meta: {
+      auth: false,
+      title: '出错了',
+    },
+  },
+  {
     name: 'Login',
     path: 'login',
     component: () => import('@/pages/auth/login.vue'),
