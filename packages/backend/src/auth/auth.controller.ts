@@ -135,10 +135,7 @@ export class AuthController {
       if (!id) {
         throw new HttpException('Token不合法', HttpStatus.BAD_REQUEST);
       }
-      const tokenPair = this.authService.createTokenPair(id);
-      return tokenPair.then((payload) =>
-        this.authService.invokeTokenPair(id, payload).then(() => payload),
-      );
+      return this.authService.refreshToken(id, body.refreshToken);
     } catch {
       throw new HttpException('Token不合法', HttpStatus.BAD_REQUEST);
     }

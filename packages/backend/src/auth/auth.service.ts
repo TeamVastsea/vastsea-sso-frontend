@@ -3,7 +3,7 @@ import { TOKEN_PAIR } from '@app/constant';
 import { AutoRedis } from '@app/decorator';
 import { JwtService } from '@app/jwt';
 import { PrismaService } from '@app/prisma';
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { createHash, randomBytes, randomUUID } from 'crypto';
 import Redis, { Cluster } from 'ioredis';
 import { LoginDto } from './dto/login.dto';
@@ -109,6 +109,27 @@ export class AuthService {
     multi.pexpire(TOKEN_PAIR(accountId.toString(), 'refresh'), expire.refresh);
     return multi.exec();
   }
+  async refreshToken(accountId: string | bigint, refreshToken: string) {
+    const cacheRefreshToken = await this.redis.get(
+      TOKEN_PAIR(`${accountId}`, 'refresh'),
+    );
+    if (isNil(cacheRefreshToken)) {
+      throw new HttpException('刷新令牌过期', HttpStatus.BAD_REQUEST);
+    }
+    if (cacheRefreshToken !== refreshToken) {
+      throw new HttpException('令牌不合法', HttpStatus.BAD_REQUEST);
+    }
+    const tokenPair = await this.createTokenPair(accountId);
+    await this.invokeTokenPair(accountId, tokenPair);
+    await this.refreshSessionState(accountId);
+    return tokenPair;
+  }
+  revokeToken(accountId: string | bigint) {
+    return this.redis.del(
+      TOKEN_PAIR(accountId.toString(), 'access'),
+      TOKEN_PAIR(accountId.toString(), 'refresh'),
+    );
+  }
   createCode(clientId: string) {
     const code = createHash('sha512')
       .update(`${randomBytes(32).toString('hex')}${clientId}`)
@@ -145,6 +166,11 @@ export class AuthService {
 
     await this.redis.hset(`AUTH::SESSION::${sessionState}::META`, meta);
     await this.redis.set(`AUTH::${code}::${clientId}`, sessionState);
+    await this.redis.set(`AUTH::${userId}::SESSION`, sessionState);
+    await this.redis.pexpire(
+      `AUTH::${userId}::SESSION`,
+      this.config.get('cache.ttl.auth.token.access') ?? 0,
+    );
     await this.redis.pexpire(
       `AUTH::${code}::${clientId}`,
       this.config.get('cache.ttl.auth.code') ?? 0,
@@ -154,6 +180,17 @@ export class AuthService {
       this.config.get('cache.ttl.auth.token.access') ?? 0,
     );
     return;
+  }
+  async refreshSessionState(accountId: bigint | string) {
+    const session = await this.redis.get(`AUTH::${accountId}::SESSION`);
+    if (isNil(session)) {
+      await this.revokeToken(accountId);
+      throw new HttpException('刷新令牌过期', HttpStatus.UNAUTHORIZED);
+    }
+    const { code, clientId, userId }: SessionMeta = (await this.redis.hgetall(
+      `AUTH::SESSION::${session}::META`,
+    )) as SessionMeta;
+    await this.invokeSessionState(code, clientId, session, userId);
   }
   async revokeSession(code: string, clientId: string) {
     const sessionKey = `AUTH::${code}::${clientId}`;

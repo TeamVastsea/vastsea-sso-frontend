@@ -37,7 +37,7 @@ export class AccountService {
     const iterations = 1000;
     const hashPwd = this.hashPwd(password, salt, iterations);
     const id = await this.cnt.incr(ID_COUNTER.ACCOUNT);
-    console.log(id)
+    console.log(id);
     const account = await this.prisma.account.create({
       data: {
         id,
@@ -121,10 +121,12 @@ export class AccountService {
         return this.kickout(account.id).then(() => account);
       });
   }
-  kickout(id: bigint) {
+  async kickout(id: bigint) {
+    const session = await this.redis.get(`AUTH::${id}::SESSION`);
     return this.redis.del(
       TOKEN_PAIR(id.toString(), 'access'),
       TOKEN_PAIR(id.toString(), 'refresh'),
+      `AUTH::SESSION::${session}::META`,
     );
   }
 
