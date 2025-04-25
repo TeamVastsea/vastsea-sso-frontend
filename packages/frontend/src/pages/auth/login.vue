@@ -5,7 +5,6 @@ import { TinyButton, TinyForm, TinyFormItem, TinyInput } from '@opentiny/vue';
 import { useCookies } from '@vueuse/integrations/useCookies';
 import { reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import Error from './components/error.vue';
 
 const route = useRoute();
 const router = useRouter();
