@@ -37,7 +37,6 @@ export class AccountService {
     const iterations = 1000;
     const hashPwd = this.hashPwd(password, salt, iterations);
     const id = await this.cnt.incr(ID_COUNTER.ACCOUNT);
-    console.log(id);
     const account = await this.prisma.account.create({
       data: {
         id,
