@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   ConflictException,
   Controller,
@@ -29,12 +30,14 @@ import {
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiQuery,
   ApiResponse,
 } from '@nestjs/swagger';
 import { Client, ClientInfo, ClientList } from './entries/clientInfo';
 import { ApiException } from '@nanogiants/nestjs-swagger-api-exception-decorator';
 import { permissionJudge } from '@app/decorator/permission-judge';
+import { PublicClientInfo } from './entries/public-client-info';
 
 @Controller('client')
 export class ClientController {
@@ -57,9 +60,10 @@ export class ClientController {
   ) {
     return this.clientService.createClient({
       ...createDto,
-      administrator: createDto.administrator && createDto.administrator.length
-        ? createDto.administrator
-        : [BigInt(accountId)],
+      administrator:
+        createDto.administrator && createDto.administrator.length
+          ? createDto.administrator
+          : [BigInt(accountId)],
     });
   }
 
@@ -169,6 +173,31 @@ export class ClientController {
       throw new HttpException('资源不存在', HttpStatus.NOT_FOUND);
     }
     return client;
+  }
+
+  @ApiOkResponse({ type: PublicClientInfo })
+  @ApiParam({ description: '客户端的clinetId', name: 'clientId' })
+  @ApiException(() => NotFoundException, {
+    description: '如果客户端不存在, 则会抛出404错误',
+  })
+  @ApiException(() => BadRequestException, {
+    description: '如果客户端存在, 但是被停用则会抛出400错误',
+  })
+  @Get('/pub-info/:clientId')
+  async getClientPubInfo(@Param('clientId') clientId: string) {
+    const clientInfo = await this.clientService.findClient({ clientId });
+    if (!clientInfo) {
+      throw new HttpException('资源不存在', HttpStatus.NOT_FOUND);
+    }
+    if (!clientInfo.active) {
+      throw new HttpException('资源被停用', HttpStatus.BAD_REQUEST);
+    }
+    return {
+      clientId,
+      avatar: clientInfo.avatar,
+      name: clientInfo.name,
+      redirect: clientInfo.redirect,
+    };
   }
 
   @ApiQuery({

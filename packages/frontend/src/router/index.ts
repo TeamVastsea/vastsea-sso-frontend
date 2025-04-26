@@ -3,6 +3,36 @@ import Home from '@/pages/index.vue';
 import { createRouter, createWebHistory } from 'vue-router';
 import { setupGuard } from './guards';
 
+const AuthChildren: RouteRecordRaw[] = [
+  {
+    name: 'AuthError',
+    path: 'error',
+    component: () => import('@/pages/auth/error.vue'),
+    meta: {
+      auth: false,
+      title: '出错了',
+    },
+  },
+  {
+    name: 'Login',
+    path: 'login',
+    component: () => import('@/pages/auth/login.vue'),
+    meta: {
+      auth: false,
+      title: '登录',
+    },
+  },
+  {
+    name: 'Reg',
+    path: 'register',
+    component: () => import('@/pages/auth/register.vue'),
+    meta: {
+      auth: false,
+      title: '登录',
+    },
+  },
+];
+
 export const dashboardHomeChildren: RouteRecordRaw[] = [
   {
     name: 'AccountManage',
@@ -48,13 +78,13 @@ const routes: RouteRecordRaw[] = [
     component: Home,
     children: [
       {
+        name: 'redirect',
+        path: 'redirect',
+        component: () => import('@/pages/redirect.vue'),
+      },
+      {
         path: 'dashboard',
         children: [
-          {
-            name: 'dashboard-login',
-            path: 'login',
-            component: () => import('@/pages/dashboard/login.vue'),
-          },
           {
             name: 'DashBoardHome',
             path: 'home',
@@ -65,6 +95,10 @@ const routes: RouteRecordRaw[] = [
             children: dashboardHomeChildren,
           },
         ],
+      },
+      {
+        path: 'auth',
+        children: [...AuthChildren],
       },
     ],
   },

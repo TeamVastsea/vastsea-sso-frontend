@@ -8,6 +8,7 @@ module.exports = () => {
     plugins: [
       new DefinePlugin({
         __TEST__: false,
+        __DEV__: true,
       })
     ]
   }

@@ -1,20 +1,21 @@
-import { useAccountStore } from "@/store";
-import type { Router } from "vue-router";
+import type { Router } from 'vue-router';
+import { useAccountStore } from '@/store';
 
-export default (router:Router)=>{
-  router.beforeEach(async (to,_,next) => {
-    if(!to.meta.auth){
+export default (router: Router) => {
+  router.beforeEach(async (to, _, next) => {
+    if (!to.meta.auth) {
       next();
       return;
     }
     const accountStore = useAccountStore();
-    if (!accountStore.accessToken){
+    if (!accountStore.accessToken) {
       next({
-        name: 'dashboard-login',
-        replace:true,
+        name: 'Login',
+        replace: true,
+        query: { clientId: __AUTH_SERVER__ },
       });
       return;
     }
     next();
-  })
-}
+  });
+};

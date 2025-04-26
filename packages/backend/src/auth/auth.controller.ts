@@ -17,6 +17,8 @@ import { ClientService } from '../client/client.service';
 import { RefreshToken } from './dto/refresh-token';
 import { JwtService } from '@app/jwt';
 import { PermissionService } from '../permission/permission.service';
+import { RegisterDto } from './dto/register.dto';
+import { AccountService } from '../account/account.service';
 
 @Controller('auth')
 export class AuthController {
@@ -25,6 +27,7 @@ export class AuthController {
     private readonly client: ClientService,
     private readonly permission: PermissionService,
     private readonly jwt: JwtService,
+    private readonly account: AccountService,
   ) {}
 
   @Post('/login')
@@ -97,7 +100,12 @@ export class AuthController {
     }
     const code = this.authService.createCode(clientId);
     const sessionState = this.authService.createSessionState();
-    await this.authService.invokeSessionState(code, clientId, sessionState);
+    await this.authService.invokeSessionState(
+      code,
+      clientId,
+      sessionState,
+      loginHandle.id.toString(),
+    );
     await this.authService.invokeCode(loginHandle.id, code);
     url.searchParams.append('ok', 'true');
     url.searchParams.append('code', code);
@@ -127,10 +135,7 @@ export class AuthController {
       if (!id) {
         throw new HttpException('Token不合法', HttpStatus.BAD_REQUEST);
       }
-      const tokenPair = this.authService.createTokenPair(id);
-      return tokenPair.then((payload) =>
-        this.authService.invokeTokenPair(id, payload).then(() => payload),
-      );
+      return this.authService.refreshToken(id, body.refreshToken);
     } catch {
       throw new HttpException('Token不合法', HttpStatus.BAD_REQUEST);
     }

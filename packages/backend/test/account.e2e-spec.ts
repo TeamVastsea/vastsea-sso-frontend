@@ -47,6 +47,7 @@ describe('Auth E2E test', () => {
           profile: {
             nick: 'This is Nick',
           },
+          usa: true,
         });
       expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
     });
@@ -60,6 +61,7 @@ describe('Auth E2E test', () => {
           profile: {
             nick: 'This is Nick',
           },
+          usa: true,
         });
       expect(statusCode).toBe(HttpStatus.BAD_REQUEST);
     });
@@ -77,6 +79,7 @@ describe('Auth E2E test', () => {
           profile: {
             nick: 'This is Nick',
           },
+          usa: true,
         });
       expect(statusCode).toBe(HttpStatus.CREATED);
     });

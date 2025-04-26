@@ -3,6 +3,13 @@ import type { ClientInfo } from './useClientList';
 import { reactive } from 'vue';
 import instance from './axios';
 
+export interface PublicClientInfo {
+  clientId: string;
+  avatar: string | null;
+  name: string;
+  redirect: string;
+}
+
 export interface CreateClientData {
   name: string;
   desc: string;
@@ -52,6 +59,9 @@ export function useClient(
   const fetchInfo = (id: string) => {
     return fetcher.get<unknown, Client>(`/client/${id}`);
   };
+  const fetchPublicInfo = (id: string) => {
+    return fetcher.get<unknown, PublicClientInfo>(`/client/pub-info/${id}`);
+  };
 
-  return { formData, rules, create, fetchInfo, update };
+  return { formData, rules, create, fetchInfo, update, fetchPublicInfo };
 }

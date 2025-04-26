@@ -7,8 +7,8 @@
 ## 功能
 
 - 登录
-  - [ ] 登录页
-  - [ ] 注册页
+  - [x] 登录页
+  - [x] 注册页
 - 第三方客户端管理
   - [x] 注册第三方客户端
   - [x] 注销第三方客户端
@@ -44,14 +44,16 @@
 gantt
     title roadmap
     dateFormat YYYY-MM-DD
-    excludes    weekends
     section 功能完善
-        账号管理 : done, base, 2025-04-23, 1d
-        权限校验 : done, after base, 12h
+      账号管理 : done, base, 2025-04-23, 1d
+      权限校验 : done, after base, 12h
     section 登录
-        注册模块 :   done a2, 2025-04-24,2025-04-26
-        登录注册页 : after a2, 2025-04-24,2025-04-26
+      注册模块   : done , a2, 2025-04-24,2025-04-26
+      登录注册页 : done ,after a2, 2025-04-24,2025-04-26
     section 安全模块
-        忘记密码 : after a2, 1d
-        修改密码 : after a2, 1d
+      忘记密码 : secPwdForget,after a2, 1d
+      修改密码 : secPwdUpdate,after a2, 1d
+    section 个人信息:
+      查询 : profileQuery, after secPwdUpdate, 1d
+      修改 : profileUpdate,after secPwdUpdate, 1d
 ```
