@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import type { Client, ClientInfo, CreateClientData, UpdateClient } from '@/composables';
+import type { Client, ClientInfo, UpdateClient } from '@/composables';
 import UserSelect from '@/components/user-select.vue';
 import { useClient } from '@/composables';
-import { TinyButton, TinyCheckbox, TinyForm, TinyFormItem, TinyInput, TinyTabItem, TinyTabs } from '@opentiny/vue';
+import { TinyButton, TinyCheckbox, TinyForm, TinyFormItem, TinyInput } from '@opentiny/vue';
 import { onMounted, reactive, ref, watch } from 'vue';
 
 const { id, onSuccess } = defineProps<{

@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import type { EdgeProps } from '@vue-flow/core';
-import { BezierEdge, useVueFlow } from '@vue-flow/core';
+import { BezierEdge } from '@vue-flow/core';
 import { computed } from 'vue';
 import ArrowMarker from './arrow-marker.vue';
 
 const props = defineProps<EdgeProps>();
 
-const {findNode} = useVueFlow();
-
-const markerId = computed(() => `${props.id}-marker`)
+const markerId = computed(() => `${props.id}-marker`);
 </script>
 
 <script lang="ts">
@@ -18,7 +16,7 @@ export default {
 </script>
 
 <template>
-  <BezierEdge
+  <bezier-edge
     class="stroke-blue-500!"
     :source-x="sourceX"
     :source-y="sourceY"
@@ -29,5 +27,5 @@ export default {
     :marker-end="`url(#${markerId})`"
     :marker-start="`url(#${markerId})`"
   />
-  <arrow-marker type="arrow" :id="markerId" :width="20" :height="20" />
+  <arrow-marker :id="markerId" type="arrow" :width="20" :height="20" />
 </template>

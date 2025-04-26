@@ -7,7 +7,6 @@
       "@/": ["./src"],
       "@/*": ["./src/*"]
     },
-    "types": ["./src/types/**/*.d.ts"],
     "strict": true,
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
