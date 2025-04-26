@@ -1,20 +1,21 @@
 <script lang="ts" setup>
 import { useDark } from '@vueuse/core';
-import { onMounted, watch } from 'vue';
+import { onMounted } from 'vue';
 
 const theme = useDark();
-
-watch(theme, () => {
-  document.documentElement.classList.add(theme.value ? 'dark' : 'light');
-});
-
 onMounted(() => {
-  document.documentElement.classList.add(theme.value ? 'dark' : 'light');
+  if (theme.value) {
+    document.documentElement.classList.toggle('dark');
+  }
 });
 </script>
 
 <template>
   <div class="size-full">
-    <router-view />
+    <router-view v-slot="{ Component }">
+      <transition>
+        <component :is="Component" />
+      </transition>
+    </router-view>
   </div>
 </template>

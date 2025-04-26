@@ -44,6 +44,12 @@ declare global {
           };
           emailCode: number;
         };
+        secure: {
+          mailCode: {
+            forget: number;
+            update: number;
+          };
+        };
       };
     };
   };

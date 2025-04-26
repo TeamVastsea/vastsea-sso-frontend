@@ -120,7 +120,14 @@ export class AuthController {
     if (!userId) {
       throw new HttpException('校验码过期', HttpStatus.BAD_REQUEST);
     }
-    const tokenPayload = this.authService.createTokenPair(userId);
+    const account = await this.account.getAccountInfo(BigInt(userId));
+    if (!account) {
+      throw new HttpException('账号不存在', HttpStatus.NOT_FOUND);
+    }
+    const tokenPayload = this.authService.createTokenPair(
+      userId,
+      account.email,
+    );
     return tokenPayload.then((payload) => {
       return this.authService
         .revokeCode(code)

@@ -13,5 +13,9 @@ export const useAccountStore = defineStore('account', () => {
     accessToken.value = payload.access_token;
     refreshToken.value = payload.refresh_token;
   };
-  return { accessToken, refreshToken, setTokenPair };
+  const clearTokenPair = () => {
+    accessToken.value = '';
+    refreshToken.value = '';
+  };
+  return { accessToken, refreshToken, setTokenPair, clearTokenPair };
 }, { persist: true });

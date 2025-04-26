@@ -14,6 +14,7 @@ import { GlobalCounterService } from '@app/global-counter';
 import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@app/config';
 import { UpdateAccount } from './dto/update-account';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class AccountService {
@@ -97,6 +98,8 @@ export class AccountService {
         data: {
           email: data.email,
           password,
+          salt: data.password === undefined ? undefined : salt,
+          iterations,
           profile: {
             update: {
               nick: data.profile?.nick,
@@ -184,8 +187,11 @@ export class AccountService {
       })
       .then((account) => account);
   }
-  findAccountByEmail(email: string) {
-    return this.prisma.account.findFirst({ where: { email } });
+  findAccountByEmail<I extends Prisma.AccountInclude>(
+    email: string,
+    include?: I,
+  ) {
+    return this.prisma.account.findFirst({ where: { email }, include });
   }
   async verifyPassword(email: string, userPassword: string) {
     const account = await this.prisma.account.findFirst({

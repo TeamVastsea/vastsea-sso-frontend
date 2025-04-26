@@ -46,12 +46,18 @@ importers:
       cookie-parser:
         specifier: ^1.4.7
         version: 1.4.7
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       globals:
         specifier: ^16.0.0
         version: 16.0.0
       ioredis:
         specifier: ^5.6.0
         version: 5.6.1
+      ms:
+        specifier: ^2.1.3
+        version: 2.1.3
       nestjs-spelunker:
         specifier: ^1.3.2
         version: 1.3.2(@nestjs/common@11.0.20(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.0.20(@nestjs/common@11.0.20(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.0.20)(reflect-metadata@0.2.2)(rxjs@7.8.2))
@@ -116,6 +122,9 @@ importers:
       '@types/jest':
         specifier: ^29.5.14
         version: 29.5.14
+      '@types/ms':
+        specifier: ^2.1.0
+        version: 2.1.0
       '@types/node':
         specifier: ^22.13.14
         version: 22.14.1
@@ -214,13 +223,16 @@ importers:
         version: 13.1.0(vue@3.5.13(typescript@5.7.3))
       '@vueuse/integrations':
         specifier: ^13.1.0
-        version: 13.1.0(axios@1.8.4)(qrcode@1.5.1)(universal-cookie@7.2.2)(vue@3.5.13(typescript@5.7.3))
+        version: 13.1.0(axios@1.8.4)(jwt-decode@4.0.0)(qrcode@1.5.1)(universal-cookie@7.2.2)(vue@3.5.13(typescript@5.7.3))
       arktype:
         specifier: ^2.1.20
         version: 2.1.20
       axios:
         specifier: ^1.8.4
         version: 1.8.4
+      jwt-decode:
+        specifier: ^4.0.0
+        version: 4.0.0
       pinia:
         specifier: ^3.0.2
         version: 3.0.2(typescript@5.7.3)(vue@3.5.13(typescript@5.7.3))
@@ -3442,6 +3454,11 @@ packages:
   cropperjs@1.6.2:
     resolution: {integrity: sha512-nhymn9GdnV3CqiEHJVai54TULFAE3VshJTXSqSJKa8yXAKyBKDWdhHarnlIPrshJ0WMFTGuFvG02YjLXfPiuOA==}
 
+  cross-env@7.0.3:
+    resolution: {integrity: sha512-+/HKd6EgcQCJGh2PSjZuUitQBQynKor4wrFbRg4DtAgS1aWO+gU52xpH7M9ScGgXSYmAVS9bIJ8EzuaGw0oNAw==}
+    engines: {node: '>=10.14', npm: '>=6', yarn: '>=1'}
+    hasBin: true
+
   cross-spawn@6.0.6:
     resolution: {integrity: sha512-VqCUuhcd1iB+dsv8gxPttb5iZh/D0iubSP21g36KXdEuf6I5JiioesUVjpCdHV9MZRUfVFlvwtIUyPfxo5trtw==}
     engines: {node: '>=4.8'}
@@ -4819,6 +4836,10 @@ packages:
     resolution: {integrity: sha512-ZhJT1soxJCkOiO55/mz8yeBKTAJhRzX9WBO+16ZTqNTONnnVlUPyVBIzQ7lDRjaBdTbid+bAnyIon/GM3yp4cA==}
     engines: {node: '>=10.0.0'}
     hasBin: true
+
+  jwt-decode@4.0.0:
+    resolution: {integrity: sha512-+KJGIyHgkGuIq3IEBNftfhW/LfWhXUIY6OmyVWjliu5KH1y0fw7VQ8YndE2O4qZdMSd9SqbnC8GOcZEy0Om7sA==}
+    engines: {node: '>=18'}
 
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
@@ -11075,13 +11096,14 @@ snapshots:
       '@vueuse/shared': 13.1.0(vue@3.5.13(typescript@5.7.3))
       vue: 3.5.13(typescript@5.7.3)
 
-  '@vueuse/integrations@13.1.0(axios@1.8.4)(qrcode@1.5.1)(universal-cookie@7.2.2)(vue@3.5.13(typescript@5.7.3))':
+  '@vueuse/integrations@13.1.0(axios@1.8.4)(jwt-decode@4.0.0)(qrcode@1.5.1)(universal-cookie@7.2.2)(vue@3.5.13(typescript@5.7.3))':
     dependencies:
       '@vueuse/core': 13.1.0(vue@3.5.13(typescript@5.7.3))
       '@vueuse/shared': 13.1.0(vue@3.5.13(typescript@5.7.3))
       vue: 3.5.13(typescript@5.7.3)
     optionalDependencies:
       axios: 1.8.4
+      jwt-decode: 4.0.0
       qrcode: 1.5.1
       universal-cookie: 7.2.2
 
@@ -11783,6 +11805,10 @@ snapshots:
   create-require@1.1.1: {}
 
   cropperjs@1.6.2: {}
+
+  cross-env@7.0.3:
+    dependencies:
+      cross-spawn: 7.0.6
 
   cross-spawn@6.0.6:
     dependencies:
@@ -13554,6 +13580,8 @@ snapshots:
     transitivePeerDependencies:
       - encoding
     optional: true
+
+  jwt-decode@4.0.0: {}
 
   keyv@4.5.4:
     dependencies:

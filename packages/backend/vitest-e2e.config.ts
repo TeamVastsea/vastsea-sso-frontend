@@ -16,6 +16,7 @@ export default defineConfig({
       '@app/redis-cache': resolve(__dirname, './libs/redis-cache/src'),
       '@app/global-counter': resolve(__dirname, './libs/global-counter/src'),
       '@app/guard': resolve(__dirname, './libs/guard/src'),
+      '@app/mail': resolve(__dirname, './libs/mail/src'),
     },
   },
   plugins: [swc.vite()],
@@ -33,6 +34,7 @@ export default defineConfig({
       '@app/redis-cache': resolve(__dirname, './libs/redis-cache/src'),
       '@app/global-counter': resolve(__dirname, './libs/global-counter/src'),
       '@app/guard': resolve(__dirname, './libs/guard/src'),
+      '@app/mail': resolve(__dirname, './libs/mail/src'),
     },
   },
 });

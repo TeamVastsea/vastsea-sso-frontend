@@ -25,15 +25,6 @@
         "tsConfigPath": "libs/constant/tsconfig.lib.json"
       }
     },
-    "guard": {
-      "type": "library",
-      "root": "libs/guard",
-      "entryFile": "index",
-      "sourceRoot": "libs/guard/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/guard/tsconfig.lib.json"
-      }
-    },
     "decorator": {
       "type": "library",
       "root": "libs/decorator",
@@ -52,6 +43,15 @@
         "tsConfigPath": "libs/global-counter/tsconfig.lib.json"
       }
     },
+    "guard": {
+      "type": "library",
+      "root": "libs/guard",
+      "entryFile": "index",
+      "sourceRoot": "libs/guard/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/guard/tsconfig.lib.json"
+      }
+    },
     "jwt": {
       "type": "library",
       "root": "libs/jwt",
@@ -59,6 +59,15 @@
       "sourceRoot": "libs/jwt/src",
       "compilerOptions": {
         "tsConfigPath": "libs/jwt/tsconfig.lib.json"
+      }
+    },
+    "mail": {
+      "type": "library",
+      "root": "libs/mail",
+      "entryFile": "index",
+      "sourceRoot": "libs/mail/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/mail/tsconfig.lib.json"
       }
     },
     "prisma": {

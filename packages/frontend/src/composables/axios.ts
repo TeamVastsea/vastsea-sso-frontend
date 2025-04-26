@@ -25,8 +25,7 @@ instance.interceptors.response.use((resp) => {
   });
   if (err.status === 401) {
     history.go(0);
-    account.accessToken = '';
-    account.refreshToken = '';
+    account.clearTokenPair();
     return;
   }
   throw err.response.data;

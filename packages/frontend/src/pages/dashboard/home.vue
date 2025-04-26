@@ -9,49 +9,43 @@ const menus = dashboardHomeChildren;
 </script>
 
 <template>
-  <div class="size-full flex group" :data-sidebar-open="isOpen">
+  <div class="group flex size-full" :data-sidebar-open="isOpen">
     <div
       :data-isMobile="isMobile"
       :data-show="isOpen"
       :data-isMobileShow="isMobile && isOpen"
-      class="
-      bg-zinc-100 flex flex-col shrink-0 overflow-auto relative
-      w-full basis-48 h-full dark:bg-zinc-800 group z-10
-      data-[show=false]:basis-0
-      data-[show=false]:overflow-hidden
-      data-[isMobileShow=true]:fixed data-[isMobileShow=true]:top-0 data-[isMobileShow=true]:left-0
-      "
+      class="group bg-zinc-100 flex shrink-0 basis-48 flex-col h-full w-full relative z-10 overflow-auto dark:bg-zinc-800 data-[show=false]:basis-0 data-[isMobileShow=true]:left-0 data-[isMobileShow=true]:top-0 data-[isMobileShow=true]:fixed data-[show=false]:overflow-hidden"
     >
-      <div class="sticky top-2 p-2 bg-zinc-200 dark:bg-zinc-700 rounded w-fit ml-2 mt-2 group-data-[isMobile=false]:hidden" @click="toggleSidebar">
+      <div class="ml-2 mt-2 p-2 rounded bg-zinc-200 w-fit top-2 sticky dark:bg-zinc-700 group-data-[isMobile=false]:hidden" @click="toggleSidebar">
         <div v-if="isOpen" class="i-tabler:layout-sidebar-left-collapse size-5 dark:text-zinc-50" />
         <div v-if="!isOpen" class="i-tabler:layout-sidebar-right-collapse size-5 dark:text-zinc-50" />
       </div>
-      <ul class="space-y-3 px-2 my-4 flex-auto">
+      <ul class="my-4 px-2 flex-auto space-y-3">
         <router-link
           v-for="menu of menus"
           :key="menu.name"
           :to="{ name: menu.name }"
-          exact-active-class="bg-zinc-200 dark:bg-blue-500/20"
-          class="cursor-pointer block rounded transition dark:text-blue"
+          exact-active-class="bg-zinc-200 dark:bg-blue-500/20 dark:text-blue-200!"
+          class="text-zinc-800 rounded block cursor-pointer transition dark:text-zinc-200"
         >
           <li class="px-2 py-1.5">
             {{ menu.meta?.title }}
           </li>
         </router-link>
       </ul>
-      <div class="mb-0 h-fit w-full border-t dark:border-t-zinc-600 border-t-zinc-300 ">
-        <color-switch class="mr-0 ml-auto" />
+      <div class="mb-0 border-t border-t-zinc-300 h-fit w-full dark:border-t-zinc-600">
+        <color-switch class="ml-auto mr-0" />
       </div>
     </div>
-    <div class="flex-grow flex-shrink bg-zinc-50 dark:bg-zinc-900 flex flex-col min-w-0 max-w-full">
-      <div class="w-full h-fit p-2">
-        <div class="size-fit flex-auto hover:bg-zinc-200 dark:hover:bg-zinc-800 p-2 cursor-pointer rounded transition" @click="toggleSidebar">
+    <div class="bg-zinc-50 flex flex-shrink flex-grow flex-col max-w-full min-w-0 dark:bg-zinc-900">
+      <div class="p-2 h-fit w-full">
+        <div class="p-2 rounded flex-auto size-fit cursor-pointer transition hover:bg-zinc-200 dark:hover:bg-zinc-800" @click="toggleSidebar">
           <div v-if="isOpen" class="i-tabler:layout-sidebar-left-collapse size-6 dark:text-zinc-50" />
           <div v-if="!isOpen" class="i-tabler:layout-sidebar-right-collapse size-6 dark:text-zinc-50" />
         </div>
       </div>
-      <div class="size-full bg-zinc-200 dark:bg-zinc-950 p-4 overflow-auto">
-        <div class="size-full bg-zinc-100 dark:bg-zinc-900 p-4 rounded overflow-auto">
+      <div class="p-4 bg-zinc-200 size-full overflow-auto dark:bg-zinc-950">
+        <div class="p-4 rounded bg-zinc-100 size-full overflow-auto dark:bg-zinc-900">
           <router-view />
         </div>
       </div>
