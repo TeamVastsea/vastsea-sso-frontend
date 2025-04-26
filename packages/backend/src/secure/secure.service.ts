@@ -22,21 +22,13 @@ export class SecureService {
     private accountService: AccountService,
     @AutoRedis() private redis: Redis | Cluster,
   ) {}
-  async updatePassword(data: UpdatePassword) {
-    const { code } = data;
-    const cacheCode = await this.getCode('update', data.email);
-    if (isNil(cacheCode)) {
-      throw new HttpException('请先发送验证码', HttpStatus.BAD_REQUEST);
-    }
-    if (cacheCode !== code) {
-      throw new HttpException('验证码错误', HttpStatus.BAD_REQUEST);
-    }
-    const account = await this.account.findAccountByEmail(data.email);
+  async updatePassword(data: UpdatePassword, id: bigint) {
+    const account = await this.account.getAccountInfo(id);
     if (isNil(account)) {
       throw new HttpException('账号不存在', HttpStatus.NOT_FOUND);
     }
     const hashOldPassword = await this.account.verifyPassword(
-      data.email,
+      account.email,
       data.oldPassword,
     );
     if (!hashOldPassword) {
@@ -91,13 +83,13 @@ export class SecureService {
     await multi.exec();
     return code;
   }
-  async revokeCode(type: 'forget' | 'update', email: string) {
+  async revokeCode(type: 'forget', email: string) {
     return this.redis.del(`SECURE::${type}::${email}`);
   }
-  getCode(type: 'forget' | 'update', email: string) {
+  getCode(type: 'forget', email: string) {
     return this.redis.get(`SECURE::${type}::${email}`);
   }
-  async sendCode(email: string, type: 'forget' | 'update') {
+  async sendCode(email: string, type: 'forget') {
     const account = (await this.account.findAccountByEmail(email, {
       profile: true,
     })) as (Account & { profile?: Profile }) | null;

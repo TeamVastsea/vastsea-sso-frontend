@@ -104,7 +104,7 @@ const register = () => {
             </div>
           </tiny-form-item>
           <tiny-form-item label="密码" required prop="password">
-            <tiny-input v-model="registerBody.password" type="password" />
+            <tiny-input v-model="registerBody.password" type="password" show-password />
           </tiny-form-item>
           <tiny-form-item label="昵称" required prop="profile.nick">
             <tiny-input v-model="registerBody.profile.nick" />

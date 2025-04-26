@@ -23,6 +23,9 @@ if (cookie.get('session-state')) {
     .then((resp) => {
       const code = resp.code;
       router.replace({ name: 'redirect', query: { ok: 'true', code } });
+    })
+    .catch(() => {
+      cookie.remove('session-state');
     });
 }
 

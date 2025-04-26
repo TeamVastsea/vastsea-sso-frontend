@@ -200,10 +200,6 @@ export class AccountService {
     if (!account) {
       throw new HttpException('账号不存在', HttpStatus.NOT_FOUND);
     }
-    console.log(
-      this.hashPwd(userPassword, account.salt, account.iterations),
-      account.password,
-    );
     return (
       this.hashPwd(userPassword, account.salt, account.iterations) ===
       account.password

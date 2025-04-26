@@ -40,6 +40,15 @@ const AuthChildren: RouteRecordRaw[] = [
       title: '忘记密码',
     },
   },
+  {
+    name: 'update-password',
+    path: 'update-password',
+    component: () => import('@/pages/auth/update-password.vue'),
+    meta: {
+      auth: true,
+      title: '修改密码',
+    },
+  },
 ];
 
 export const dashboardHomeChildren: RouteRecordRaw[] = [

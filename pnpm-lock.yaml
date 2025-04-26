@@ -223,13 +223,16 @@ importers:
         version: 13.1.0(vue@3.5.13(typescript@5.7.3))
       '@vueuse/integrations':
         specifier: ^13.1.0
-        version: 13.1.0(axios@1.8.4)(qrcode@1.5.1)(universal-cookie@7.2.2)(vue@3.5.13(typescript@5.7.3))
+        version: 13.1.0(axios@1.8.4)(jwt-decode@4.0.0)(qrcode@1.5.1)(universal-cookie@7.2.2)(vue@3.5.13(typescript@5.7.3))
       arktype:
         specifier: ^2.1.20
         version: 2.1.20
       axios:
         specifier: ^1.8.4
         version: 1.8.4
+      jwt-decode:
+        specifier: ^4.0.0
+        version: 4.0.0
       pinia:
         specifier: ^3.0.2
         version: 3.0.2(typescript@5.7.3)(vue@3.5.13(typescript@5.7.3))
@@ -4833,6 +4836,10 @@ packages:
     resolution: {integrity: sha512-ZhJT1soxJCkOiO55/mz8yeBKTAJhRzX9WBO+16ZTqNTONnnVlUPyVBIzQ7lDRjaBdTbid+bAnyIon/GM3yp4cA==}
     engines: {node: '>=10.0.0'}
     hasBin: true
+
+  jwt-decode@4.0.0:
+    resolution: {integrity: sha512-+KJGIyHgkGuIq3IEBNftfhW/LfWhXUIY6OmyVWjliu5KH1y0fw7VQ8YndE2O4qZdMSd9SqbnC8GOcZEy0Om7sA==}
+    engines: {node: '>=18'}
 
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
@@ -11089,13 +11096,14 @@ snapshots:
       '@vueuse/shared': 13.1.0(vue@3.5.13(typescript@5.7.3))
       vue: 3.5.13(typescript@5.7.3)
 
-  '@vueuse/integrations@13.1.0(axios@1.8.4)(qrcode@1.5.1)(universal-cookie@7.2.2)(vue@3.5.13(typescript@5.7.3))':
+  '@vueuse/integrations@13.1.0(axios@1.8.4)(jwt-decode@4.0.0)(qrcode@1.5.1)(universal-cookie@7.2.2)(vue@3.5.13(typescript@5.7.3))':
     dependencies:
       '@vueuse/core': 13.1.0(vue@3.5.13(typescript@5.7.3))
       '@vueuse/shared': 13.1.0(vue@3.5.13(typescript@5.7.3))
       vue: 3.5.13(typescript@5.7.3)
     optionalDependencies:
       axios: 1.8.4
+      jwt-decode: 4.0.0
       qrcode: 1.5.1
       universal-cookie: 7.2.2
 
@@ -13572,6 +13580,8 @@ snapshots:
     transitivePeerDependencies:
       - encoding
     optional: true
+
+  jwt-decode@4.0.0: {}
 
   keyv@4.5.4:
     dependencies:

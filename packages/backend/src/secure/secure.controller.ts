@@ -19,18 +19,11 @@ export class SecureController {
   constructor(
     private readonly accountService: AccountService,
     private readonly secureService: SecureService,
-    private readonly config: ConfigService,
   ) {}
 
   @Post('/password/forget-mail-code')
   async sendForgetPasswordMailCode(@Query('email') email: string) {
     return this.secureService.sendCode(email, 'forget');
-  }
-
-  @Auth()
-  @Post('/password/update-mail-code')
-  async sendUpdatePasswordMailCode(@Query('email') email: string) {
-    return this.secureService.sendCode(email, 'update');
   }
 
   @Patch('/password/forget')
@@ -51,12 +44,6 @@ export class SecureController {
     if (!account) {
       throw new HttpException('用户不存在', HttpStatus.BAD_REQUEST);
     }
-    if (account.email !== body.email) {
-      throw new HttpException('参数错误', HttpStatus.BAD_REQUEST);
-    }
-    return this.secureService
-      .updatePassword(body)
-      .then(() => this.secureService.revokeCode('forget', body.email))
-      .then(() => {});
+    return this.secureService.updatePassword(body, BigInt(id)).then(() => {});
   }
 }

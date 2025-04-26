@@ -70,9 +70,9 @@ export class AuthService {
     } as const;
   }
 
-  async createTokenPair(id: bigint | string) {
+  async createTokenPair(id: bigint | string, email: string) {
     const accessToken = await this.jwt.sign(
-      { id, random: randomBytes(16).toString('base64') },
+      { id, random: randomBytes(16).toString('base64'), email },
       'access',
       this.config.get('cache.ttl.auth.token.access'),
       { issuer: process.env.APP_NAME },
