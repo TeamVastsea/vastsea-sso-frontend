@@ -1,4 +1,5 @@
 import { resolve } from 'node:path';
+import { env } from 'node:process';
 import vue from '@vitejs/plugin-vue';
 import { visualizer } from 'rollup-plugin-visualizer';
 import UnoCSS from 'unocss/vite';
@@ -23,9 +24,9 @@ export default defineConfig({
   ],
   define: {
     'process.env': { TINY_MODE: 'pc' },
-    'BASE_URL': JSON.stringify('/api'),
+    'BASE_URL': JSON.stringify(env.BASE_URL ?? '/api'),
     'MOBILE_WIDTH': 648,
-    '__AUTH_SERVER__': JSON.stringify('oagoiasdjgioa'),
+    '__AUTH_SERVER__': JSON.stringify(env.AUTH_SERVER_CLIENT_ID),
   },
   resolve: {
     alias: {

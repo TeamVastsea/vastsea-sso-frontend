@@ -16,8 +16,6 @@ FROM node:current-alpine3.21 as builder
 WORKDIR /app/backend
 
 ADD . .
-RUN npm i -g pnpm && \
-    pnpm i --prefer-offline
 
 ENV DATABASE_URL          = ""
 ENV NODE_ENV              = "production"
@@ -45,7 +43,7 @@ COPY --from=builder /app/backend/package*.json ./
 COPY --from=builder /app/backend/dist ./dist
 
 RUN npm i -g pnpm && \
-    pnpm prisma migrate && \
+    pnpm prisma migrate
 
 EXPOSE 3000
 

@@ -17,3 +17,7 @@ services:
       COMMON_ERROR_REDIRECT: ""
       SWAGGER_TITLE: ""
       SWAGGER_DESC: ""
+  redis:
+    image: redis
+    ports:
+      - 6379:6379

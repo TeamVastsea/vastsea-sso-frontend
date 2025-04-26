@@ -1,0 +1,20 @@
+FROM node:current-alpine3.21 as builder
+
+WORKDIR /app/frontend
+
+ADD . .
+
+ENV BASE_URL=""
+ENV AUTH_SERVER_CLIENT_ID=""
+
+RUN npm i -g pnpm && \
+    pnpm i && \
+    pnpm build
+
+FROM nginx
+
+COPY --from=builder /app/frontend/dist /usr/share/nginx/html
+
+VOLUME [ "/etc/nginx/nginx.conf","/etc/nginx/conf.d" ]
+
+EXPOSE 80

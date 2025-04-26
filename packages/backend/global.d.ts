@@ -15,3 +15,5 @@ declare namespace NodeJS {
 
 declare const __TEST__: boolean;
 declare const __DEV__: boolean;
+declare const __BUILD_AT__: string;
+declare const __COMMIT__: string;

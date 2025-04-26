@@ -70,7 +70,7 @@ const BUILT_IN_PERMISSIONS = [
             inject: [ConfigService],
             useFactory(config: ConfigService) {
               return {
-                config: config.get('redis.cluster'),
+                config: config.get('redis.cluster')!,
               };
             },
           },
@@ -81,7 +81,7 @@ const BUILT_IN_PERMISSIONS = [
             inject: [ConfigService],
             useFactory(config: ConfigService) {
               return {
-                config: config.get('redis.standalone'),
+                config: config.get('redis.standalone')!,
               };
             },
           },
@@ -201,7 +201,7 @@ export class AppModule implements OnModuleInit {
           active: true,
           clientId: client.clientId,
         },
-        dbAdminId,
+        dbAdminId!,
         true,
       );
       this.logger.log(`创建权限 ${p} 成功`);
@@ -211,7 +211,7 @@ export class AppModule implements OnModuleInit {
     });
     const role = await this.role.createRole({
       name: 'Admin',
-      permissions: [superPermission.id],
+      permissions: [superPermission!.id],
       clientId: client.clientId,
       desc: '',
     });
