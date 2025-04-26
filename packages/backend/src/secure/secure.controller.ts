@@ -24,20 +24,21 @@ export class SecureController {
 
   @Post('/password/forget-mail-code')
   async sendForgetPasswordMailCode(@Query('email') email: string) {
-    await this.secureService.sendCode(email, 'forget');
-    return;
+    return this.secureService.sendCode(email, 'forget');
   }
 
   @Auth()
   @Post('/password/update-mail-code')
   async sendUpdatePasswordMailCode(@Query('email') email: string) {
-    await this.secureService.sendCode(email, 'update');
-    return;
+    return this.secureService.sendCode(email, 'update');
   }
 
   @Patch('/password/forget')
   async forgetPassword(@Body() body: ForgetPassword) {
-    return this.secureService.forgetPassword(body);
+    return this.secureService
+      .forgetPassword(body)
+      .then(() => this.secureService.revokeCode('forget', body.email))
+      .then(() => {});
   }
 
   @Auth()
@@ -53,6 +54,9 @@ export class SecureController {
     if (account.email !== body.email) {
       throw new HttpException('参数错误', HttpStatus.BAD_REQUEST);
     }
-    return this.secureService.updatePassword(body);
+    return this.secureService
+      .updatePassword(body)
+      .then(() => this.secureService.revokeCode('forget', body.email))
+      .then(() => {});
   }
 }

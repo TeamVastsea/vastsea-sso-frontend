@@ -98,6 +98,8 @@ export class AccountService {
         data: {
           email: data.email,
           password,
+          salt: data.password === undefined ? undefined : salt,
+          iterations,
           profile: {
             update: {
               nick: data.profile?.nick,
@@ -198,6 +200,10 @@ export class AccountService {
     if (!account) {
       throw new HttpException('账号不存在', HttpStatus.NOT_FOUND);
     }
+    console.log(
+      this.hashPwd(userPassword, account.salt, account.iterations),
+      account.password,
+    );
     return (
       this.hashPwd(userPassword, account.salt, account.iterations) ===
       account.password

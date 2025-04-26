@@ -79,19 +79,28 @@ export class SecureService {
     code: string,
     expire = 60 * 1000 * 10,
   ) {
+    if (await this.redis.exists(`SECURE::${type}::${email}`)) {
+      throw new HttpException(
+        '请不要重复发送验证码',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
     const multi = this.redis.multi();
     multi.set(`SECURE::${type}::${email}`, code);
     multi.pexpire(`SECURE::${type}::${email}`, expire);
     await multi.exec();
     return code;
   }
+  async revokeCode(type: 'forget' | 'update', email: string) {
+    return this.redis.del(`SECURE::${type}::${email}`);
+  }
   getCode(type: 'forget' | 'update', email: string) {
     return this.redis.get(`SECURE::${type}::${email}`);
   }
   async sendCode(email: string, type: 'forget' | 'update') {
-    const account = (await this.account.findAccountByEmail(email)) as
-      | (Account & { profile?: Profile })
-      | null;
+    const account = (await this.account.findAccountByEmail(email, {
+      profile: true,
+    })) as (Account & { profile?: Profile }) | null;
     if (!account || !account.profile) {
       throw new HttpException('用户不存在', HttpStatus.NOT_FOUND);
     }
@@ -99,14 +108,14 @@ export class SecureService {
       type === 'forget'
         ? this.config.get('cache.ttl.secure.mailCode.forget')
         : this.config.get('cache.ttl.secure.mailCode.update');
-    const expire = rawExpire ?? 60 * 10 * 1000;
+    const expire = rawExpire ?? 60 * 1000;
     const code = this.generateSecureCode();
-    const expireStr = Number.parseInt(String((expire / 60) * 1000)).toString();
+    const expireStr = Number.parseInt(String(expire / 1000)).toString();
     const template =
       type === 'forget'
         ? FORGET_PASSWORD(account.profile.nick, code, expireStr)
         : UPDATE_PASSWORD(account.profile.nick, code, expireStr);
-    this.invokeCode(type, email, code, expire)
+    return this.invokeCode(type, email, code, expire)
       .then(() => {
         return this.mail.send({
           to: email,
@@ -115,7 +124,7 @@ export class SecureService {
         });
       })
       .then((ok) => {
-        return ok;
+        return { ttl: expire };
       });
   }
 }

@@ -74,11 +74,15 @@ if (clientId) {
               </tiny-form-item>
               <tiny-form-item label="密码" required prop="password">
                 <tiny-input v-model="loginDto.password" type="password" name="password" />
+                <router-link view-transition to="/auth/forget-password" class="text-blue-500">
+                  忘记密码
+                </router-link>
               </tiny-form-item>
               <tiny-form-item>
                 <tiny-button type="primary" native-type="submit" class="mr-2">
                   登录
                 </tiny-button>
+
                 <router-link to="/auth/register" view-transition class="text-zinc-800 dark:text-zinc-200">
                   注册
                 </router-link>

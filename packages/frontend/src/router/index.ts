@@ -28,7 +28,16 @@ const AuthChildren: RouteRecordRaw[] = [
     component: () => import('@/pages/auth/register.vue'),
     meta: {
       auth: false,
-      title: '登录',
+      title: '注册',
+    },
+  },
+  {
+    name: 'forget-password',
+    path: 'forget-password',
+    component: () => import('@/pages/auth/forget-password.vue'),
+    meta: {
+      auth: false,
+      title: '忘记密码',
     },
   },
 ];
