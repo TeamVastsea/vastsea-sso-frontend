@@ -27,6 +27,8 @@ import { ZodValidationPipe } from 'nestjs-zod';
 import { RequireClientPairGuard } from '@app/guard';
 import { ClientService } from './client/client.service';
 import { RequriedClientAdministratorGuard } from '@app/guard/require-client-administrator';
+import { SecureModule } from './secure/secure.module';
+import { MailModule } from '@app/mail';
 
 const BUILT_IN_PERMISSIONS = [
   '*',
@@ -45,6 +47,7 @@ const BUILT_IN_PERMISSIONS = [
 
 @Module({
   imports: [
+    MailModule,
     PrismaModule,
     JwtModule.forRoot({
       global: true,
@@ -91,6 +94,7 @@ const BUILT_IN_PERMISSIONS = [
     RoleModule,
     AccountModule,
     AuthModule,
+    SecureModule,
   ],
   providers: [
     {

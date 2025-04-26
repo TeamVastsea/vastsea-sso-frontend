@@ -42,11 +42,23 @@
       "@app/global-counter/*": [
         "libs/global-counter/src/*"
       ],
+      "@app/guard": [
+        "libs/guard/src"
+      ],
+      "@app/guard/*": [
+        "libs/guard/src/*"
+      ],
       "@app/jwt": [
         "libs/jwt/src"
       ],
       "@app/jwt/*": [
         "libs/jwt/src/*"
+      ],
+      "@app/mail": [
+        "libs/mail/src"
+      ],
+      "@app/mail/*": [
+        "libs/mail/src/*"
       ],
       "@app/prisma": [
         "libs/prisma/src"
@@ -65,12 +77,6 @@
       ],
       "@app/redis-cache/*": [
         "libs/redis-cache/src/*"
-      ],
-      "@app/guard": [
-        "libs/guard/src"
-      ],
-      "@app/guard/*":[
-        "libs/guard/src/*"
       ]
     }
   }

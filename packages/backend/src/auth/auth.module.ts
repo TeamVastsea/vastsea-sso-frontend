@@ -7,14 +7,14 @@ import { ConfigService } from '@app/config';
 
 @Module({
   imports: [
-    MailerModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory(config: ConfigService) {
-        return {
-          transport: config.get('email.transport'),
-        };
-      },
-    }),
+    // MailerModule.forRootAsync({
+    //   inject: [ConfigService],
+    //   useFactory(config: ConfigService) {
+    //     return {
+    //       transport: config.get('email.transport'),
+    //     };
+    //   },
+    // }),
   ],
   controllers: [AuthController],
   providers: [AuthService, PrismaService],

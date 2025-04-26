@@ -52,6 +52,9 @@ importers:
       ioredis:
         specifier: ^5.6.0
         version: 5.6.1
+      ms:
+        specifier: ^2.1.3
+        version: 2.1.3
       nestjs-spelunker:
         specifier: ^1.3.2
         version: 1.3.2(@nestjs/common@11.0.20(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.0.20(@nestjs/common@11.0.20(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.0.20)(reflect-metadata@0.2.2)(rxjs@7.8.2))
@@ -116,6 +119,9 @@ importers:
       '@types/jest':
         specifier: ^29.5.14
         version: 29.5.14
+      '@types/ms':
+        specifier: ^2.1.0
+        version: 2.1.0
       '@types/node':
         specifier: ^22.13.14
         version: 22.14.1

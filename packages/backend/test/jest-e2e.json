@@ -21,6 +21,8 @@
     "@app/global-counter/(.*)": "<rootDir>/../libs/global-counter/src/$1",
     "@app/jwt": "<rootDir>/../libs/jwt/src",
     "@app/jwt/(.*)": "<rootDir>/../libs/jwt/src/$1",
+    "@app/mail": "<rootDir>/../libs/mail/src",
+    "@app/mail/(.*)": "<rootDir>/../libs/mail/src/$1",
     "@app/prisma": "<rootDir>/../libs/prisma/src",
     "@app/prisma-cache": "<rootDir>/../libs/prisma-cache/src",
     "@app/prisma-cache/(.*)": "<rootDir>/../libs/prisma-cache/src/$1",
