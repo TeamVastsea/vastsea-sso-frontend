@@ -44,7 +44,8 @@ jobs:
         run: pnpm i
       - name: e2e testing
         working-directory: packages/backend
-        run: pnpm prisma migrate deploy && pnpm prisma migrate reset -f && pnpm test:e2e client &&
-             pnpm prisma migrate reset -f  && pnpm test:e2e role && 
-             pnpm prisma migrate reset -f  && pnpm test:e2e auth && 
-             pnpm prisma migrate reset -f  && pnpm test:e2e account
+        run: pnpm prisma migrate deploy --schema=prisma/schema.dev.prisma &&
+             pnpm prisma migrate reset -f --schema=prisma/schema.dev.prisma &&pnpm test:e2e client &&
+             pnpm prisma migrate reset -f --schema=prisma/schema.dev.prisma  && pnpm test:e2e role && 
+             pnpm prisma migrate reset -f --schema=prisma/schema.dev.prisma  && pnpm test:e2e auth && 
+             pnpm prisma migrate reset -f --schema=prisma/schema.dev.prisma  && pnpm test:e2e account
