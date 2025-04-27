@@ -28,7 +28,6 @@ import {
   Permission,
   Auth,
   RequireClientPair,
-  RequiredClientAdministrator,
   permissionJudge,
 } from '@app/decorator';
 import {
@@ -170,46 +169,6 @@ export class PermissionController {
     );
   }
 
-  @ApiException(() => ForbiddenException, {
-    description:
-      '如果调用方要获取的权限不在他管理的客户端中, 那么会抛出 403 错误. 除非拥有 PERISSION::QUERY::INFO::* 或 * 权限',
-  })
-  @ApiException(() => NotFoundException, {
-    description: '如果这个权限不位于数据库中则抛出404',
-  })
-  @ApiParam({ name: 'id', description: '要获取的权限数据库主键' })
-  @Auth()
-  @Permission({
-    lhs: { op: Operator.HAS, expr: 'PERMISSION::QUERY::INFO' },
-    op: Operator.OR,
-    rhs: {
-      lhs: { op: Operator.HAS, expr: '*' },
-      op: Operator.OR,
-      rhs: { op: Operator.HAS, expr: 'PERMISSION::QUERY::INFO::*' },
-    },
-  })
-  @Get(':id')
-  async getPermissionInfo(
-    @Param('id', BigIntPipe) id: bigint,
-    @Account('id') _accountId: string,
-    @PermissionJudge({
-      lhs: { op: Operator.HAS, expr: '*' },
-      op: Operator.OR,
-      rhs: { op: Operator.HAS, expr: 'PERMISSION::QUERY::INFO::*' },
-    })
-    force: boolean,
-  ) {
-    const permission = await this.permissionService.findPermission({
-      id,
-      accountId: BigInt(_accountId),
-      force,
-    });
-    if (!permission) {
-      throw new HttpException('客户端不存在', HttpStatus.NOT_FOUND);
-    }
-    return permission;
-  }
-
   @Auth()
   @Permission({
     lhs: { op: Operator.HAS, expr: 'PERMISSION::QUERY::LIST' },
@@ -294,5 +253,50 @@ export class PermissionController {
         }
         return { pass };
       });
+  }
+  @Auth()
+  @Get('list')
+  async getAccountPermissionList(@Account('id') id: string) {
+    return this.permissionService.getAccountPermission(BigInt(id));
+  }
+
+  @ApiException(() => ForbiddenException, {
+    description:
+      '如果调用方要获取的权限不在他管理的客户端中, 那么会抛出 403 错误. 除非拥有 PERISSION::QUERY::INFO::* 或 * 权限',
+  })
+  @ApiException(() => NotFoundException, {
+    description: '如果这个权限不位于数据库中则抛出404',
+  })
+  @ApiParam({ name: 'id', description: '要获取的权限数据库主键' })
+  @Auth()
+  @Permission({
+    lhs: { op: Operator.HAS, expr: 'PERMISSION::QUERY::INFO' },
+    op: Operator.OR,
+    rhs: {
+      lhs: { op: Operator.HAS, expr: '*' },
+      op: Operator.OR,
+      rhs: { op: Operator.HAS, expr: 'PERMISSION::QUERY::INFO::*' },
+    },
+  })
+  @Get('/:id')
+  async getPermissionInfo(
+    @Param('id', BigIntPipe) id: bigint,
+    @Account('id') _accountId: string,
+    @PermissionJudge({
+      lhs: { op: Operator.HAS, expr: '*' },
+      op: Operator.OR,
+      rhs: { op: Operator.HAS, expr: 'PERMISSION::QUERY::INFO::*' },
+    })
+    force: boolean,
+  ) {
+    const permission = await this.permissionService.findPermission({
+      id,
+      accountId: BigInt(_accountId),
+      force,
+    });
+    if (!permission) {
+      throw new HttpException('客户端不存在', HttpStatus.NOT_FOUND);
+    }
+    return permission;
   }
 }

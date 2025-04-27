@@ -269,7 +269,7 @@ export class PermissionService {
       data: await data,
     };
   }
-  async getAccountPermission(account: bigint, clientId: string) {
+  async getAccountPermission(account: bigint, clientId?: string) {
     // TODO: should add cache.
     const roles = await this.prisma.account.findFirst({
       where: { id: account },
