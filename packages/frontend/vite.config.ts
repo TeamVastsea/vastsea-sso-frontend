@@ -1,7 +1,6 @@
 import { resolve } from 'node:path';
 import { env } from 'node:process';
 import vue from '@vitejs/plugin-vue';
-import { visualizer } from 'rollup-plugin-visualizer';
 import UnoCSS from 'unocss/vite';
 import { defineConfig } from 'vite';
 import { Plugin as importToCDN } from 'vite-plugin-cdn-import';
@@ -13,7 +12,6 @@ export default defineConfig({
     vue(),
     tsconfigPaths(),
     UnoCSS(),
-    visualizer({ open: true }),
     importToCDN({
       modules: [
         'vue',
