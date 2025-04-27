@@ -11,7 +11,7 @@
 # COMMON_ERROR_REDIRECT 通用错误重定向位置, 指向的应当是前端某一个页面
 # APP_NAME              JWT 颁发时 issuer 参数值. 如果要部署集群所有节点该值应当相同
 
-FROM node:current-alpine3.21 as builder
+FROM node:23-alpine as builder
 
 WORKDIR /app/backend
 
@@ -32,22 +32,25 @@ ENV COMMON_ERROR_REDIRECT = ""
 
 RUN npm i -g pnpm &&  \
     pnpm i --prefer-offline && \
+    pnpm prisma generate && \
     pnpm build
 
-FROM node:current-alpine3.21 as runner
+FROM node:23-alpine as runner
 
 WORKDIR /app/backend
 
 COPY --from=builder /app/backend/node_modules ./node_modules
 COPY --from=builder /app/backend/package*.json ./
 COPY --from=builder /app/backend/dist ./dist
+COPY --from=builder /app/backend/prisma .
 
-RUN npm i -g pnpm && \
-    pnpm prisma migrate
+RUN rm -rf ./prisma/migrations && \
+    npm i -g pnpm && \
+    apk add --no-cache openssl
 
 EXPOSE 3000
 
 VOLUME ["/app/backend/keys","/app/backend/config.toml"]
 
-CMD [ "node", "dist/main.js" ]
+CMD ["sh","-c", "pnpm prisma migrate deploy && node dist/main.js"]
 

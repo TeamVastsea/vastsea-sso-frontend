@@ -1,19 +1,28 @@
 services:
+  pgsql:
+    image: postgres
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DB=vastsea-auth
+    ports:
+      - 5432:5432
   backend:
     build:
       context: .
       dockerfile: dockerfile
+    ports:
+      - 3000:3000
     volumes:
       - ./keys:/app/backend/keys
       - ./config.toml:/app/backend/config.toml
     environment:
-      DATABASE_URL: "file:./dev.db"
+      DATABASE_URL: "postgresql://root:123456@pgsql:5432/vastsea-auth"
       REDIRECT: "http://example.org"
       VERSION: "1.0.0"
       APP_NAME: "TEST_SSO"
       CLIENT_ID: "SAJDOSAJDIAS"
       CLIENT_SECRET: "HGIOAHGIOJASF"
-      REDIS_CLUSTER: false
       COMMON_ERROR_REDIRECT: ""
       SWAGGER_TITLE: ""
       SWAGGER_DESC: ""

@@ -1,6 +1,6 @@
 [redis]
 [redis.standalone]
-host="localhost"
+host="redis"
 port=6379
 
 [email]
