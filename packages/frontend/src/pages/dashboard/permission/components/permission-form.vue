@@ -3,6 +3,7 @@ import type { CreatePermission } from '@/composables';
 import clientSelect from '@/components/client-select.vue';
 import { TinyButton, TinyCheckbox, TinyForm, TinyFormItem, TinyInput } from '@opentiny/vue';
 import { computed, reactive, ref, useTemplateRef } from 'vue';
+
 const { permission, readonly, title, submitBehavior, readonlyField = [], hiddenField = [] } = defineProps<{
   submitBehavior: (data: CreatePermission) => void;
   permission?: CreatePermission;
@@ -32,7 +33,7 @@ const data: CreatePermission = reactive(permission ?? {
 
 const beforeSubmit = () => {
   form.value?.validate()
-    .then((ok) => {
+    .then((ok: boolean) => {
       if (!ok) {
         return;
       }

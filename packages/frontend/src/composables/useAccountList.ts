@@ -2,7 +2,7 @@ import type { CommonComposablesProps } from '@/types/common-composables';
 import type { MaybeRef, Ref } from 'vue';
 import type { CreateAccountMininalDto } from './useAccount';
 import SuperJSON from 'superjson';
-import { ref, setDevtoolsHook, unref, watch } from 'vue';
+import { ref, unref, watch } from 'vue';
 import instance from './axios';
 
 export type UseAccountList = CommonComposablesProps & {

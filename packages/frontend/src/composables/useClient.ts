@@ -1,5 +1,4 @@
 import type { CommonComposablesProps } from '@/types/common-composables';
-import type { ClientInfo } from './useClientList';
 import { reactive } from 'vue';
 import instance from './axios';
 

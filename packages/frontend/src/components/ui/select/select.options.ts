@@ -1,7 +1,7 @@
 import type { AcceptableValue } from 'reka-ui';
 import type { Ref } from 'vue';
 import { createInjectionState } from '@vueuse/core';
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 
 export interface OptionProps<T extends AcceptableValue> {
   label: string;

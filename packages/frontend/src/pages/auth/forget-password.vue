@@ -28,7 +28,7 @@ const sendMailCode = () => {
 };
 const sendForgetPassword = () => {
   axios.patch('/secure/password/forget', forgetPassword)
-    .then((resp) => {
+    .then(() => {
       router.back();
     });
 };

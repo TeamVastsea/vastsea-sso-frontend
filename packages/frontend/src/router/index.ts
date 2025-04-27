@@ -94,6 +94,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     component: Home,
+    redirect: `/auth/login?clientId=${__AUTH_SERVER__}`,
     children: [
       {
         name: 'redirect',
@@ -120,6 +121,10 @@ const routes: RouteRecordRaw[] = [
       },
     ],
   },
+  {
+    path:'/:pathMatch(.*)',
+    redirect: `/auth/login?clientId=${__AUTH_SERVER__}`
+  }
 ];
 const router = createRouter({
   history: createWebHistory(),

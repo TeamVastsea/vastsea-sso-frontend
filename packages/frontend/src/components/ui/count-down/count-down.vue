@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { TinyButton } from '@opentiny/vue';
-import { computed, ref, unref, watch } from 'vue';
+import { computed, unref, watch } from 'vue';
 
 const { interval, endValue, onTrigger, showBehavior } = defineProps<{
   endValue: number;

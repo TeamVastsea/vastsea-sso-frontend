@@ -48,8 +48,10 @@ CREATE TABLE "Role" (
     "id" BIGINT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
     "desc" TEXT NOT NULL DEFAULT '',
-    "clientId" TEXT,
-    "active" BOOLEAN NOT NULL DEFAULT true
+    "clientId" TEXT NOT NULL,
+    "clientPK" BIGINT NOT NULL,
+    "active" BOOLEAN NOT NULL DEFAULT true,
+    CONSTRAINT "Role_clientPK_fkey" FOREIGN KEY ("clientPK") REFERENCES "Client" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable

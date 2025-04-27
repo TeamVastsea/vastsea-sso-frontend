@@ -1,5 +1,5 @@
 import { useAccountStore } from '@/store';
-import { Modal, Notify } from '@opentiny/vue';
+import { Modal } from '@opentiny/vue';
 import axios from 'axios';
 import { unref } from 'vue';
 
