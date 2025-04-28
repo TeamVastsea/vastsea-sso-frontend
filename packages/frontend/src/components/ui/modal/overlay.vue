@@ -1,5 +1,5 @@
 <template>
-  <div class="size-full position-absolute top-0 left-0 bg-dark/20 z-20">
+  <div class="bg-dark/50 size-full left-0 top-0 position-absolute z-20">
     <slot />
   </div>
 </template>

@@ -16,6 +16,10 @@ export default (router: Router) => {
       });
       return;
     }
+    if (!accountStore.permissionList.length) {
+      return accountStore.fetchPermissionList()
+        .then(() => next());
+    }
     next();
   });
 };
