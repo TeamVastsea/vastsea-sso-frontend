@@ -12,7 +12,10 @@ export class ProfileService {
         where: {
           accountId: id,
         },
-        data,
+        data: {
+          nick: data.nick,
+          desc: data.desc,
+        },
       })
       .then((profile) => profile);
   }

@@ -18,6 +18,11 @@ export function useProfile({
     return fetcher.get<never, Profile>(`/profile/${id}`)
       .then(resp => resp);
   };
+  const updateProfile = (
+    profile: Exclude<Profile, 'avatar' | 'id' | 'accountId'>,
+  ) => {
+    return fetcher.patch(`/profile/`, profile);
+  };
   const uploadAvatar = (
     file: File,
   ) => {
@@ -25,5 +30,5 @@ export function useProfile({
     formData.set('profile', file);
     return fetcher.postForm('/upload/profile/avatar', formData);
   };
-  return { fetchProfile, uploadAvatar };
+  return { fetchProfile, uploadAvatar, updateProfile };
 }
