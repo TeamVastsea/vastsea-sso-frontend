@@ -32,7 +32,7 @@ ENV COMMON_ERROR_REDIRECT = ""
 
 RUN npm i -g pnpm &&  \
     pnpm i --prefer-offline && \
-    pnpm prisma generate && \
+    pnpm prisma generate --schema=prisma/schema.prisma && \
     pnpm build
 
 FROM node:23-alpine as runner
