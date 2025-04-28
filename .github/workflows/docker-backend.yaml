@@ -3,11 +3,11 @@ name: Build And Publish
 on:
   push:
     tags:
-      - "*.*.*-backend"
-      - "*.*.*-backend-.*"
+      - "*.*.*"
+      - "*.*.*-*.*"
 
 jobs:
-  build_test:
+  BackendBuild:
     name: Build docker image but not publish
     runs-on: ubuntu-latest
     steps:
@@ -34,8 +34,7 @@ jobs:
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      -
-        name: Build and push
+      - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: .
