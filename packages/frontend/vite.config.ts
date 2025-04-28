@@ -17,7 +17,7 @@ export default defineConfig({
         'vue',
         'vue-router',
       ],
-      enableInDevMode: true,
+      // enableInDevMode: true,
     }),
   ],
   define: {

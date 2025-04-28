@@ -2,10 +2,11 @@ import { AutoRedis } from '@app/decorator';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { createHash } from 'crypto';
 import { promises } from 'dns';
-import { unlinkSync, writeFileSync } from 'fs';
+import { existsSync, unlinkSync, writeFileSync } from 'fs';
 import Redis, { Cluster } from 'ioredis';
 import { join } from 'path';
-import sharp from 'sharp';
+import { isEmpty } from 'ramda';
+import * as sharp from 'sharp';
 
 const FILE_META = (fileHash: string) => `FILE::${fileHash}::REF::COUNTER`;
 
@@ -25,10 +26,8 @@ export class UploadService {
 
   async storageFile({ file, path, hash, size }: StorageFile) {
     const key = FILE_META(hash);
-    const fileMeta = (await this.redis.hgetall(
-      key,
-    )) as unknown as FileMeta | null;
-    if (fileMeta) {
+    const fileMeta = (await this.redis.hgetall(key)) as unknown as FileMeta;
+    if (!isEmpty(fileMeta)) {
       await this.redis.hincrby(key, 'ref', 1);
       return fileMeta.path;
     }
@@ -43,7 +42,7 @@ export class UploadService {
         return this.redis
           .hmset(key, {
             path,
-            ref: 0,
+            ref: 1,
           } satisfies FileMeta)
           .then(() => hash);
       });
@@ -62,12 +61,19 @@ export class UploadService {
   }
   async unrefFile(fileHash: string) {
     const fileMeta = await this.getFileMeta(fileHash);
-    if (!fileMeta) {
-      throw new HttpException('文件不存在', HttpStatus.NOT_FOUND);
+    if (isEmpty(fileMeta)) {
+      return true;
     }
-    await this.redis.hincrby(FILE_META(fileHash), 'ref', -1);
-    if (fileMeta.ref - 1 === 0) {
-      unlinkSync(fileMeta.path);
+    await this.redis.hset(
+      FILE_META(fileHash),
+      'ref',
+      Number.parseInt(fileMeta.ref.toString()) - 1,
+    );
+    if (Number.parseInt(fileMeta.ref.toString()) - 1 <= 0) {
+      if (existsSync(fileMeta.path)) {
+        unlinkSync(fileMeta.path);
+      }
+      await this.redis.del(FILE_META(fileHash));
     }
     return true;
   }
@@ -82,7 +88,7 @@ export class UploadService {
   getFileMeta(fileHash: string) {
     return this.redis.hgetall(
       FILE_META(fileHash),
-    ) as unknown as Promise<FileMeta | null>;
+    ) as unknown as Promise<FileMeta>;
   }
 
   getFileHash(file: Buffer) {
@@ -90,13 +96,13 @@ export class UploadService {
     return hash.update(file).digest('base64url');
   }
   resolvePath(basePath: string, fileName: string) {
-    return join(basePath, fileName);
+    return join(__dirname, basePath, fileName);
   }
   resolveStorageParam(
     file: Express.Multer.File,
     path: string,
     hash: string,
   ): StorageFile {
-    return { file: file.buffer, path, hash, size: [200, 200] };
+    return { file: file.buffer, path, hash, size: [100, 100] };
   }
 }

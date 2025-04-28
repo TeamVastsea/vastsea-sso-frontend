@@ -88,6 +88,15 @@ export const dashboardHomeChildren: RouteRecordRaw[] = [
       title: '角色管理',
     },
   },
+  {
+    name: 'Profile',
+    path: 'profile',
+    component: () => import('@/pages/dashboard/profile/index.vue'),
+    meta: {
+      auth: true,
+      title: '个人空间',
+    },
+  },
 ];
 
 const routes: RouteRecordRaw[] = [
@@ -122,9 +131,9 @@ const routes: RouteRecordRaw[] = [
     ],
   },
   {
-    path:'/:pathMatch(.*)',
-    redirect: `/auth/login?clientId=${__AUTH_SERVER__}`
-  }
+    path: '/:pathMatch(.*)',
+    redirect: `/auth/login?clientId=${__AUTH_SERVER__}`,
+  },
 ];
 const router = createRouter({
   history: createWebHistory(),

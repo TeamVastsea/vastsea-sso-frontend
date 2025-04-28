@@ -1,6 +1,8 @@
 import {
   Controller,
   Delete,
+  HttpException,
+  HttpStatus,
   Param,
   Post,
   Query,
@@ -13,6 +15,8 @@ import { Account, Auth, BigIntPipe, Permission } from '@app/decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ProfileService } from '../profile/profile.service';
 import { ClientService } from '../client/client.service';
+
+export const DEFAULT_PATH = `./assets/images`;
 
 @Controller('upload')
 export class UploadController {
@@ -34,17 +38,26 @@ export class UploadController {
   ) {
     const _id = BigInt(id);
     const hash = this.uploadService.getFileHash(file.buffer);
-    const path = this.uploadService.resolvePath(
-      this.config.get('file.avatar.profile.path') ?? `/public/${__dirname}`,
-      file.filename,
+    const filePath = this.uploadService.resolvePath(
+      this.config.get('file.avatar.profile.path') ?? DEFAULT_PATH,
+      hash,
     );
+    const oldProfile = await this.profileService.getProfile(_id);
+    if (!oldProfile) {
+      throw new HttpException('用户不存在', HttpStatus.NOT_FOUND);
+    }
+    if (oldProfile.avatar && !oldProfile.avatar?.endsWith(hash)) {
+      await this.uploadService.unrefFile(oldProfile.avatar.split('/').at(-1)!);
+    }
     await this.uploadService.storageFile(
-      this.uploadService.resolveStorageParam(file, path, hash),
+      this.uploadService.resolveStorageParam(file, filePath, hash),
     );
     await this.profileService.updateProfile(_id, {
-      avatar: path,
+      avatar: `/images/avatar/profile/${hash}`,
     });
-    return hash;
+    return {
+      path: `/images/avatar/profile/${hash}`,
+    };
   }
 
   @Permission(['UPDATE::CLIENT'])
@@ -58,20 +71,33 @@ export class UploadController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     const hash = this.uploadService.getFileHash(file.buffer);
-    const path = this.uploadService.resolvePath(__dirname, `/public/image`);
-    const clientAvatarPath = await this.uploadService
-      .storageFile(this.uploadService.resolveStorageParam(file, path, hash))
-      .then((hash) => {
-        return `/image/${hash}`;
-      });
+    const filePath = this.uploadService.resolvePath(
+      this.config.get('file.avatar.client.path') ?? DEFAULT_PATH,
+      hash,
+    );
+
+    const oldClientInfo = await this.clientService.findClient({ id });
+    if (oldClientInfo && !oldClientInfo.avatar?.endsWith(hash)) {
+      const hash = oldClientInfo.avatar?.split('/').at(-1);
+      if (hash) {
+        await this.uploadService.unrefFile(hash);
+      }
+    }
+
+    await this.uploadService.storageFile(
+      this.uploadService.resolveStorageParam(file, filePath, hash),
+    );
     await this.clientService.updateClient(
       id,
       {
-        avatar: clientAvatarPath,
+        avatar: `/images/avatar/profile/${hash}`,
       },
       -1n,
       true,
     );
+    return {
+      path: `/images/avatar/client/${hash}`,
+    };
   }
 
   @Permission(['REMOVE::IMAGE::*'])

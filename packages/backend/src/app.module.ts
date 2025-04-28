@@ -31,6 +31,7 @@ import { SecureModule } from './secure/secure.module';
 import { MailModule } from '@app/mail';
 import { ProfileModule } from './profile/profile.module';
 import { UploadModule } from './upload/upload.module';
+import { ImagesModule } from './images/images.module';
 
 const BUILT_IN_PERMISSIONS = [
   '*',
@@ -99,6 +100,7 @@ const BUILT_IN_PERMISSIONS = [
     SecureModule,
     ProfileModule,
     UploadModule,
+    ImagesModule,
   ],
   providers: [
     {
