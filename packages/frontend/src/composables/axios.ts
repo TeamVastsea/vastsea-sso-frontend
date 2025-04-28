@@ -3,22 +3,19 @@ import { Modal } from '@opentiny/vue';
 import axios from 'axios';
 import { unref } from 'vue';
 
-const account = useAccountStore();
-
 const instance = axios.create({
   baseURL: '/api',
-  headers: {
-    Authorization: `Bearer ${unref(account.accessToken)}`,
-  },
 });
 
 instance.interceptors.request.use((config) => {
+  const account = useAccountStore();
   config.headers.setAuthorization(`Bearer ${unref(account.accessToken)}`, true);
   return config;
 });
 instance.interceptors.response.use((resp) => {
   return resp.data;
 }, (err) => {
+  const account = useAccountStore();
   Modal.message({
     message: err.response.data.message,
     status: 'error',

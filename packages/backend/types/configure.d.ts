@@ -24,6 +24,16 @@ declare global {
       idLen: number;
       secretLen: number;
     };
+    file: {
+      avatar: {
+        profile: {
+          path: string;
+        };
+        client: {
+          path: string;
+        };
+      };
+    };
     cache: {
       ttl: {
         role: {

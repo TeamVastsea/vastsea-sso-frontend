@@ -54,6 +54,6 @@ gantt
       忘记密码 : done, secPwdForget,after a2, 1d
       修改密码 : done, secPwdUpdate,after a2, 1d
     section 个人信息:
-      查询 : profileQuery, after secPwdUpdate, 2d
-      修改 : profileUpdate,after secPwdUpdate, 2d
+      查询 : done, profileQuery, after secPwdUpdate, 3d
+      修改 : done, profileUpdate,after secPwdUpdate, 3d
 ```

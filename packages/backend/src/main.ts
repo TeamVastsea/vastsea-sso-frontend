@@ -4,6 +4,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { patchNestJsSwagger } from 'nestjs-zod';
 import { SpelunkerModule } from 'nestjs-spelunker';
 import * as cookieParser from 'cookie-parser';
+import { static as static_ } from 'express';
+import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,6 +19,7 @@ async function bootstrap() {
   SwaggerModule.setup('/swagger', app, factory);
   patchNestJsSwagger();
   app.use(cookieParser());
+  app.use(static_(join(__dirname, 'assets')));
   await app.listen(3000);
 }
 bootstrap();

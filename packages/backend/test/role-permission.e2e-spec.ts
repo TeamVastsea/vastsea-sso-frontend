@@ -303,6 +303,18 @@ describe('Role And Permission end to end test', () => {
         expect(statusCode).toBe(HttpStatus.FORBIDDEN);
       });
     });
+    describe('Get Account PermissionList', () => {
+      it('Get Permission List', async () => {
+        const { statusCode, body } = await request(app.getHttpServer())
+          .get('/permission/list')
+          .query({
+            clientId: process.env.CLIENT_ID,
+          })
+          .auth(tokenPair.admin.access, { type: 'bearer' });
+        expect(statusCode).toBe(HttpStatus.OK);
+        expect(body).toContain('*');
+      });
+    });
   });
   describe.skip('Role', () => {
     type MinialAccount = { id: bigint; email: string };

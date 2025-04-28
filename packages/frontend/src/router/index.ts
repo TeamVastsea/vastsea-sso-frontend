@@ -59,6 +59,8 @@ export const dashboardHomeChildren: RouteRecordRaw[] = [
     meta: {
       auth: true,
       title: '账号管理',
+      system: ['ACCOUNT'],
+      sideBar: true,
     },
   },
   {
@@ -68,6 +70,8 @@ export const dashboardHomeChildren: RouteRecordRaw[] = [
     meta: {
       auth: true,
       title: '客户端管理',
+      system: ['CLIENT'],
+      sideBar: true,
     },
   },
   {
@@ -77,6 +81,8 @@ export const dashboardHomeChildren: RouteRecordRaw[] = [
     meta: {
       auth: true,
       title: '权限管理',
+      system: ['PERMISSION'],
+      sideBar: true,
     },
   },
   {
@@ -86,6 +92,19 @@ export const dashboardHomeChildren: RouteRecordRaw[] = [
     meta: {
       auth: true,
       title: '角色管理',
+      system: ['ROLE'],
+      sideBar: true,
+    },
+  },
+  {
+    name: 'Profile',
+    path: 'profile',
+    component: () => import('@/pages/dashboard/profile/index.vue'),
+    meta: {
+      auth: true,
+      title: '个人空间',
+      system: [],
+      sideBar: true,
     },
   },
 ];
@@ -122,10 +141,11 @@ const routes: RouteRecordRaw[] = [
     ],
   },
   {
-    path:'/:pathMatch(.*)',
-    redirect: `/auth/login?clientId=${__AUTH_SERVER__}`
-  }
+    path: '/:pathMatch(.*)',
+    redirect: `/auth/login?clientId=${__AUTH_SERVER__}`,
+  },
 ];
+
 const router = createRouter({
   history: createWebHistory(),
   routes,

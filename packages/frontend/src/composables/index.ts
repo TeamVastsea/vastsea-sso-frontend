@@ -6,5 +6,6 @@ export * from './useClientList';
 export * from './useInfiniteAccountList';
 export * from './useLogin';
 export * from './usePermission';
+export * from './useProfile';
 export * from './useRole';
 export * from './useSidebar';

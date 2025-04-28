@@ -29,6 +29,9 @@ import { ClientService } from './client/client.service';
 import { RequriedClientAdministratorGuard } from '@app/guard/require-client-administrator';
 import { SecureModule } from './secure/secure.module';
 import { MailModule } from '@app/mail';
+import { ProfileModule } from './profile/profile.module';
+import { UploadModule } from './upload/upload.module';
+import { ImagesModule } from './images/images.module';
 
 const BUILT_IN_PERMISSIONS = [
   '*',
@@ -95,6 +98,9 @@ const BUILT_IN_PERMISSIONS = [
     AccountModule,
     AuthModule,
     SecureModule,
+    ProfileModule,
+    UploadModule,
+    ImagesModule,
   ],
   providers: [
     {

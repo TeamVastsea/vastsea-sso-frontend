@@ -1,11 +1,13 @@
 <script lang="ts" setup>
 import colorSwitch from '@/components/color-switch.vue';
 import { useSidebar } from '@/composables';
-import { dashboardHomeChildren } from '@/router';
+import { useRouter } from 'vue-router';
 
 const { isOpen, toggleSidebar, isMobile } = useSidebar();
 
-const menus = dashboardHomeChildren;
+const router = useRouter();
+const routes = router.getRoutes();
+const menus = routes.filter(route => route.meta.sideBar);
 </script>
 
 <template>
