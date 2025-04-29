@@ -10,6 +10,9 @@ jobs:
   FrontendBuild:
     name: Build docker frontend image
     runs-on: ubuntu-latest
+    env:
+      BASE_URL: /api
+      AUTH_SERVER_CLIENT_ID: ${{secrets.AUTH_SERVER_CLIENT_ID}}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
