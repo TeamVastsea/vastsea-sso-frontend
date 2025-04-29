@@ -3,7 +3,6 @@ import { env } from 'node:process';
 import vue from '@vitejs/plugin-vue';
 import UnoCSS from 'unocss/vite';
 import { defineConfig } from 'vite';
-import { Plugin as importToCDN } from 'vite-plugin-cdn-import';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
 // https://vite.dev/config/
@@ -12,13 +11,6 @@ export default defineConfig({
     vue(),
     tsconfigPaths(),
     UnoCSS(),
-    importToCDN({
-      modules: [
-        'vue',
-        'vue-router',
-      ],
-      // enableInDevMode: true,
-    }),
   ],
   define: {
     'process.env': { TINY_MODE: 'pc' },
@@ -40,18 +32,6 @@ export default defineConfig({
         },
         autoRewrite: true,
         changeOrigin: true,
-      },
-    },
-  },
-  build: {
-    rollupOptions: {
-      external: ['vue', 'vue-router'],
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            return id.toString().split('node_modules/')[1].split('/')[0].toString();
-          }
-        },
       },
     },
   },
