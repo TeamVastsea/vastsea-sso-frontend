@@ -32,6 +32,7 @@ import { MailModule } from '@app/mail';
 import { ProfileModule } from './profile/profile.module';
 import { UploadModule } from './upload/upload.module';
 import { ImagesModule } from './images/images.module';
+import { CaptchaModule } from './captcha/captcha.module';
 
 const BUILT_IN_PERMISSIONS = [
   '*',
@@ -101,6 +102,7 @@ const BUILT_IN_PERMISSIONS = [
     ProfileModule,
     UploadModule,
     ImagesModule,
+    CaptchaModule,
   ],
   providers: [
     {
