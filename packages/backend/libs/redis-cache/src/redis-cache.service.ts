@@ -2,7 +2,7 @@ import { AutoRedis } from '@app/decorator';
 import { Injectable } from '@nestjs/common';
 import { createHash } from 'crypto';
 import Redis, { Cluster } from 'ioredis';
-import SuperJSON from 'superjson';
+import SuperJSON from '@gaonengwww/superjson';
 
 @Injectable()
 export class RedisCacheService {

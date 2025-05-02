@@ -3,12 +3,12 @@ import type { PublicClientInfo } from '@/composables';
 import { useAxios, useClient } from '@/composables';
 import { TinyButton, TinyForm, TinyFormItem, TinyInput } from '@opentiny/vue';
 import { useCookies } from '@vueuse/integrations/useCookies';
-import { reactive, ref } from 'vue';
+import { reactive, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();
-const clientId = route.query.clientId?.toString();
+const clientId = ref(route.query.clientId?.toString());
 const cookie = useCookies();
 const { fetchPublicInfo } = useClient();
 const { axios } = useAxios();
@@ -19,7 +19,7 @@ const loginDto = reactive({
   password: '',
 });
 if (cookie.get('session-state')) {
-  axios.post<unknown, { code: string }>(`/auth/session?clientId=${clientId}`)
+  axios.post<unknown, { code: string }>(`/auth/session?clientId=${clientId.value}`)
     .then((resp) => {
       const code = resp.code;
       router.replace({ name: 'redirect', query: { ok: 'true', code } });
@@ -29,17 +29,39 @@ if (cookie.get('session-state')) {
     });
 }
 
-if (!clientId) {
-  router.replace({
+if (clientId.value && clientId.value === 'undefined') {
+  router.push({
     name: 'AuthError',
     query: {
-      reason: ['第三方登录需要CilentId但是没有找到', '这可能不是你的问题', '请尽快联系站点管理员'].toString(),
+      reason: ['AuthServer 出现异常', '这可能不是你的问题', '请尽快向站点管理员反馈该问题'],
     },
   });
 }
 
-if (clientId) {
-  fetchPublicInfo(clientId)
+if (!clientId.value) {
+  if (!__AUTH_SERVER__) {
+    router.push({
+      name: 'AuthError',
+      query: {
+        reason: ['AuthServer 出现异常', '这可能不是你的问题', '请尽快向站点管理员反馈该问题'],
+      },
+    });
+  } else {
+    router.push({
+      name: 'Login',
+      query: {
+        clientId: __AUTH_SERVER__,
+      },
+      force: true,
+    });
+    clientId.value = __AUTH_SERVER__;
+  }
+}
+watch(clientId, () => {
+  if (!clientId.value) {
+    return;
+  }
+  fetchPublicInfo(clientId.value)
     .then((info) => {
       publicInfo.value = info;
     })
@@ -48,7 +70,7 @@ if (clientId) {
         router.replace({ name: 'AuthError', query: { reason: '客户端不存在' } });
       }
     });
-}
+}, { immediate: true });
 </script>
 
 <template>
