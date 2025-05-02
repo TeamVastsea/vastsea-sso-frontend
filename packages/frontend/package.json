@@ -1,8 +1,4 @@
 {
-  "name": "vastsea-token-frontend",
-  "type": "module",
-  "version": "0.0.0",
-  "private": true,
   "scripts": {
     "dev": "vite --port 3001",
     "build": "vue-tsc -b && vite build",

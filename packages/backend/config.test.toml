@@ -4,13 +4,14 @@ host="redis"
 port=6379
 
 [email]
-email="noreply@vastsea.com"
+email="user@domain.com"
 [email.transport]
-host="sandbox.smtp.mailtrap.io"
-port=2525
+host="smtp.domain.com"
+port=25
+secure=false
 [email.transport.auth]
-user="70589292a368c5"
-pass="6128fa467c17be"
+user="user"
+pass="pass"
 
 
 [cache]
@@ -24,8 +25,8 @@ secret=10
 info=10
 list=10
 [cache.ttl.auth]
-emailCode=600
-code=600
+emailCode=60000
+code=5000
 [cache.ttl.auth.token]
 access=86400000
 refresh=604800000
