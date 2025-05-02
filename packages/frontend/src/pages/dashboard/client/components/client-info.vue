@@ -1,9 +1,15 @@
 <script lang="ts" setup>
-import type { Client, ClientInfo, UpdateClient } from '@/composables';
-import UserSelect from '@/components/user-select.vue';
-import { useClient } from '@/composables';
-import { TinyButton, TinyCheckbox, TinyForm, TinyFormItem, TinyInput } from '@opentiny/vue';
-import { onMounted, reactive, ref, watch } from 'vue';
+import type { Client, ClientInfo, UpdateClient } from "@/composables";
+import UserSelect from "@/components/user-select.vue";
+import { useClient } from "@/composables";
+import {
+  TinyButton,
+  TinyCheckbox,
+  TinyForm,
+  TinyFormItem,
+  TinyInput,
+} from "@opentiny/vue";
+import { onMounted, reactive, ref, watch } from "vue";
 
 const { id, onSuccess } = defineProps<{
   id: string;
@@ -14,10 +20,10 @@ const { fetchInfo, rules, update } = useClient();
 const cache = new Map<string, ClientInfo | Client>();
 const activeId = ref<string | null>(null);
 const data: UpdateClient = reactive({
-  name: '',
-  desc: '',
-  avatar: '',
-  redirect: '',
+  name: "",
+  desc: "",
+  avatar: "",
+  redirect: "",
   administrator: [],
   active: false,
 });
@@ -26,14 +32,15 @@ const setData = (info: ClientInfo | Client) => {
   data.desc = info.desc;
   data.avatar = info.avatar;
   data.redirect = info.redirect;
-  data.administrator = 'administrator' in info ? info.administrator.map(admin => admin.id) : [];
+  data.administrator =
+    "administrator" in info ? info.administrator.map((admin) => admin.id) : [];
   data.active = info.active;
 };
 const updateClient = (id: string | null, data: UpdateClient) => {
   if (!id) {
     return;
   }
-  return update(id, data).then(client => onSuccess?.(client));
+  return update(id, data).then((client) => onSuccess?.(client));
 };
 watch(activeId, () => {
   if (!activeId.value) {
@@ -42,14 +49,13 @@ watch(activeId, () => {
   if (cache.has(activeId.value)) {
     setData(cache.get(activeId.value)!);
   }
-  fetchInfo(activeId.value)
-    .then((info) => {
-      if (!activeId.value) {
-        return;
-      }
-      cache.set(activeId.value, info);
-      setData(info);
-    });
+  fetchInfo(activeId.value).then((info) => {
+    if (!activeId.value) {
+      return;
+    }
+    cache.set(activeId.value, info);
+    setData(info);
+  });
 });
 
 onMounted(() => {

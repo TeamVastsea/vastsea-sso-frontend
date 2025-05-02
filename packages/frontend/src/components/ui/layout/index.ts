@@ -1,3 +1,3 @@
-import GeneralLayout from './general-layout.vue';
+import GeneralLayout from "./general-layout.vue";
 
 export { GeneralLayout };
