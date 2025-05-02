@@ -79,5 +79,8 @@
         "libs/redis-cache/src/*"
       ]
     }
-  }
+  },
+  "files": [
+    "webpack.config.js"
+  ]
 }

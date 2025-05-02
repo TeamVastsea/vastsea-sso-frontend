@@ -1,6 +1,6 @@
-FROM node:23-alpine as builder
+FROM node:23-alpine AS builder
 
-WORKDIR /app/frontend
+WORKDIR /app
 
 ADD . .
 
@@ -8,13 +8,11 @@ ENV BASE_URL="/api"
 ENV AUTH_SERVER_CLIENT_ID=""
 
 RUN npm i -g pnpm && \
-    pnpm i && \
+    pnpm i --frozen-lockfile --prefer-offline  && \
     pnpm build
 
-FROM nginx
+FROM nginx AS runner
 
-COPY --from=builder /app/frontend/dist /usr/share/nginx/html
-
-VOLUME [ "/etc/nginx/conf.d/default.conf" ]
+COPY --from=builder /app/dist /usr/share/nginx/html
 
 EXPOSE 80
