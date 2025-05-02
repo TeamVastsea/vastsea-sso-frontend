@@ -80,7 +80,9 @@
       ]
     }
   },
-  "files": [
+  "include": [
+    "./**/*.ts",
     "webpack.config.js"
-  ]
+  ],
+  "exclude": ["node_modules"]
 }
