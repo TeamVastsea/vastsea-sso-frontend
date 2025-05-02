@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@gaonengwww/jose": "^6.0.9",
+    "@gaonengwww/superjson": "^2.2.2",
     "@liaoliaots/nestjs-redis": "9.0.0",
     "@nanogiants/nestjs-swagger-api-exception-decorator": "^1.7.2",
     "@nestjs-modules/mailer": "^2.0.2",
@@ -44,7 +45,6 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "sharp": "^0.34.1",
-    "superjson": "^2.2.2",
     "toml": "^3.0.0",
     "typescript-eslint": "^8.28.0",
     "webpack": "^5.99.1",
