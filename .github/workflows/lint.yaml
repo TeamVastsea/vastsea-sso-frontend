@@ -28,23 +28,8 @@ jobs:
         with:
           node-version: 23
           cache: 'pnpm'
-      - name: Install backend dependencies
+      - name: Install dependencies
         working-directory: packages/backend
-        run: pnpm i --frozen-lockfile --prefer-offline
-      - name: Install frontend dependencies
-        working-directory: packages/frontend
-        run: pnpm i --frozen-lockfile --prefer-offline
-      - name: Run linters backend
-        uses: wearerequired/lint-action@v2
-        with:
-          eslint: true
-          prettier: true
-          eslint_dir: packages/backend
-          prettier_dir: packages/backend
-      - name: Run linters frontend
-        uses: wearerequired/lint-action@v2
-        with:
-          eslint: true
-          prettier: true
-          eslint_dir: packages/frontend
-          prettier_dir: packages/frontend
+        run: pnpm i
+      - name: Run Lint
+        run: pnpm lint
