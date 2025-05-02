@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { relationNode,bezierEdge } from '@/components/ui';
+import { bezierEdge, relationNode } from '@/components/ui';
 import { useRoleRelationGraph } from '@/composables/useRoleRelationGraph';
 import { VueFlow } from '@vue-flow/core';
 import { onMounted } from 'vue';
@@ -27,7 +27,7 @@ onMounted(() => {
         <relation-node v-bind="customProps" @expand="onClickExpand" />
       </template>
       <template #edge-custom="customEdgeProps">
-        <bezier-edge v-bind="customEdgeProps"/>
+        <bezier-edge v-bind="customEdgeProps" />
       </template>
     </vue-flow>
   </div>

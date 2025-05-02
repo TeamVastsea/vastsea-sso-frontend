@@ -25,7 +25,7 @@ export function useLogin(
   const login = (
     valid?: () => Promise<boolean>,
   ) => {
-    let p = valid?.();
+    const p = valid?.();
     p?.then((ok) => {
       if (!ok) {
         return;

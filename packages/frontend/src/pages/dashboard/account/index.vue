@@ -37,8 +37,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="w-full h-full break-words dark:text-white space-y-2 flex flex-col">
-    <div class="h-fit basis-auto shrink-0 grow-0">
+  <div class="flex flex-col h-full w-full break-words space-y-2 dark:text-white">
+    <div class="shrink-0 grow-0 basis-auto h-fit">
       <tiny-button @click="() => toggleModalShowState()">
         添加账号
       </tiny-button>

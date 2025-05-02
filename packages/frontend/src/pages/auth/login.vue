@@ -59,7 +59,7 @@ if (clientId) {
           <div class="text-zinc-900 flex flex-col flex-wrap gap-2 dark:text-zinc-100">
             <div class="mx-auto w-fit">
               <img v-if="publicInfo?.avatar" :src="publicInfo.avatar" alt="">
-              <div v-else class="dark:i-material-symbols:person-shield-rounded i-material-symbols:person-shield-outline-rounded size-16 dark:size-16" />
+              <div v-else class="i-material-symbols:person-shield-outline-rounded dark:i-material-symbols:person-shield-rounded size-16 dark:size-16" />
             </div>
             <div class="mx-auto text-center w-fit space-y-2">
               <h1 class="text-2xl">
