@@ -4,13 +4,22 @@ import { useClientList } from '@/composables';
 import { noop } from '@vueuse/core';
 import { computed, onMounted, ref, watch } from 'vue';
 
-const { placeholder = '筛选的客户端', multiple = false } = defineProps<{ placeholder?: string; multiple?: boolean }>();
+const { placeholder = '筛选的客户端', multiple = false } = defineProps<{
+  placeholder?: string;
+  multiple?: boolean;
+}>();
 
 const modelValue = defineModel<{ clientId: string; name: string }[]>();
 
 const values = ref<{ clientId: string; name: string }[]>([]);
 
-const { canLoad, loadMore, data: clients, getList, loading: getClientsLoading } = useClientList({ type: 'scroll', size: 5 });
+const {
+  canLoad,
+  loadMore,
+  data: clients,
+  getList,
+  loading: getClientsLoading,
+} = useClientList({ type: 'scroll', size: 5 });
 
 const selectOptions = computed(() => {
   return clients.value.map((data) => {
@@ -21,9 +30,13 @@ const selectOptions = computed(() => {
   });
 });
 
-watch(values, () => {
-  modelValue.value = values.value.filter(value => value !== undefined);
-}, { deep: true });
+watch(
+  values,
+  () => {
+    modelValue.value = values.value.filter(value => value !== undefined);
+  },
+  { deep: true },
+);
 
 onMounted(() => {
   getList();

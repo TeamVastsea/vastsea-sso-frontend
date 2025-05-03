@@ -36,13 +36,15 @@ export interface UseRole {
   type: 'page' | 'scroll';
 }
 
-export function useRole({
-  fetcher: _fetcher,
-  type: _type,
-}: Partial<CommonComposablesProps<UseRole>> = {
-  fetcher: instance,
-  type: 'page',
-}) {
+export function useRole(
+  {
+    fetcher: _fetcher,
+    type: _type,
+  }: Partial<CommonComposablesProps<UseRole>> = {
+    fetcher: instance,
+    type: 'page',
+  },
+) {
   const fetcher = _fetcher ?? instance;
   const type = _type ?? 'page';
 
@@ -59,14 +61,20 @@ export function useRole({
   const getRoleInfo = (roleId: string) => {
     return fetcher.get<unknown, RoleInfoItem>(`/role/${roleId}`);
   };
-  const getRoleList = ({ all, clientId }: { all?: boolean; clientId?: string } = { all: false, clientId: undefined }) => {
-    return fetcher.get<unknown, List<MininalRole>>(`/role`, {
-      params: {
-        preId: unref(preId),
-        size: all ? undefined : unref(roleListPageSize),
-        clientId,
-      },
-    })
+  const getRoleList = (
+    { all, clientId }: { all?: boolean; clientId?: string } = {
+      all: false,
+      clientId: undefined,
+    },
+  ) => {
+    return fetcher
+      .get<unknown, List<MininalRole>>(`/role`, {
+        params: {
+          preId: unref(preId),
+          size: all ? undefined : unref(roleListPageSize),
+          clientId,
+        },
+      })
       .then((resp) => {
         if (type === 'page') {
           roleList.value = resp.data;
@@ -80,7 +88,10 @@ export function useRole({
         roleTotal.value = resp.total.toString();
       });
   };
-  const updateRole = (id: string, data: Partial<CreateRole & { active: boolean }>) => {
+  const updateRole = (
+    id: string,
+    data: Partial<CreateRole & { active: boolean }>,
+  ) => {
     return fetcher.patch<never, MininalRole>(`/role/${id}`, data);
   };
   const setPage = (page: number, type: 'next' | 'prev') => {
@@ -104,8 +115,27 @@ export function useRole({
   const setClientId = (target?: string) => {
     clientId.value = target;
   };
-  watch([preId, roleListPageSize, curPage, clientId], () => {
-    getRoleList({ clientId: unref(clientId) });
-  }, { deep: true });
-  return { roleList, roleTotal, fetcher, preId, roleListPageSize, curPage, clientId, setPage, createRole, getRoleList, setSize, setClientId, getRoleInfo, updateRole };
+  watch(
+    [preId, roleListPageSize, curPage, clientId],
+    () => {
+      getRoleList({ clientId: unref(clientId) });
+    },
+    { deep: true },
+  );
+  return {
+    roleList,
+    roleTotal,
+    fetcher,
+    preId,
+    roleListPageSize,
+    curPage,
+    clientId,
+    setPage,
+    createRole,
+    getRoleList,
+    setSize,
+    setClientId,
+    getRoleInfo,
+    updateRole,
+  };
 }

@@ -6,11 +6,7 @@ import { defineConfig, loadEnv } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig(({ mode }) => {
-  const plugins = [
-    vue(),
-    tsconfigPaths(),
-    UnoCSS(),
-  ];
+  const plugins = [vue(), tsconfigPaths(), UnoCSS()];
   const env = loadEnv(mode, cwd());
   const define = {
     'process.env': { TINY_MODE: 'pc' },

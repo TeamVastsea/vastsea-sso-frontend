@@ -136,7 +136,7 @@ const BUILT_IN_PERMISSIONS = [
   ],
 })
 export class AppModule implements OnModuleInit {
-  private appName: string = process.env.APP_NAME ?? 'Vastsea Token';
+  private appName: string = process.env.APP_NAME ?? 'Vastsea SSO';
   private logger: Logger = new Logger(this.appName);
   constructor(
     private permission: PermissionService,
@@ -213,7 +213,7 @@ export class AppModule implements OnModuleInit {
           active: true,
           clientId: client.clientId,
         },
-        dbAdminId!,
+        dbAdminId,
         true,
       );
       this.logger.log(`创建权限 ${p} 成功`);
@@ -246,7 +246,7 @@ export class AppModule implements OnModuleInit {
     this.logger.log(`AdminPassword: ${password}`);
     this.logger.log(`---------------------------`);
     this.logger.log(`ClientId: ${client.clientId}`);
-    this.logger.log(`ClientId: ${client.clientSecret}`);
+    this.logger.log(`ClientSecret: ${client.clientSecret}`);
     this.logger.log(`---------------------------`);
   }
 }

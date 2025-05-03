@@ -1,7 +1,13 @@
 <script lang="ts" setup>
-import { GeeTest } from '@/components/ui';
 import { useAxios } from '@/composables';
-import { Modal, TinyButton, TinyCheckbox, TinyForm, TinyFormItem, TinyInput } from '@opentiny/vue';
+import {
+  Modal,
+  TinyButton,
+  TinyCheckbox,
+  TinyForm,
+  TinyFormItem,
+  TinyInput,
+} from '@opentiny/vue';
 import { reactive, ref, useTemplateRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -47,11 +53,12 @@ const sendEmail = () => {
   if (!registerBody.email) {
     return;
   }
-  axios.post<never, { ttl: number }>('/account/mail-code', null, {
-    params: {
-      email: registerBody.email,
-    },
-  })
+  axios
+    .post<never, { ttl: number }>('/account/mail-code', null, {
+      params: {
+        email: registerBody.email,
+      },
+    })
     .then(({ ttl }) => {
       mailCodeTTL.value = ttl;
       const handles = setInterval(() => {
@@ -65,18 +72,21 @@ const sendEmail = () => {
 };
 
 const register = () => {
-  form.value.validate()
+  form.value
+    .validate()
     .then((ok: boolean) => {
       if (!ok) {
         return;
       }
-      axios.post('/account/register', registerBody)
-        .then(() => {
-          Modal.message({
-            message: '注册成功',
-          });
-          router.replace({ path: `/auth/login`, query: router.currentRoute.value.query });
+      axios.post('/account/register', registerBody).then(() => {
+        Modal.message({
+          message: '注册成功',
         });
+        router.replace({
+          path: `/auth/login`,
+          query: router.currentRoute.value.query,
+        });
+      });
     })
     .catch(() => {});
 };
@@ -85,18 +95,29 @@ const register = () => {
 <template>
   <div class="p-4 bg-zinc-100 size-full dark:bg-zinc-900">
     <div class="mx-auto flex h-full max-w-xl items-center">
-      <div class="form-wrapper p-4 border border-zinc-300 rounded bg-zinc-200 h-fit w-full dark:border-none dark:bg-zinc-800">
+      <div
+        class="form-wrapper p-4 border border-zinc-300 rounded bg-zinc-200 h-fit w-full dark:border-none dark:bg-zinc-800"
+      >
         <h1 class="text-3xl text-zinc-800 mb-4 dark:text-zinc-200">
           注册账号
         </h1>
-        <tiny-form ref="form" label-position="top" validate-type="text" :model="registerBody">
+        <tiny-form
+          ref="form"
+          label-position="top"
+          validate-type="text"
+          :model="registerBody"
+        >
           <tiny-form-item label="邮箱" required prop="email">
             <tiny-input v-model="registerBody.email" />
           </tiny-form-item>
           <tiny-form-item label="验证码" required prop="code">
             <div class="flex gap-2 w-full">
               <tiny-input v-model="registerBody.code" />
-              <tiny-button v-if="mailCodeTTL <= 0" :disabled="!registerBody.email.length" @click="sendEmail">
+              <tiny-button
+                v-if="mailCodeTTL <= 0"
+                :disabled="!registerBody.email.length"
+                @click="sendEmail"
+              >
                 发送验证码
               </tiny-button>
               <tiny-button v-else>
@@ -105,7 +126,11 @@ const register = () => {
             </div>
           </tiny-form-item>
           <tiny-form-item label="密码" required prop="password">
-            <tiny-input v-model="registerBody.password" type="password" show-password />
+            <tiny-input
+              v-model="registerBody.password"
+              type="password"
+              show-password
+            />
           </tiny-form-item>
           <tiny-form-item label="昵称" required prop="profile.nick">
             <tiny-input v-model="registerBody.profile.nick" />

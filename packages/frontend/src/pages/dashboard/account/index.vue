@@ -9,7 +9,15 @@ import { onMounted, ref } from 'vue';
 import addAccountForm from './components/add-account-form.vue';
 import updateAccountForm from './components/update-account-form.vue';
 
-const { data, getAccountList, onClickNext, onClickPrev, setSize, remove, update } = useAccountList();
+const {
+  data,
+  getAccountList,
+  onClickNext,
+  onClickPrev,
+  setSize,
+  remove,
+  update,
+} = useAccountList();
 const showModal = ref(false);
 const showUpdateModal = ref(false);
 
@@ -27,7 +35,9 @@ const removeAccount = () => {
 
 const reopen = () => {
   datas.value = datas.value.filter(data => !data.active);
-  const handles = datas.value.map(account => update(BigInt(account.id), { ...account, active: true }));
+  const handles = datas.value.map(account =>
+    update(BigInt(account.id), { ...account, active: true }),
+  );
   return Promise.allSettled(handles);
 };
 
@@ -37,8 +47,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="w-full h-full break-words dark:text-white space-y-2 flex flex-col">
-    <div class="h-fit basis-auto shrink-0 grow-0">
+  <div
+    class="flex flex-col h-full w-full break-words space-y-2 dark:text-white"
+  >
+    <div class="shrink-0 grow-0 basis-auto h-fit">
       <tiny-button @click="() => toggleModalShowState()">
         添加账号
       </tiny-button>
@@ -48,12 +60,20 @@ onMounted(() => {
       <tiny-button :disabled="!datas || !datas.length" @click="reopen">
         启用账号
       </tiny-button>
-      <tiny-button :disabled="!datas || datas.length !== 1" @click="toggleUpdateModal">
+      <tiny-button
+        :disabled="!datas || datas.length !== 1"
+        @click="toggleUpdateModal"
+      >
         更新账号信息
       </tiny-button>
     </div>
     <div class="flex-shrink grow basis-auto">
-      <grid :data="data?.data" height="100%" :select-config="{ showHeader: false }" @select-change="onSelect">
+      <grid
+        :data="data?.data"
+        height="100%"
+        :select-config="{ showHeader: false }"
+        @select-change="onSelect"
+      >
         <grid-column type="selection" />
         <grid-column field="id" title="ID" />
         <grid-column field="profile.nick" title="昵称" />
@@ -61,13 +81,20 @@ onMounted(() => {
         <grid-column field="createAt" title="创建时间" />
         <grid-column field="active" title="帐号状态">
           <template #default="{ row }">
-            {{ row.active ? '正常' : '被禁用' }}
+            {{ row.active ? "正常" : "被禁用" }}
           </template>
         </grid-column>
       </grid>
     </div>
     <div>
-      <tiny-pager :page-size="10" :total="Number.parseInt(data?.total.toString() ?? '0')" mode="simple" @size-change="setSize" @next-click="onClickNext" @prev-click="onClickPrev" />
+      <tiny-pager
+        :page-size="10"
+        :total="Number.parseInt(data?.total.toString() ?? '0')"
+        mode="simple"
+        @size-change="setSize"
+        @next-click="onClickNext"
+        @prev-click="onClickPrev"
+      />
     </div>
     <modal v-model="showUpdateModal">
       <modal-content>

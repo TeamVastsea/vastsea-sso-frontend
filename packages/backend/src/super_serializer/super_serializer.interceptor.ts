@@ -4,7 +4,7 @@ import {
   Injectable,
   NestInterceptor,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { map, Observable } from 'rxjs';
 import SuperJSON from '@gaonengwww/superjson';
 

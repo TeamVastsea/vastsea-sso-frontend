@@ -12,16 +12,14 @@ const { formData, rules, create } = useClient();
 const form = useTemplateRef<any>('form');
 
 const onSubmit = () => {
-  form.value.validate()
-    .then((ok: boolean) => {
-      if (!ok) {
-        return;
-      }
-      create()
-        .then((client) => {
-          emits('ok', client);
-        });
+  form.value.validate().then((ok: boolean) => {
+    if (!ok) {
+      return;
+    }
+    create().then((client) => {
+      emits('ok', client);
     });
+  });
 };
 </script>
 

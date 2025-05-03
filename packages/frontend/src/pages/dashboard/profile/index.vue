@@ -4,21 +4,30 @@ import avatarUpload from '@/components/avatar-upload.vue';
 import generalLayout from '@/components/ui/layout/general-layout.vue';
 import { useProfile } from '@/composables';
 import { useAccountStore } from '@/store';
-import { Modal, TinyButton, TinyForm, TinyFormItem, TinyInput } from '@opentiny/vue';
+import {
+  Modal,
+  TinyButton,
+  TinyForm,
+  TinyFormItem,
+  TinyInput,
+} from '@opentiny/vue';
 import { useJwt } from '@vueuse/integrations/useJwt';
 import { storeToRefs } from 'pinia';
 import { computed, ref, useTemplateRef, watch } from 'vue';
 
 const { fetchProfile, uploadAvatar, updateProfile } = useProfile();
 const { accessToken } = storeToRefs(useAccountStore());
-const { payload } = useJwt<AccessTokenPayload>(computed(() => accessToken.value));
+const { payload } = useJwt<AccessTokenPayload>(
+  computed(() => accessToken.value),
+);
 const profile = ref<Profile | null>(null);
 const url = ref('');
 const avatar = ref<File | null>(null);
 
 const form = useTemplateRef<any>('form');
 const onClickUpdate = () => {
-  form.value.validate()
+  form.value
+    .validate()
     .then((ok: boolean) => {
       if (!ok || !profile.value) {
         return;
@@ -48,16 +57,19 @@ watch(avatar, () => {
   reader.readAsDataURL(avatar.value);
 });
 
-watch(payload, () => {
-  if (!payload.value?.id) {
-    return;
-  }
-  fetchProfile({ id: payload.value.id })
-    .then((resp) => {
+watch(
+  payload,
+  () => {
+    if (!payload.value?.id) {
+      return;
+    }
+    fetchProfile({ id: payload.value.id }).then((resp) => {
       profile.value = resp;
       url.value = `/api${profile.value.avatar}`;
     });
-}, { immediate: true, deep: true });
+  },
+  { immediate: true, deep: true },
+);
 </script>
 
 <template>
@@ -70,7 +82,12 @@ watch(payload, () => {
       </div>
       <div class="flex flex-wrap-reverse gap-4 justify-center">
         <div class="flex-shrink-0 flex-grow">
-          <tiny-form v-if="profile" ref="form" label-position="top" :model="profile">
+          <tiny-form
+            v-if="profile"
+            ref="form"
+            label-position="top"
+            :model="profile"
+          >
             <tiny-form-item label="昵称" required>
               <tiny-input v-model="profile.nick" />
             </tiny-form-item>

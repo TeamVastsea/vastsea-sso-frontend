@@ -21,7 +21,9 @@ export interface MininalRoleInfo {
   id: bigint;
 }
 
-type AccountType = Omit<CreateAccountMininalDto, 'role'> & { role: MininalRoleInfo[] };
+type AccountType = Omit<CreateAccountMininalDto, 'role'> & {
+  role: MininalRoleInfo[];
+};
 
 export interface Account extends AccountType {
   active: boolean;
@@ -52,7 +54,10 @@ export function useAccount(
     active: false,
   });
   const formRules = {
-    email: [{ required: true, message: '必填', trigger: 'change' }, { type: 'email', trigger: 'change' }],
+    email: [
+      { required: true, message: '必填', trigger: 'change' },
+      { type: 'email', trigger: 'change' },
+    ],
     password: [{ required: true }],
     profile: {
       nick: [{ required: true }],
@@ -60,9 +65,7 @@ export function useAccount(
     },
     active: [{ required: true }],
   };
-  const createAccount = (
-    valid: () => Promise<boolean>,
-  ) => {
+  const createAccount = (valid: () => Promise<boolean>) => {
     valid()
       .then((ok) => {
         if (!ok) {
@@ -77,20 +80,30 @@ export function useAccount(
     id: bigint,
     data: Partial<CreateAccountMininalDto>,
   ) => {
-    return valid()
-      .then((ok) => {
-        if (!ok) {
-          return;
-        }
-        return fetcher.patch(`/account/${id}`, SuperJSON.serialize({
+    return valid().then((ok) => {
+      if (!ok) {
+        return;
+      }
+      return fetcher.patch(
+        `/account/${id}`,
+        SuperJSON.serialize({
           ...data,
           id: undefined,
-        }).json);
-      });
+        }).json,
+      );
+    });
   };
   const fetchAccount = (id: bigint) => {
-    return fetcher.get<unknown, Account>(`/account/${id}`)
-      .then(data => account.value = data);
+    return fetcher
+      .get<unknown, Account>(`/account/${id}`)
+      .then(data => (account.value = data));
   };
-  return { formData, createAccount, updateAccount, fetchAccount, formRules, account };
+  return {
+    formData,
+    createAccount,
+    updateAccount,
+    fetchAccount,
+    formRules,
+    account,
+  };
 }

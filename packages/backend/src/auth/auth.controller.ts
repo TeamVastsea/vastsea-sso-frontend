@@ -17,7 +17,6 @@ import { ClientService } from '../client/client.service';
 import { RefreshToken } from './dto/refresh-token';
 import { JwtService } from '@app/jwt';
 import { PermissionService } from '../permission/permission.service';
-import { RegisterDto } from './dto/register.dto';
 import { AccountService } from '../account/account.service';
 
 @Controller('auth')
@@ -80,7 +79,6 @@ export class AuthController {
     @Query('clientId') clientId: string,
     @Query('state') state: string,
     @Res() res: Response,
-    @Req() req: Request,
   ) {
     const client = await this.client.findClient({ clientId });
     if (!client) {

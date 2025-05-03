@@ -9,9 +9,13 @@ const vInfiniteScroll = InfiniteScroll;
 const modelValue = defineModel<string[]>();
 const administratorId = ref<string[]>(modelValue.value ?? []);
 
-watch(() => modelValue, () => {
-  administratorId.value = modelValue.value ?? [];
-}, { deep: true });
+watch(
+  () => modelValue,
+  () => {
+    administratorId.value = modelValue.value ?? [];
+  },
+  { deep: true },
+);
 
 onMounted(() => {
   load();
@@ -19,7 +23,17 @@ onMounted(() => {
 </script>
 
 <template>
-  <tiny-select v-model="modelValue" v-infinite-scroll="loadMore" :loading="isLoading" multiple>
-    <tiny-option v-for="option in data" :key="option.id" :value="option.id" :label="option.profile.nick" />
+  <tiny-select
+    v-model="modelValue"
+    v-infinite-scroll="loadMore"
+    :loading="isLoading"
+    multiple
+  >
+    <tiny-option
+      v-for="option in data"
+      :key="option.id"
+      :value="option.id"
+      :label="option.profile.nick"
+    />
   </tiny-select>
 </template>

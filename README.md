@@ -1,4 +1,4 @@
-# Vastsea Token
+# Vastsea SSO
 
 ## 简介
 

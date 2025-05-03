@@ -4,7 +4,11 @@ import { useMouse, useToggle } from '@vueuse/core';
 import { reactive, ref, unref, watch } from 'vue';
 import { useProvideModalContext } from './constant';
 
-const { initX = 0, initY = 0 } = defineProps<{ to?: string | RendererElement; initX?: number; initY?: number }>();
+const { initX = 0, initY = 0 } = defineProps<{
+  to?: string | RendererElement;
+  initX?: number;
+  initY?: number;
+}>();
 const emits = defineEmits<{
   hidden: [];
 }>();
@@ -25,16 +29,20 @@ const close = () => {
 };
 const toggle = useToggle(isOpen);
 
-watch(() => modelValue, () => {
-  isOpen.value = unref(modelValue);
-  if (modelValue.value) {
-    transformer.x = x.value;
-    transformer.y = y.value;
-  }
-  if (!isOpen.value) {
-    emits('hidden');
-  }
-}, { deep: true });
+watch(
+  () => modelValue,
+  () => {
+    isOpen.value = unref(modelValue);
+    if (modelValue.value) {
+      transformer.x = x.value;
+      transformer.y = y.value;
+    }
+    if (!isOpen.value) {
+      emits('hidden');
+    }
+  },
+  { deep: true },
+);
 
 useProvideModalContext({ isOpen, open, close, toggle, transformer });
 </script>

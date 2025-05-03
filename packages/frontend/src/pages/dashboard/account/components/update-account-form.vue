@@ -1,6 +1,12 @@
 <script lang="ts" setup>
 import { useAccount, useRole } from '@/composables';
-import { TinyCheckbox, TinyForm, TinyFormItem, TinyInput, TinySelect } from '@opentiny/vue';
+import {
+  TinyCheckbox,
+  TinyForm,
+  TinyFormItem,
+  TinyInput,
+  TinySelect,
+} from '@opentiny/vue';
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
 
 const { id } = defineProps<{ id: string }>();
@@ -21,15 +27,18 @@ const roleOptions = computed(() => {
 });
 const form = useTemplateRef<any>('form');
 
-watch(account.value, () => {
-  role.value = account.value.role.map(role => role.id.toString());
-}, { deep: true, immediate: true });
+watch(
+  account.value,
+  () => {
+    role.value = account.value.role.map(role => role.id.toString());
+  },
+  { deep: true, immediate: true },
+);
 
 onMounted(() => {
-  fetchAccount(BigInt(id))
-    .then((account) => {
-      role.value = account.role.map(role => role.id.toString());
-    });
+  fetchAccount(BigInt(id)).then((account) => {
+    role.value = account.role.map(role => role.id.toString());
+  });
   getRoleList();
 });
 </script>
@@ -54,7 +63,14 @@ onMounted(() => {
     <tiny-form-item prop="profile.role" label="角色">
       <tiny-select v-model="role" :options="roleOptions" multiple />
     </tiny-form-item>
-    <tiny-button type="primary" @click="updateAccount(form.validate, BigInt(id), { ...account, role }).then(() => $router.go(0))">
+    <tiny-button
+      type="primary"
+      @click="
+        updateAccount(form.validate, BigInt(id), { ...account, role }).then(
+          () => $router.go(0),
+        )
+      "
+    >
       提交
     </tiny-button>
     <!-- TODO:avatar -->

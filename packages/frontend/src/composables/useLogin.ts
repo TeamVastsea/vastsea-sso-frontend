@@ -15,22 +15,24 @@ export function useLogin(
     password: 'string',
   });
   const formRules = {
-    email: [{ required: true, message: '必填', trigger: 'change' }, { type: 'email', trigger: 'change' }],
+    email: [
+      { required: true, message: '必填', trigger: 'change' },
+      { type: 'email', trigger: 'change' },
+    ],
     password: [{ required: true, message: '必填', trigger: 'change' }],
   };
   const formData: Reactive<typeof formDataSchema.infer> = reactive({
     email: '',
     password: '',
   });
-  const login = (
-    valid?: () => Promise<boolean>,
-  ) => {
-    let p = valid?.();
+  const login = (valid?: () => Promise<boolean>) => {
+    const p = valid?.();
     p?.then((ok) => {
       if (!ok) {
         return;
       }
-      fetcher.post<unknown, TokenPayload>('/auth/login', { ...formData })
+      fetcher
+        .post<unknown, TokenPayload>('/auth/login', { ...formData })
         .then((resp) => {
           account.setTokenPair(resp);
           return resp;

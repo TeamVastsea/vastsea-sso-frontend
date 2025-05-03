@@ -8,7 +8,6 @@ import { AccountService } from '../account/account.service';
 import { isNil } from 'ramda';
 import { ForgetPassword } from './dto/forget-password';
 import { MailService } from '@app/mail';
-import { Account, Profile } from '@prisma/client';
 import { ConfigService } from '@app/config';
 import { FORGET_PASSWORD, UPDATE_PASSWORD } from '@app/mail/templates';
 
@@ -90,9 +89,9 @@ export class SecureService {
     return this.redis.get(`SECURE::${type}::${email}`);
   }
   async sendCode(email: string, type: 'forget') {
-    const account = (await this.account.findAccountByEmail(email, {
+    const account = await this.account.findAccountByEmail(email, {
       profile: true,
-    })) as (Account & { profile?: Profile }) | null;
+    });
     if (!account || !account.profile) {
       throw new HttpException('用户不存在', HttpStatus.NOT_FOUND);
     }

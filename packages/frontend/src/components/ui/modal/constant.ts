@@ -21,13 +21,18 @@ export interface Context {
   toggle: () => void;
 }
 
-export const [useProvideModalContext, useModalContext] = createInjectionState((context: Context) => {
-  const isOpen = ref(context.isOpen);
-  watch(() => context, () => {
-    isOpen.value = context.isOpen.value;
-  });
-  return {
-    ...context,
-    isOpen,
-  };
-});
+export const [useProvideModalContext, useModalContext] = createInjectionState(
+  (context: Context) => {
+    const isOpen = ref(context.isOpen);
+    watch(
+      () => context,
+      () => {
+        isOpen.value = context.isOpen.value;
+      },
+    );
+    return {
+      ...context,
+      isOpen,
+    };
+  },
+);

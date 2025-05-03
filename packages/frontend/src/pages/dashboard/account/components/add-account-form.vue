@@ -25,7 +25,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <tiny-form ref="form" label-position="top" :model="formData" :rules="formRules">
+  <tiny-form
+    ref="form"
+    label-position="top"
+    :model="formData"
+    :rules="formRules"
+  >
     <tiny-form-item prop="email" label="邮箱">
       <tiny-input v-model="formData.email" />
     </tiny-form-item>

@@ -3,7 +3,9 @@ declare interface List<T> {
   data: T extends unknown[] ? T : T[];
 }
 
-declare type Form = InstanceType<typeof TinyForm> & { validate: () => Promise<boolean> };
+declare type Form = InstanceType<typeof TinyForm> & {
+  validate: () => Promise<boolean>;
+};
 
 declare interface AccessTokenPayload {
   id: string;

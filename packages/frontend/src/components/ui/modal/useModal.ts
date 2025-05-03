@@ -21,7 +21,8 @@ let x: number = 0;
 let y: number = 0;
 export function useModal() {
   const appContext = getCurrentInstance()?.appContext;
-  const isAnchor = (el: Element): el is HTMLElement & { anchor: symbol } => Object.keys(el).includes('anchor') && (el as any).anchor === ANCHOR_SYMBOl;
+  const isAnchor = (el: Element): el is HTMLElement & { anchor: symbol } =>
+    Object.keys(el).includes('anchor') && (el as any).anchor === ANCHOR_SYMBOl;
   const createAnchor = () => {
     const bodyChildren = document.body.children;
     if (Array.from(bodyChildren).some(isAnchor)) {
@@ -70,9 +71,11 @@ export function useModal() {
     render(null, cur.anchor);
     cur.anchor.style.display = 'none';
   };
-  const createModal = (
-    { content, onHidden, onDestory }: CreateModalOptions,
-  ) => {
+  const createModal = ({
+    content,
+    onHidden,
+    onDestory,
+  }: CreateModalOptions) => {
     const modal = h(
       Modal,
       {
@@ -94,17 +97,13 @@ export function useModal() {
               // instance.anchor.remove();
               remove(instance);
             });
-            instances = instances.filter(_instance => !instance.includes(_instance));
+            instances = instances.filter(
+              _instance => !instance.includes(_instance),
+            );
           }, 200);
         },
       },
-      () => [
-        h(
-          ModalContent,
-          {},
-          () => [content],
-        ),
-      ],
+      () => [h(ModalContent, {}, () => [content])],
     );
     if (!appContext) {
       return;

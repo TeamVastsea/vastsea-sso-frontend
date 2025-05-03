@@ -17,11 +17,14 @@ export interface SelectContext {
   values: Ref<AcceptableValue[]>;
 }
 
-export const [useProvide, useContext] = createInjectionState((
-  defaultValue: SelectContext,
-) => {
-  const renderOptions: Ref<OptionProps<AcceptableValue>[]> = ref(defaultValue.renderOptions.value);
-  const values = defaultValue.values;
+export const [useProvide, useContext] = createInjectionState(
+  (defaultValue: SelectContext) => {
+    const renderOptions: Ref<OptionProps<AcceptableValue>[]> = ref(
+      defaultValue.renderOptions.value,
+    );
+    const values = defaultValue.values;
 
-  return { renderOptions, values };
-}, { injectionKey: Symbol('Select') });
+    return { renderOptions, values };
+  },
+  { injectionKey: Symbol('Select') },
+);

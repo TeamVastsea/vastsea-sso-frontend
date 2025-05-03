@@ -1,7 +1,6 @@
 import { AutoRedis } from '@app/decorator';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { createHash } from 'crypto';
-import { promises } from 'dns';
 import { existsSync, unlinkSync, writeFileSync } from 'fs';
 import Redis, { Cluster } from 'ioredis';
 import { join } from 'path';

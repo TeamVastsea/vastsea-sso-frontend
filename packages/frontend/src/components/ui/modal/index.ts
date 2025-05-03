@@ -4,10 +4,4 @@ import ModalHeader from './header.vue';
 import Modal from './index.vue';
 import { useModal } from './useModal';
 
-export {
-  Modal,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  useModal,
-};
+export { Modal, ModalContent, ModalFooter, ModalHeader, useModal };

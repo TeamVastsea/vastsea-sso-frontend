@@ -18,7 +18,8 @@ const modelValue = defineModel<number>({ required: true });
 let timer: number | undefined;
 
 const _onTrigger = onTrigger || ((val: number) => val - 1);
-const _showBehavior = showBehavior || ((val: number) => Number.parseInt(val.toString()));
+const _showBehavior
+  = showBehavior || ((val: number) => Number.parseInt(val.toString()));
 
 const showValue = computed(() => _showBehavior(unref(modelValue)));
 
@@ -42,20 +43,26 @@ const start = () => {
 
 defineExpose({ stop, start });
 
-watch(() => modelValue, () => {
-  if (timer) {
-    stop();
-  }
-  start();
-}, { immediate: true, deep: true });
+watch(
+  () => modelValue,
+  () => {
+    if (timer) {
+      stop();
+    }
+    start();
+  },
+  { immediate: true, deep: true },
+);
 </script>
 
 <template>
   <div class="w-fit">
-    <slot v-if="modelValue > endValue" :current-time="modelValue" :show-value="showValue">
-      <tiny-button>
-        {{ showValue }} 秒
-      </tiny-button>
+    <slot
+      v-if="modelValue > endValue"
+      :current-time="modelValue"
+      :show-value="showValue"
+    >
+      <tiny-button> {{ showValue }} 秒 </tiny-button>
     </slot>
     <slot v-else name="done" />
   </div>

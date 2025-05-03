@@ -21,7 +21,11 @@ export interface UseClientListProps {
   type?: 'scroll' | 'page';
 }
 export function useClientList(
-  { fetcher: _fecther, size: _size, type }: Partial<CommonComposablesProps> & UseClientListProps = {
+  {
+    fetcher: _fecther,
+    size: _size,
+    type,
+  }: Partial<CommonComposablesProps> & UseClientListProps = {
     fetcher: instance,
     size: 20,
     type: 'page',
@@ -40,12 +44,13 @@ export function useClientList(
   const preIdRecord = new Map<number, string>();
   const getList = () => {
     loading.value = true;
-    return fetcher.get<unknown, List<ClientInfo>>('/client', {
-      params: SuperJSON.serialize({
-        preId: preId.value,
-        size: size.value,
-      }).json,
-    })
+    return fetcher
+      .get<unknown, List<ClientInfo>>('/client', {
+        params: SuperJSON.serialize({
+          preId: preId.value,
+          size: size.value,
+        }).json,
+      })
       .then((resp) => {
         if (type === 'page') {
           data.value = resp.data;
@@ -84,5 +89,16 @@ export function useClientList(
     preIdRecord.clear();
     return getList();
   };
-  return { getList, loadNext, loadPrev, setSize, loadMore, canLoad, loading, data, total, size };
+  return {
+    getList,
+    loadNext,
+    loadPrev,
+    setSize,
+    loadMore,
+    canLoad,
+    loading,
+    data,
+    total,
+    size,
+  };
 }

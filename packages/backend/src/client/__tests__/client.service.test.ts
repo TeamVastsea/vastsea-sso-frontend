@@ -1,7 +1,5 @@
 import { TestBed } from '@suites/unit';
 import { ClientService } from '../client.service';
-import { ConfigService } from '@app/config';
-import { GlobalCounterService } from '@app/global-counter';
 import { ClientCache } from '../client.cache';
 import { PrismaService } from '@app/prisma';
 import { Mocked } from '@suites/doubles.jest';
@@ -9,17 +7,11 @@ import { HttpException } from '@nestjs/common';
 
 describe('ClientService', () => {
   let service: ClientService;
-  let config: Mocked<ConfigService>;
-  let cnt: Mocked<GlobalCounterService>;
   let prisma: Mocked<PrismaService>;
   let cache: Mocked<ClientCache>;
   beforeEach(async () => {
     const { unit, unitRef } = await TestBed.solitary(ClientService).compile();
     service = unit;
-    config = unitRef.get(ConfigService) as any as Mocked<ConfigService>;
-    cnt = unitRef.get(
-      GlobalCounterService,
-    ) as any as Mocked<GlobalCounterService>;
     prisma = unitRef.get(PrismaService) as any as Mocked<PrismaService>;
     cache = unitRef.get(ClientCache) as any as Mocked<ClientCache>;
   });

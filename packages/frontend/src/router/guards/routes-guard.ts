@@ -15,9 +15,11 @@ export default (router: Router) => {
       if (!system || !system.length) {
         continue;
       }
-      const canVisit = accounts.permissionList.length > 0  && accounts.permissionList.every((permission) => {
-        return system.some(sys => permission.toUpperCase().startsWith(sys));
-      });
+      const canVisit
+        = accounts.permissionList.length > 0
+          && accounts.permissionList.every((permission) => {
+            return system.some(sys => permission.toUpperCase().startsWith(sys));
+          });
       if (!canVisit && route.name && router.hasRoute(route.name)) {
         router.removeRoute(route.name);
       }

@@ -8,18 +8,23 @@ const route = useRoute();
 const router = useRouter();
 const ok = route.query.ok?.toString();
 const reason = route.query.reason?.toString();
+// eslint-disable-next-line ts/no-non-null-asserted-optional-chain
 const code = ok === 'true' ? route.query.code?.toString()! : null;
 const account = useAccountStore();
 const { axios } = useAxios();
 
 if (!code) {
-  router.replace({ name: 'AuthError', query: {
-    reason: reason ?? ['页面不存在'],
-  } });
+  router.replace({
+    name: 'AuthError',
+    query: {
+      reason: reason ?? ['页面不存在'],
+    },
+  });
 }
 
 if (code) {
-  axios.post<unknown, TokenPayload>('/auth/token', null, { params: { code } })
+  axios
+    .post<unknown, TokenPayload>('/auth/token', null, { params: { code } })
     .then((tokenPair) => {
       account.setTokenPair(tokenPair);
     })

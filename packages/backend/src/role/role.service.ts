@@ -35,19 +35,15 @@ export class RoleService {
     const permissionIds = permissions.map((permission) => ({
       id: permission.id,
     }));
-    const parents = Promise.all(handles)
-      .then((roles) => {
-        if (!roles) {
-          return [];
-        }
-        if (roles.some((role) => isNil(role) || isEmpty(role))) {
-          throw new HttpException('参数错误', HttpStatus.BAD_REQUEST);
-        }
-        return roles.map((role) => ({ id: role.id }));
-      })
-      .catch((err) => {
-        throw new HttpException('服务器繁忙', HttpStatus.TOO_MANY_REQUESTS);
-      });
+    const parents = Promise.all(handles).then((roles) => {
+      if (!roles) {
+        return [];
+      }
+      if (roles.some((role) => isNil(role) || isEmpty(role))) {
+        throw new HttpException('参数错误', HttpStatus.BAD_REQUEST);
+      }
+      return roles.map((role) => ({ id: role.id }));
+    });
     const id = await this.cnt.incr(ID_COUNTER.ROLE);
     return this.prisma.role
       .create({

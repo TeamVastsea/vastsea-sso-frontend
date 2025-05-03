@@ -4,7 +4,6 @@ import {
   HttpException,
   HttpStatus,
   Param,
-  Res,
   StreamableFile,
 } from '@nestjs/common';
 import { UploadService } from '../upload/upload.service';

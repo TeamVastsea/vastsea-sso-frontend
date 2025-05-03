@@ -47,20 +47,22 @@ const router = useRouter();
 const createPermission = (permission: CreatePermission) => {
   create(permission).then(removeCurrent);
 };
-const updatePermission = (id: string, permission: Partial<CreatePermission>) => {
-  update(id, permission)
-    .then(() => {
-      router.go(0);
-    });
+const updatePermission = (
+  id: string,
+  permission: Partial<CreatePermission>,
+) => {
+  update(id, permission).then(() => {
+    router.go(0);
+  });
 };
 const openUpdateModal = (id: string) => {
-  fetchPermissionInfo(id)
-    .then((permission) => {
-      renderModal(
-        AddPermissionForm,
-        { title: '修改权限', submitBehavior: data => updatePermission(id, data), permission },
-      );
+  fetchPermissionInfo(id).then((permission) => {
+    renderModal(AddPermissionForm, {
+      title: '修改权限',
+      submitBehavior: data => updatePermission(id, data),
+      permission,
     });
+  });
 };
 
 const loadNextPage = (page: number) => {
@@ -80,12 +82,16 @@ const resetSize = (size: number) => {
   getPermissionList(values.value[0]?.clientId, unref(preId));
 };
 
-watchDebounced(values, () => {
-  const clientId = values.value[0]?.clientId;
-  resetPreId();
-  getPermissionList(clientId, unref(preId));
-  curPage.value = 1;
-}, { debounce: 200, deep: true });
+watchDebounced(
+  values,
+  () => {
+    const clientId = values.value[0]?.clientId;
+    resetPreId();
+    getPermissionList(clientId, unref(preId));
+    curPage.value = 1;
+  },
+  { debounce: 200, deep: true },
+);
 
 onMounted(() => {
   getPermissionList();
@@ -98,7 +104,14 @@ onMounted(() => {
       <div class="flex gap-2 w-full">
         <div
           class="px-3 rounded flex cursor-pointer transition items-center hover:bg-zinc-200 dark:hover:bg-zinc-800"
-          @click="() => renderModal(AddPermissionForm, { title: '添加权限', readonly: false, submitBehavior: createPermission })"
+          @click="
+            () =>
+              renderModal(AddPermissionForm, {
+                title: '添加权限',
+                readonly: false,
+                submitBehavior: createPermission,
+              })
+          "
         >
           <div class="i-material-symbols:add" />
         </div>
@@ -114,14 +127,12 @@ onMounted(() => {
         <tiny-grid-column field="desc" title="desc" />
         <tiny-grid-column field="active" title="actvie">
           <template #default="{ row }">
-            {{ row.active ? '正常' : '被禁用' }}
+            {{ row.active ? "正常" : "被禁用" }}
           </template>
         </tiny-grid-column>
         <tiny-grid-column title="action">
           <template #default="{ row }">
-            <tiny-button
-              @click="openUpdateModal(row.id)"
-            >
+            <tiny-button @click="openUpdateModal(row.id)">
               修改
             </tiny-button>
           </template>

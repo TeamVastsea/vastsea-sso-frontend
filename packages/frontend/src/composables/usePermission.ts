@@ -23,7 +23,11 @@ export interface UsePermission {
   type: MaybeRef<'page' | 'scroll'>;
 }
 export function usePermission(
-  { fetcher: _fetcher, size: _size, type: _type }: Partial<CommonComposablesProps<UsePermission>> = {
+  {
+    fetcher: _fetcher,
+    size: _size,
+    type: _type,
+  }: Partial<CommonComposablesProps<UsePermission>> = {
     fetcher: instance,
     size: 10,
     type: 'page',
@@ -41,9 +45,20 @@ export function usePermission(
   // page -> preId;
   const pagePreId = new Map<number, string>();
 
-  const getPermissionList = (clientId?: string, preId?: string, all?: boolean) => {
+  const getPermissionList = (
+    clientId?: string,
+    preId?: string,
+    all?: boolean,
+  ) => {
     loading.value = true;
-    return fetcher.get<never, PermissionList>('/permission', { params: { clientId, preId, size: all ? undefined : unref(permissionListPageSize) } })
+    return fetcher
+      .get<never, PermissionList>('/permission', {
+        params: {
+          clientId,
+          preId,
+          size: all ? undefined : unref(permissionListPageSize),
+        },
+      })
       .then((resp) => {
         if (!permissionList.value) {
           permissionList.value = resp.data;
@@ -53,7 +68,14 @@ export function usePermission(
             permissionList.value = resp.data;
           }
           if (unref(type) === 'scroll') {
-            permissionList.value.push(...resp.data.filter((permission) => !permissionList.value?.map(permission => permission.id).includes(permission.id)));
+            permissionList.value.push(
+              ...resp.data.filter(
+                permission =>
+                  !permissionList.value
+                    ?.map(permission => permission.id)
+                    .includes(permission.id),
+              ),
+            );
           }
         }
         permissionTotal.value = resp.total.toString();
@@ -64,7 +86,8 @@ export function usePermission(
   };
 
   const search = (name: string, clientId: string) => {
-    return fetcher.get<never, PermissionList>('/permission', { params: { name, clientId } })
+    return fetcher
+      .get<never, PermissionList>('/permission', { params: { name, clientId } })
       .then(resp => resp.data);
   };
 
@@ -73,12 +96,13 @@ export function usePermission(
   };
   const createPermission = (data: CreatePermission) => {
     loading.value = true;
-    return fetcher.post<unknown, Permission>(`/permission`, {
-      name: data.name,
-      desc: data.desc,
-      clientId: unref(data.clientId),
-      active: data.active,
-    } satisfies CreatePermission)
+    return fetcher
+      .post<unknown, Permission>(`/permission`, {
+        name: data.name,
+        desc: data.desc,
+        clientId: unref(data.clientId),
+        active: data.active,
+      } satisfies CreatePermission)
       .then((permission) => {
         permissionList.value?.push(permission);
         permissionTotal.value = `${BigInt(permissionTotal.value) + 1n}`;
@@ -89,13 +113,14 @@ export function usePermission(
   };
   const updatePermission = (id: string, data: Partial<CreatePermission>) => {
     loading.value = true;
-    return fetcher.patch(`/permission/${id}`, {
-      name: unref(data.name),
-      desc: unref(data.desc),
-      active: unref(data.active),
-      clientId: data.clientId,
-    } satisfies Partial<CreatePermission>)
-      .finally(() => loading.value = false);
+    return fetcher
+      .patch(`/permission/${id}`, {
+        name: unref(data.name),
+        desc: unref(data.desc),
+        active: unref(data.active),
+        clientId: data.clientId,
+      } satisfies Partial<CreatePermission>)
+      .finally(() => (loading.value = false));
   };
 
   const clickNext = (page: number) => {
@@ -114,7 +139,7 @@ export function usePermission(
     }
     preId.value = pagePreId.get(cur);
   };
-  const resetPreId = () => preId.value = undefined;
+  const resetPreId = () => (preId.value = undefined);
   const setSize = (newSize: number) => {
     permissionListPageSize.value = newSize;
     pagePreId.clear();
@@ -128,8 +153,28 @@ export function usePermission(
   const resetPage = () => {
     curPage.value = 1;
   };
-  watch(() => _type, () => {
-    type.value = unref(_type);
-  });
-  return { resetPage, search, loadMore, getPermissionList, clickNext, clickPrev, resetPreId, setSize, createPermission, fetchPermissionInfo, updatePermission, permissionList, permissionTotal, loading, permissionListPageSize, preId: readonly(preId) };
+  watch(
+    () => _type,
+    () => {
+      type.value = unref(_type);
+    },
+  );
+  return {
+    resetPage,
+    search,
+    loadMore,
+    getPermissionList,
+    clickNext,
+    clickPrev,
+    resetPreId,
+    setSize,
+    createPermission,
+    fetchPermissionInfo,
+    updatePermission,
+    permissionList,
+    permissionTotal,
+    loading,
+    permissionListPageSize,
+    preId: readonly(preId),
+  };
 }

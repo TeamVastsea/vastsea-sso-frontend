@@ -30,9 +30,7 @@ export interface Client {
   active: boolean;
 }
 export function useClient(
-  {
-    fetcher,
-  }: CommonComposablesProps = { fetcher: instance },
+  { fetcher }: CommonComposablesProps = { fetcher: instance },
 ) {
   const formData: CreateClientData = reactive({
     name: '',

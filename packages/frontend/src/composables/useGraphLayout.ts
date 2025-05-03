@@ -12,7 +12,11 @@ export function useGraphLayout() {
 
   const previousDirection = ref('LR');
 
-  function layout(nodes: Node[], edges: Edge[], direction: GraphDirection): Node[] {
+  function layout(
+    nodes: Node[],
+    edges: Edge[],
+    direction: GraphDirection,
+  ): Node[] {
     const dagreGraph = new dagre.graphlib.Graph();
 
     graph.value = dagreGraph;
@@ -29,7 +33,10 @@ export function useGraphLayout() {
       if (!graphNode) {
         return [];
       }
-      dagreGraph.setNode(node.id, { width: graphNode.dimensions.width || 150, height: graphNode.dimensions.height || 50 });
+      dagreGraph.setNode(node.id, {
+        width: graphNode.dimensions.width || 150,
+        height: graphNode.dimensions.height || 50,
+      });
     }
 
     for (const edge of edges) {
