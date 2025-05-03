@@ -68,7 +68,7 @@ describe('Auth E2E test', () => {
         '/account/mail-code?email=test2@no-reply.com',
       );
       const code = await redis.get(AUTH_EMAIL_CODE(`test2@no-reply.com`));
-      const { statusCode, body } = await request(app.getHttpServer())
+      const { statusCode } = await request(app.getHttpServer())
         .post('/account/register')
         .send({
           email: 'test2@no-reply.com',
