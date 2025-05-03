@@ -24,7 +24,7 @@ if (code) {
       account.setTokenPair(tokenPair);
     })
     .then(() => {
-      router.replace({ name: 'AccountManage' });
+      router.replace({ name: 'Profile' });
     });
 }
 </script>

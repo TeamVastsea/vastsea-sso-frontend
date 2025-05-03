@@ -27,7 +27,9 @@ declare global {
     captcha: {
       geeTest: {
         gtId: string;
+        key: string;
       };
+      map: object;
     };
     file: {
       avatar: {

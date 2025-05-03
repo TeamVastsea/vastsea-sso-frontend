@@ -13,6 +13,9 @@ importers:
       '@gaonengwww/jose':
         specifier: ^6.0.9
         version: 6.0.9
+      '@gaonengwww/superjson':
+        specifier: ^2.2.2
+        version: 2.2.2
       '@liaoliaots/nestjs-redis':
         specifier: 9.0.0
         version: 9.0.0(@nestjs/common@11.1.0)(@nestjs/core@11.1.0)(ioredis@5.6.1)
@@ -43,6 +46,9 @@ importers:
       '@prisma/client':
         specifier: 6.5.0
         version: 6.5.0(prisma@6.7.0)(typescript@5.8.3)
+      axios:
+        specifier: ^1.8.4
+        version: 1.9.0
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
@@ -82,9 +88,6 @@ importers:
       sharp:
         specifier: ^0.34.1
         version: 0.34.1
-      superjson:
-        specifier: ^2.2.2
-        version: 2.2.2
       toml:
         specifier: ^3.0.0
         version: 3.0.0
@@ -239,6 +242,9 @@ importers:
       axios:
         specifier: ^1.8.4
         version: 1.9.0
+      dotenv:
+        specifier: ^16.5.0
+        version: 16.5.0
       jwt-decode:
         specifier: ^4.0.0
         version: 4.0.0
@@ -1390,6 +1396,13 @@ packages:
 
   /@gaonengwww/jose@6.0.9:
     resolution: {integrity: sha512-WUIuPC571hG6xxzIWuyWdqXpFEDHeGYlyRIyemn/zArliHSRAKzq27XcltN0MXiLcfhmY207k9/jCBj35v01Yg==}
+    dev: false
+
+  /@gaonengwww/superjson@2.2.2:
+    resolution: {integrity: sha512-Hr8yuz74DnURoeIernpJLHO4I52pPFX8i4zEi18B/kBgQ6WdvbwiZjLs5kG+BAbt3fSHM+7kbEihh0bBUOQ59Q==}
+    engines: {node: '>=16'}
+    dependencies:
+      copy-anything: 3.0.5
     dev: false
 
   /@humanfs/core@0.19.1:

@@ -13,7 +13,7 @@ import { AuthModule } from './auth/auth.module';
 import { readFileSync } from 'fs';
 import { SuperSerializerInterceptor } from './super_serializer/super_serializer.interceptor';
 import { ClientModule } from './client/client.module';
-import { AuthGuard } from '@app/guard';
+import { AuthGuard, RequiredCaptchaGuard } from '@app/guard';
 import { PermissionGuard } from '../libs/guard/src/permission-guard';
 import { AccountModule } from './account/account.module';
 import { PermissionService } from './permission/permission.service';
@@ -128,6 +128,10 @@ const BUILT_IN_PERMISSIONS = [
     {
       provide: APP_GUARD,
       useClass: RequriedClientAdministratorGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RequiredCaptchaGuard,
     },
   ],
 })
