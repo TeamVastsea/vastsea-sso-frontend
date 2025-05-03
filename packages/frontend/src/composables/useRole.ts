@@ -1,8 +1,8 @@
-import type { CommonComposablesProps } from "@/types/common-composables";
-import type { MaybeRef } from "vue";
-import type { Permission } from "./usePermission";
-import { ref, unref, watch } from "vue";
-import instance from "./axios";
+import type { CommonComposablesProps } from '@/types/common-composables';
+import type { MaybeRef } from 'vue';
+import type { Permission } from './usePermission';
+import { ref, unref, watch } from 'vue';
+import instance from './axios';
 
 export interface RoleInfoItem {
   id: string;
@@ -11,8 +11,8 @@ export interface RoleInfoItem {
   clientId: string;
   clientPk: string;
   permission: Permission[];
-  parents: Pick<MininalRole, "id" | "name" | "clientId">[];
-  children: Pick<MininalRole, "id" | "name" | "clientId">[];
+  parents: Pick<MininalRole, 'id' | 'name' | 'clientId'>[];
+  children: Pick<MininalRole, 'id' | 'name' | 'clientId'>[];
 }
 
 export interface CreateRole {
@@ -33,7 +33,7 @@ export interface MininalRole {
 }
 
 export interface UseRole {
-  type: "page" | "scroll";
+  type: 'page' | 'scroll';
 }
 
 export function useRole(
@@ -42,11 +42,11 @@ export function useRole(
     type: _type,
   }: Partial<CommonComposablesProps<UseRole>> = {
     fetcher: instance,
-    type: "page",
+    type: 'page',
   },
 ) {
   const fetcher = _fetcher ?? instance;
-  const type = _type ?? "page";
+  const type = _type ?? 'page';
 
   const curPage = ref(1);
   const roleList = ref<MininalRole[]>([]);
@@ -56,7 +56,7 @@ export function useRole(
   const pagePreid = new Map<number, string | undefined>();
   const clientId = ref<string | undefined>();
   const createRole = (data: MaybeRef<CreateRole>) => {
-    return fetcher.post<never, MininalRole>("/role", unref(data));
+    return fetcher.post<never, MininalRole>('/role', unref(data));
   };
   const getRoleInfo = (roleId: string) => {
     return fetcher.get<unknown, RoleInfoItem>(`/role/${roleId}`);
@@ -76,12 +76,12 @@ export function useRole(
         },
       })
       .then((resp) => {
-        if (type === "page") {
+        if (type === 'page') {
           roleList.value = resp.data;
         }
-        if (type === "scroll") {
+        if (type === 'scroll') {
           const newData = resp.data.filter((resp) => {
-            return !roleList.value.map((role) => role.id).includes(resp.id);
+            return !roleList.value.map(role => role.id).includes(resp.id);
           });
           roleList.value.push(...newData);
         }
@@ -94,19 +94,19 @@ export function useRole(
   ) => {
     return fetcher.patch<never, MininalRole>(`/role/${id}`, data);
   };
-  const setPage = (page: number, type: "next" | "prev") => {
+  const setPage = (page: number, type: 'next' | 'prev') => {
     curPage.value = page;
-    if (type === "next") {
+    if (type === 'next') {
       const id = roleList.value[roleList.value.length - 1].id;
       pagePreid.set(page, id);
       preId.value = id;
     }
-    if (type === "prev") {
+    if (type === 'prev') {
       preId.value = pagePreid.get(curPage.value);
     }
   };
   const setSize = (newSize: number) => {
-    if (type === "page") {
+    if (type === 'page') {
       roleListPageSize.value = newSize;
     }
     pagePreid.clear();

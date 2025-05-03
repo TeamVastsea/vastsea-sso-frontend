@@ -1,7 +1,7 @@
-import type { AcceptableValue } from "reka-ui";
-import type { Ref } from "vue";
-import { createInjectionState } from "@vueuse/core";
-import { ref } from "vue";
+import type { AcceptableValue } from 'reka-ui';
+import type { Ref } from 'vue';
+import { createInjectionState } from '@vueuse/core';
+import { ref } from 'vue';
 
 export interface OptionProps<T extends AcceptableValue> {
   label: string;
@@ -26,5 +26,5 @@ export const [useProvide, useContext] = createInjectionState(
 
     return { renderOptions, values };
   },
-  { injectionKey: Symbol("Select") },
+  { injectionKey: Symbol('Select') },
 );

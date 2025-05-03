@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import type { Reactive } from "vue";
-import { useAxios } from "@/composables";
-import { TinyButton, TinyForm, TinyFormItem, TinyInput } from "@opentiny/vue";
-import { reactive, useTemplateRef } from "vue";
-import { useRouter } from "vue-router";
+import type { Reactive } from 'vue';
+import { useAxios } from '@/composables';
+import { TinyButton, TinyForm, TinyFormItem, TinyInput } from '@opentiny/vue';
+import { reactive, useTemplateRef } from 'vue';
+import { useRouter } from 'vue-router';
 
 interface UpdatePassword {
   newPassword: string;
@@ -11,11 +11,11 @@ interface UpdatePassword {
 }
 
 const updatePassword: Reactive<UpdatePassword> = reactive({
-  newPassword: "",
-  oldPassword: "",
+  newPassword: '',
+  oldPassword: '',
 });
 const { axios } = useAxios();
-const form = useTemplateRef<any>("form");
+const form = useTemplateRef<any>('form');
 const router = useRouter();
 const doUpdate = () => {
   form.value
@@ -24,7 +24,7 @@ const doUpdate = () => {
       if (!ok) {
         return;
       }
-      axios.patch("/secure/password", updatePassword).then(() => {
+      axios.patch('/secure/password', updatePassword).then(() => {
         router.back();
       });
     })
@@ -38,7 +38,9 @@ const doUpdate = () => {
       <div
         class="p-4 rounded-lg bg-zinc-200 flex flex-col gap-2 h-fit w-full dark:bg-zinc-800"
       >
-        <h1 class="text-3xl text-zinc-800 mb-4 dark:text-zinc-200">修改密码</h1>
+        <h1 class="text-3xl text-zinc-800 mb-4 dark:text-zinc-200">
+          修改密码
+        </h1>
         <tiny-form
           ref="form"
           label-position="top"
@@ -60,7 +62,9 @@ const doUpdate = () => {
             />
           </tiny-form-item>
           <tiny-form-item>
-            <tiny-button class="mr-2" @click="doUpdate"> 提交 </tiny-button>
+            <tiny-button class="mr-2" @click="doUpdate">
+              提交
+            </tiny-button>
             <router-link
               :to="{ name: 'forget-password' }"
               class="text-blue-600 transition hover:text-blue-800"

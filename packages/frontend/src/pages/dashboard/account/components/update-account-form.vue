@@ -1,13 +1,13 @@
 <script lang="ts" setup>
-import { useAccount, useRole } from "@/composables";
+import { useAccount, useRole } from '@/composables';
 import {
   TinyCheckbox,
   TinyForm,
   TinyFormItem,
   TinyInput,
   TinySelect,
-} from "@opentiny/vue";
-import { computed, onMounted, ref, useTemplateRef, watch } from "vue";
+} from '@opentiny/vue';
+import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
 
 const { id } = defineProps<{ id: string }>();
 
@@ -25,19 +25,19 @@ const roleOptions = computed(() => {
     };
   });
 });
-const form = useTemplateRef<any>("form");
+const form = useTemplateRef<any>('form');
 
 watch(
   account.value,
   () => {
-    role.value = account.value.role.map((role) => role.id.toString());
+    role.value = account.value.role.map(role => role.id.toString());
   },
   { deep: true, immediate: true },
 );
 
 onMounted(() => {
   fetchAccount(BigInt(id)).then((account) => {
-    role.value = account.role.map((role) => role.id.toString());
+    role.value = account.role.map(role => role.id.toString());
   });
   getRoleList();
 });

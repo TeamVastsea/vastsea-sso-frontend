@@ -1,14 +1,14 @@
 <script lang="ts" setup>
-import type { Client, ClientInfo } from "@/composables";
-import { useModal } from "@/components/ui/modal";
-import { useClientList } from "@/composables";
-import { TinyButton, TinyGrid, TinyGridColumn, TinyPager } from "@opentiny/vue";
-import { h, onMounted, ref } from "vue";
-import ClientInfoModal from "./components/client-info.vue";
-import createClientForm from "./components/create-client-form.vue";
+import type { Client, ClientInfo } from '@/composables';
+import { useModal } from '@/components/ui/modal';
+import { useClientList } from '@/composables';
+import { TinyButton, TinyGrid, TinyGridColumn, TinyPager } from '@opentiny/vue';
+import { h, onMounted, ref } from 'vue';
+import ClientInfoModal from './components/client-info.vue';
+import createClientForm from './components/create-client-form.vue';
 
-const { data, total, getList, loading, loadNext, loadPrev, size, setSize } =
-  useClientList();
+const { data, total, getList, loading, loadNext, loadPrev, size, setSize }
+  = useClientList();
 
 const { createModal, removeCurrent } = useModal();
 
@@ -16,7 +16,7 @@ const selectColumn = ref<string[]>([]);
 
 const showModal = <T extends new (...args: any) => any>(
   comp: T,
-  props?: InstanceType<T>["$props"],
+  props?: InstanceType<T>['$props'],
 ) => {
   createModal({
     content: h(comp, props),
@@ -39,7 +39,7 @@ const onUpdateSuccess = (client: Client) => {
 };
 
 const onSelect = ({ selection }: { selection: ClientInfo[] }) => {
-  selectColumn.value = selection.map((info) => info.id.toString());
+  selectColumn.value = selection.map(info => info.id.toString());
 };
 
 onMounted(() => {

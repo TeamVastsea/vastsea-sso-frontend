@@ -1,9 +1,9 @@
 <script lang="ts" setup generic="T extends AcceptableValue">
-import type { AcceptableValue, ComboboxItemProps } from "reka-ui";
-import type { OptionProps } from "./select.options";
-import { ComboboxItem } from "reka-ui";
-import { computed, toRefs, unref } from "vue";
-import { useContext } from "./select.options";
+import type { AcceptableValue, ComboboxItemProps } from 'reka-ui';
+import type { OptionProps } from './select.options';
+import { ComboboxItem } from 'reka-ui';
+import { computed, toRefs, unref } from 'vue';
+import { useContext } from './select.options';
 
 type FinalOptionProps = ComboboxItemProps & OptionProps<T>;
 
