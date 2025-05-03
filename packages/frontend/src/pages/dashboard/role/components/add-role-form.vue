@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import type { CreateRole, MininalRole } from "@/composables";
-import ClientSelect from "@/components/client-select.vue";
-import { usePermission, useRole } from "@/composables";
+import type { CreateRole, MininalRole } from '@/composables';
+import ClientSelect from '@/components/client-select.vue';
+import { usePermission, useRole } from '@/composables';
 import {
   TinyButton,
   TinyForm,
@@ -9,8 +9,8 @@ import {
   TinyInput,
   TinyOption,
   TinySelect,
-} from "@opentiny/vue";
-import { computed, reactive, ref, useTemplateRef, watch } from "vue";
+} from '@opentiny/vue';
+import { computed, reactive, ref, useTemplateRef, watch } from 'vue';
 
 const emits = defineEmits<{
   ok: [MininalRole[]];
@@ -18,19 +18,19 @@ const emits = defineEmits<{
 
 const client = ref<{ clientId: string; name: string }[]>([]);
 
-const { getRoleList, roleList, createRole } = useRole({ type: "scroll" });
+const { getRoleList, roleList, createRole } = useRole({ type: 'scroll' });
 
 const formData: CreateRole = reactive({
-  name: "",
-  desc: "",
-  clientId: "",
+  name: '',
+  desc: '',
+  clientId: '',
   parent: [],
   permissions: [],
 });
 
-const form = useTemplateRef<Form>("form");
+const form = useTemplateRef<Form>('form');
 const { permissionList, getPermissionList } = usePermission({
-  type: "scroll",
+  type: 'scroll',
   size: 5,
 });
 
@@ -52,7 +52,7 @@ const roleSelect = computed(() => {
     };
   });
 });
-const clientId = computed(() => client.value.map((client) => client?.clientId));
+const clientId = computed(() => client.value.map(client => client?.clientId));
 const batchCreateRole = () => {
   form.value
     .validate()
@@ -71,13 +71,13 @@ const batchCreateRole = () => {
       }
       Promise.allSettled(tasks)
         .then((handles) => {
-          return handles.filter((handle) => handle.status === "fulfilled");
+          return handles.filter(handle => handle.status === 'fulfilled');
         })
         .then((res) => {
-          return res.map((res) => res.value);
+          return res.map(res => res.value);
         })
         .then((roles) => {
-          emits("ok", roles);
+          emits('ok', roles);
         });
     })
     .catch(() => {});
@@ -88,22 +88,22 @@ watch(
     permissionList.value = [];
     roleList.value = [];
     Promise.all([
-      ...clientId.value.map((value) =>
+      ...clientId.value.map(value =>
         getPermissionList(value, undefined, true),
       ),
-      ...clientId.value.map((value) =>
+      ...clientId.value.map(value =>
         getRoleList({ all: true, clientId: value }),
       ),
     ]).then(() => {
       formData.permissions = formData.permissions.filter(
         (readySubmitPermission) => {
           return permissionList.value
-            ?.map((permission) => permission.name)
+            ?.map(permission => permission.name)
             .includes(readySubmitPermission);
         },
       );
       formData.parent = formData.parent.filter((role) => {
-        return roleList.value.map((_role) => _role.name).includes(role);
+        return roleList.value.map(_role => _role.name).includes(role);
       });
     });
   },
@@ -144,7 +144,9 @@ watch(
         </tiny-select>
       </tiny-form-item>
       <tiny-form-item>
-        <tiny-button @click="batchCreateRole"> 提交 </tiny-button>
+        <tiny-button @click="batchCreateRole">
+          提交
+        </tiny-button>
       </tiny-form-item>
     </tiny-form>
   </div>

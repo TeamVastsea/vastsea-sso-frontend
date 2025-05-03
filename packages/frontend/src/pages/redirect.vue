@@ -1,35 +1,35 @@
 <script lang="ts" setup>
-import type { TokenPayload } from "@/store";
-import { useAxios } from "@/composables";
-import { useAccountStore } from "@/store";
-import { useRoute, useRouter } from "vue-router";
+import type { TokenPayload } from '@/store';
+import { useAxios } from '@/composables';
+import { useAccountStore } from '@/store';
+import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();
 const ok = route.query.ok?.toString();
 const reason = route.query.reason?.toString();
 // eslint-disable-next-line ts/no-non-null-asserted-optional-chain
-const code = ok === "true" ? route.query.code?.toString()! : null;
+const code = ok === 'true' ? route.query.code?.toString()! : null;
 const account = useAccountStore();
 const { axios } = useAxios();
 
 if (!code) {
   router.replace({
-    name: "AuthError",
+    name: 'AuthError',
     query: {
-      reason: reason ?? ["页面不存在"],
+      reason: reason ?? ['页面不存在'],
     },
   });
 }
 
 if (code) {
   axios
-    .post<unknown, TokenPayload>("/auth/token", null, { params: { code } })
+    .post<unknown, TokenPayload>('/auth/token', null, { params: { code } })
     .then((tokenPair) => {
       account.setTokenPair(tokenPair);
     })
     .then(() => {
-      router.replace({ name: "AccountManage" });
+      router.replace({ name: 'AccountManage' });
     });
 }
 </script>

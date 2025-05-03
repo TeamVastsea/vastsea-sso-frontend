@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import { CountDown } from "@/components/ui";
-import { useAxios } from "@/composables";
-import { TinyButton, TinyForm, TinyFormItem, TinyInput } from "@opentiny/vue";
-import { reactive, ref } from "vue";
-import { useRouter } from "vue-router";
+import { CountDown } from '@/components/ui';
+import { useAxios } from '@/composables';
+import { TinyButton, TinyForm, TinyFormItem, TinyInput } from '@opentiny/vue';
+import { reactive, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 interface ForgetPasswordDto {
   email: string;
@@ -11,9 +11,9 @@ interface ForgetPasswordDto {
   newPassword: string;
 }
 const forgetPassword: ForgetPasswordDto = reactive({
-  email: "",
-  code: "",
-  newPassword: "",
+  email: '',
+  code: '',
+  newPassword: '',
 });
 
 const router = useRouter();
@@ -23,15 +23,15 @@ const ttl = ref(-1);
 const sendMailCode = () => {
   axios
     .post<
-      never,
-      { ttl: number }
-    >("/secure/password/forget-mail-code", null, { params: { email: forgetPassword.email } })
+    never,
+    { ttl: number }
+  >('/secure/password/forget-mail-code', null, { params: { email: forgetPassword.email } })
     .then((resp) => {
       ttl.value = resp.ttl / 1000;
     });
 };
 const sendForgetPassword = () => {
-  axios.patch("/secure/password/forget", forgetPassword).then(() => {
+  axios.patch('/secure/password/forget', forgetPassword).then(() => {
     router.back();
   });
 };
@@ -43,7 +43,9 @@ const sendForgetPassword = () => {
       <div
         class="p-4 rounded-lg bg-zinc-200 flex flex-col gap-2 h-fit w-full dark:bg-zinc-800"
       >
-        <h1 class="text-3xl text-zinc-800 mb-4 dark:text-zinc-200">忘记密码</h1>
+        <h1 class="text-3xl text-zinc-800 mb-4 dark:text-zinc-200">
+          忘记密码
+        </h1>
         <tiny-form
           label-position="top"
           :model="forgetPassword"
@@ -75,7 +77,9 @@ const sendForgetPassword = () => {
             />
           </tiny-form-item>
           <tiny-form-item>
-            <tiny-button @click="sendForgetPassword"> 提交 </tiny-button>
+            <tiny-button @click="sendForgetPassword">
+              提交
+            </tiny-button>
           </tiny-form-item>
         </tiny-form>
       </div>
