@@ -1,4 +1,4 @@
-FROM node:23-alpine as base
+FROM node:23-alpine AS base
 
 FROM base as builder
 WORKDIR /app
@@ -10,7 +10,7 @@ RUN npm i -g pnpm &&  \
     pnpm prisma generate --schema=prisma/schema.prisma && \
     pnpm build
 
-FROM base as runner
+FROM base AS runner
 WORKDIR /app
 
 COPY --from=builder /app/node_modules ./node_modules
