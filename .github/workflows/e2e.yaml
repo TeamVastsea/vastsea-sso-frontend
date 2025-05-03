@@ -7,12 +7,12 @@ on:
 env:
   CI: true
   DATABASE_URL: file:dev.db
-  SWAGGER_TITLE: Vastsea Token
+  SWAGGER_TITLE: Vastsea SSO
   SWAGGER_DESC: 一站式认证、鉴权服务
   VERSION: 1.0.0-alpha
-  COMMON_ERROR_REDIRECT: http://auth.vastsea.org/auth/error
+  COMMON_ERROR_REDIRECT: http://localhost:3000/auth/error
   CLIENT_ID: AuthServer
-  CLIENT_SECRET: pRVkhH5Ce3kezJknvjAQ
+  CLIENT_SECRET: AuthServer
   REDIRECT: http://localhost:3000/auth/redirect
 
 jobs:
@@ -34,7 +34,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          run-install: false
+          run_install: false
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
