@@ -31,7 +31,6 @@ describe('Auth E2E test', () => {
     const u = await createUser(app, redis, 'test@no-reply.com', 'test');
     id = u.id.toString();
   });
-  afterEach(async () => {});
   describe('Register', () => {
     it('Fail, invalid code', async () => {
       await request(app.getHttpServer()).post(
@@ -80,7 +79,6 @@ describe('Auth E2E test', () => {
           },
           usa: true,
         } as RegisterAccount);
-      console.log(body);
       expect(statusCode).toBe(HttpStatus.CREATED);
     });
   });
