@@ -13,9 +13,6 @@ importers:
       '@gaonengwww/jose':
         specifier: ^6.0.9
         version: 6.0.9
-      '@gaonengwww/superjson':
-        specifier: ^2.2.2
-        version: 2.2.2
       '@liaoliaots/nestjs-redis':
         specifier: 9.0.0
         version: 9.0.0(@nestjs/common@11.1.0)(@nestjs/core@11.1.0)(ioredis@5.6.1)
@@ -85,6 +82,9 @@ importers:
       sharp:
         specifier: ^0.34.1
         version: 0.34.1
+      superjson:
+        specifier: ^2.2.2
+        version: 2.2.2
       toml:
         specifier: ^3.0.0
         version: 3.0.0
@@ -239,9 +239,6 @@ importers:
       axios:
         specifier: ^1.8.4
         version: 1.9.0
-      dotenv:
-        specifier: ^16.5.0
-        version: 16.5.0
       jwt-decode:
         specifier: ^4.0.0
         version: 4.0.0
@@ -1393,13 +1390,6 @@ packages:
 
   /@gaonengwww/jose@6.0.9:
     resolution: {integrity: sha512-WUIuPC571hG6xxzIWuyWdqXpFEDHeGYlyRIyemn/zArliHSRAKzq27XcltN0MXiLcfhmY207k9/jCBj35v01Yg==}
-    dev: false
-
-  /@gaonengwww/superjson@2.2.2:
-    resolution: {integrity: sha512-Hr8yuz74DnURoeIernpJLHO4I52pPFX8i4zEi18B/kBgQ6WdvbwiZjLs5kG+BAbt3fSHM+7kbEihh0bBUOQ59Q==}
-    engines: {node: '>=16'}
-    dependencies:
-      copy-anything: 3.0.5
     dev: false
 
   /@humanfs/core@0.19.1:
@@ -7110,7 +7100,6 @@ packages:
   /binary-extensions@2.3.0:
     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
     engines: {node: '>=8'}
-    requiresBuild: true
 
   /birpc@2.3.0:
     resolution: {integrity: sha512-ijbtkn/F3Pvzb6jHypHRyve2QApOCZDR25D/VnkY2G/lBNcXCTsnsCxgY4k4PkVB7zfwzYbY3O9Lcqe3xufS5g==}
@@ -7161,7 +7150,6 @@ packages:
 
   /boolbase@1.0.0:
     resolution: {integrity: sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww==}
-    requiresBuild: true
 
   /brace-expansion@1.1.11:
     resolution: {integrity: sha512-iCuPHDFgrHX7H2vEI/5xpz07zSHB00TpugqhmYtVmMO6518mCuRMoOYFldEBl0g187ufozdaHgWKcYFb61qGiA==}
@@ -7383,7 +7371,6 @@ packages:
   /chokidar@3.6.0:
     resolution: {integrity: sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==}
     engines: {node: '>= 8.10.0'}
-    requiresBuild: true
     dependencies:
       anymatch: 3.1.3
       braces: 3.0.3
@@ -8222,7 +8209,6 @@ packages:
   /entities@4.5.0:
     resolution: {integrity: sha512-V0hjH4dGPh9Ao5p0MoRY6BVqtwCjhz6vI5LT8AJ55H+4g9/4vbHx1I54fS0XuclLhDHArPQCiMjDxjaL8fPxhw==}
     engines: {node: '>=0.12'}
-    requiresBuild: true
 
   /entities@6.0.0:
     resolution: {integrity: sha512-aKstq2TDOndCn4diEyp9Uq/Flu2i1GlLkc6XIDQSDMuaFE3OPW5OphLCyQ5SpSJZTb4reN+kTcYru5yIfXoRPw==}
@@ -9503,7 +9489,6 @@ packages:
   /he@1.2.0:
     resolution: {integrity: sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==}
     hasBin: true
-    requiresBuild: true
 
   /hookable@5.5.3:
     resolution: {integrity: sha512-Yc+BQe8SvoXH1643Qez1zqLRmbA5rCL+sSmk6TVos0LWVfNIB7PGncdlId77WzLGSIB5KaWgTaNTs2lNVEI6VQ==}
@@ -9700,7 +9685,6 @@ packages:
   /is-binary-path@2.1.0:
     resolution: {integrity: sha512-ZMERYes6pDydyuGidse7OsHxtbI7WVeUEozgR/g7rd0xUimYNlvZRE/K2MgZTjWy725IfelLeVcEM97mmtRGXw==}
     engines: {node: '>=8'}
-    requiresBuild: true
     dependencies:
       binary-extensions: 2.3.0
 
@@ -9721,7 +9705,6 @@ packages:
     resolution: {integrity: sha512-F+i2BKsFrH66iaUFc0woD8sLy8getkwTwtOBjvs56Cx4CgJDeKQeqfz8wAYiSb8JOprWhHH5p77PbmYCvvUuXQ==}
     engines: {node: '>=8'}
     hasBin: true
-    requiresBuild: true
 
   /is-expression@4.0.0:
     resolution: {integrity: sha512-zMIXX63sxzG3XrkHkrAPvm/OVZVSCPNkwMHU8oTX7/U3AL78I0QXCEICXUM13BIa8TYGZ68PiTKfQz3yaTNr4A==}
@@ -9812,7 +9795,6 @@ packages:
   /is-wsl@2.2.0:
     resolution: {integrity: sha512-fKzAra0rGJUUBwGBgNkHZuToZcn+TtXHpeCgmkMJMMYx1sQDYaCSyjJBSCa2nH1DGm7s3n1oBnohoVTBaN7Lww==}
     engines: {node: '>=8'}
-    requiresBuild: true
     dependencies:
       is-docker: 2.2.1
 
@@ -11915,7 +11897,6 @@ packages:
 
   /nth-check@2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
-    requiresBuild: true
     dependencies:
       boolbase: 1.0.0
 
@@ -12723,7 +12704,6 @@ packages:
   /readdirp@3.6.0:
     resolution: {integrity: sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==}
     engines: {node: '>=8.10.0'}
-    requiresBuild: true
     dependencies:
       picomatch: 2.3.1
 
