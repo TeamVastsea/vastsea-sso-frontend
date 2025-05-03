@@ -33,7 +33,7 @@ if (clientId.value && clientId.value === 'undefined') {
   router.push({
     name: 'AuthError',
     query: {
-      reason: ['AuthServer 出现异常', '这可能不是你的问题', '请尽快向站点管理员反馈该问题'],
+      reason: ['AuthServer 出现异常', '这可能不是您的问题', '请向管理员反馈该问题'],
     },
   });
 }
