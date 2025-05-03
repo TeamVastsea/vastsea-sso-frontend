@@ -8,7 +8,6 @@ import { AccountService } from '../account/account.service';
 import { isNil } from 'ramda';
 import { ForgetPassword } from './dto/forget-password';
 import { MailService } from '@app/mail';
-import { Account, Profile } from '@prisma/client';
 import { ConfigService } from '@app/config';
 import { FORGET_PASSWORD, UPDATE_PASSWORD } from '@app/mail/templates';
 
