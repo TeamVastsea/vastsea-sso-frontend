@@ -35,9 +35,7 @@ jobs:
         uses: wearerequired/lint-action@v2
         with:
           eslint: true
-          prettier: true
           eslint_dir: packages/frontend
-          prettier_dir: packages/frontend
           auto_fix: true
   run-linters-backend:
     name: Run linters backend
@@ -61,23 +59,17 @@ jobs:
         uses: wearerequired/lint-action@v2
         with:
           eslint: true
-          prettier: true
           eslint_dir: packages/backend/libs
-          prettier_dir: packages/backend/libs
           auto_fix: true
       - name: Lint src
         uses: wearerequired/lint-action@v2
         with:
           eslint: true
-          prettier: true
           eslint_dir: packages/backend/src
-          prettier_dir: packages/backend/src
           auto_fix: true
       - name: Lint test
         uses: wearerequired/lint-action@v2
         with:
           eslint: true
-          prettier: true
           eslint_dir: packages/backend/test
-          prettier_dir: packages/backend/test
           auto_fix: true

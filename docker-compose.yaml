@@ -54,5 +54,3 @@ services:
       - ./data/redis:/data
     networks:
       - vastsea-sso
-
-# Removed duplicate networks and services sections starting at line 58.
