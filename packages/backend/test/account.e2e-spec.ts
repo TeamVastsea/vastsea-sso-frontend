@@ -24,8 +24,8 @@ describe('Auth E2E test', () => {
     app = moduleFixture.createNestApplication();
 
     redis = app.get(getRedisToken(DEFAULT_REDIS_NAMESPACE));
-    await clear('sqlite');
     await redis.flushall();
+    await clear('sqlite');
     await app.init();
     expect(redis).toBeDefined();
     const u = await createUser(app, redis, 'test@no-reply.com', 'test');
