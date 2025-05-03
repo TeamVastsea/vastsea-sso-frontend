@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { useModalContext } from "./constant";
-import overlay from "./overlay.vue";
+import { useModalContext } from './constant';
+import overlay from './overlay.vue';
 
 const { close, isOpen, transformer } = useModalContext()!;
 </script>

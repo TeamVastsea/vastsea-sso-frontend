@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import type { CreateRole, RoleInfoItem } from "@/composables";
-import { usePermission, useRole } from "@/composables";
+import type { CreateRole, RoleInfoItem } from '@/composables';
+import { usePermission, useRole } from '@/composables';
 import {
   TinyButton,
   TinyForm,
@@ -8,10 +8,10 @@ import {
   TinyInput,
   TinyModal,
   TinySelect,
-} from "@opentiny/vue";
-import { useToggle } from "@vueuse/core";
-import { computed, onMounted, ref, useTemplateRef, watch } from "vue";
-import RelationGraph from "./relation-graph.vue";
+} from '@opentiny/vue';
+import { useToggle } from '@vueuse/core';
+import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
+import RelationGraph from './relation-graph.vue';
 
 const {
   roleId,
@@ -49,7 +49,7 @@ const roleSelect = computed(() => {
     };
   });
 });
-const form = useTemplateRef<Form>("form");
+const form = useTemplateRef<Form>('form');
 const roleParents = ref<string[]>([]);
 
 const onClickSubmit = () => {
@@ -63,7 +63,7 @@ const onClickSubmit = () => {
       if (!ok) {
         return;
       }
-      submitBehavior?.(roleInfo.value?.id ?? "", {
+      submitBehavior?.(roleInfo.value?.id ?? '', {
         name: roleInfo.value?.name,
         desc: roleInfo.value?.desc,
         permissions: roleInfoPermissionId.value,
@@ -81,9 +81,9 @@ watch(
       return [];
     }
     roleInfoPermissionId.value = roleInfo.value.permission.map(
-      (permission) => permission.id,
+      permission => permission.id,
     );
-    roleParents.value = roleInfo.value.parents.map((role) => role.id);
+    roleParents.value = roleInfo.value.parents.map(role => role.id);
   },
   { deep: true },
 );

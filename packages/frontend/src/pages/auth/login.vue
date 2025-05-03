@@ -15,17 +15,17 @@ const { axios } = useAxios();
 const publicInfo = ref<PublicClientInfo | null>(null);
 
 const loginDto = reactive({
-  email: "",
-  password: "",
+  email: '',
+  password: '',
 });
 if (cookie.get('session-state')) {
   axios.post<unknown, { code: string }>(`/auth/session?clientId=${clientId.value}`)
     .then((resp) => {
       const code = resp.code;
-      router.replace({ name: "redirect", query: { ok: "true", code } });
+      router.replace({ name: 'redirect', query: { ok: 'true', code } });
     })
     .catch(() => {
-      cookie.remove("session-state");
+      cookie.remove('session-state');
     });
 }
 
@@ -68,8 +68,8 @@ watch(clientId, () => {
     .catch((err) => {
       if (err.statusCode === 404) {
         router.replace({
-          name: "AuthError",
-          query: { reason: "客户端不存在" },
+          name: 'AuthError',
+          query: { reason: '客户端不存在' },
         });
       }
     });
@@ -88,7 +88,7 @@ watch(clientId, () => {
             class="text-zinc-900 flex flex-col flex-wrap gap-2 dark:text-zinc-100"
           >
             <div class="mx-auto w-fit">
-              <img v-if="publicInfo?.avatar" :src="publicInfo.avatar" alt="" />
+              <img v-if="publicInfo?.avatar" :src="publicInfo.avatar" alt="">
               <div
                 v-else
                 class="i-material-symbols:person-shield-outline-rounded dark:i-material-symbols:person-shield-rounded size-16 dark:size-16"

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { useAxios } from "@/composables";
+import { useAxios } from '@/composables';
 import {
   Modal,
   TinyButton,
@@ -7,9 +7,9 @@ import {
   TinyForm,
   TinyFormItem,
   TinyInput,
-} from "@opentiny/vue";
-import { reactive, ref, useTemplateRef } from "vue";
-import { useRoute, useRouter } from "vue-router";
+} from '@opentiny/vue';
+import { reactive, ref, useTemplateRef } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 interface RegisterDTO {
   email: string;
@@ -22,7 +22,7 @@ interface RegisterDTO {
   usa: boolean;
 }
 
-const form = useTemplateRef<Form>("form");
+const form = useTemplateRef<Form>('form');
 
 const route = useRoute();
 const router = useRouter();
@@ -35,12 +35,12 @@ if (!clientId) {
 }
 
 const registerBody: RegisterDTO = reactive({
-  email: "",
-  password: "",
-  code: "",
+  email: '',
+  password: '',
+  code: '',
   profile: {
-    nick: "",
-    desc: "",
+    nick: '',
+    desc: '',
   },
   usa: false,
 });
@@ -54,7 +54,7 @@ const sendEmail = () => {
     return;
   }
   axios
-    .post<never, { ttl: number }>("/account/mail-code", null, {
+    .post<never, { ttl: number }>('/account/mail-code', null, {
       params: {
         email: registerBody.email,
       },
@@ -78,9 +78,9 @@ const register = () => {
       if (!ok) {
         return;
       }
-      axios.post("/account/register", registerBody).then(() => {
+      axios.post('/account/register', registerBody).then(() => {
         Modal.message({
-          message: "注册成功",
+          message: '注册成功',
         });
         router.replace({
           path: `/auth/login`,
@@ -98,7 +98,9 @@ const register = () => {
       <div
         class="form-wrapper p-4 border border-zinc-300 rounded bg-zinc-200 h-fit w-full dark:border-none dark:bg-zinc-800"
       >
-        <h1 class="text-3xl text-zinc-800 mb-4 dark:text-zinc-200">注册账号</h1>
+        <h1 class="text-3xl text-zinc-800 mb-4 dark:text-zinc-200">
+          注册账号
+        </h1>
         <tiny-form
           ref="form"
           label-position="top"
@@ -142,7 +144,9 @@ const register = () => {
             </tiny-checkbox>
           </tiny-form-item>
           <tiny-form-item>
-            <tiny-button type="primary" @click="register"> 注册 </tiny-button>
+            <tiny-button type="primary" @click="register">
+              注册
+            </tiny-button>
           </tiny-form-item>
         </tiny-form>
       </div>

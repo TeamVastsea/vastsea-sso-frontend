@@ -1,8 +1,8 @@
-import type { Edge, Node } from "@vue-flow/core";
-import { MarkerType, useVueFlow } from "@vue-flow/core";
-import { nextTick, ref } from "vue";
-import { useGraphLayout } from "./useGraphLayout";
-import { useRole } from "./useRole";
+import type { Edge, Node } from '@vue-flow/core';
+import { MarkerType, useVueFlow } from '@vue-flow/core';
+import { nextTick, ref } from 'vue';
+import { useGraphLayout } from './useGraphLayout';
+import { useRole } from './useRole';
 
 interface NodeData {
   id: string;
