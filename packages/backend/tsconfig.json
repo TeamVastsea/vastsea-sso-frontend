@@ -79,5 +79,10 @@
         "libs/redis-cache/src/*"
       ]
     }
-  }
+  },
+  "include": [
+    "./**/*.ts",
+    "webpack.config.js"
+  ],
+  "exclude": ["node_modules"]
 }

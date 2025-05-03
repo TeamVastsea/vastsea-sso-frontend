@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { map, Observable } from 'rxjs';
-import SuperJSON from 'superjson';
+import SuperJSON from '@gaonengwww/superjson';
 
 @Injectable()
 export class SuperSerializerInterceptor<T>
