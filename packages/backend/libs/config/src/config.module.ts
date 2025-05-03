@@ -7,7 +7,7 @@ import { ConfigurableModuleClass } from './config.option';
   exports: [ConfigService],
 })
 export class ConfigModule extends ConfigurableModuleClass {
-  constructor(){
-    super()
+  constructor() {
+    super();
   }
 }
