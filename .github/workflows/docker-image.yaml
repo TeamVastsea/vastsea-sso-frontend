@@ -97,12 +97,12 @@ jobs:
           tags: |
             type=semver,pattern={{version}}
             type=raw,value=latest,enable=${{ github.event_name != 'pull_request' }}
-            - name: Login to ACR
-            uses: aliyun/acr-login@v1
-            with:
-              login-server: https://${{ vars.REGISTRY_ADDRESS }}
-              username: "${{ vars.REGISTRY_USERNAME }}"
-              password: "${{ secrets.REGISTRY_PASSWORD }}"
+      - name: Login to ACR
+        uses: aliyun/acr-login@v1
+        with:
+          login-server: https://${{ vars.REGISTRY_ADDRESS }}
+          username: "${{ vars.REGISTRY_USERNAME }}"
+          password: "${{ secrets.REGISTRY_PASSWORD }}"
       - name: Build and push
         run: |
           docker build -t ${{ vars.REGISTRY_ADDRESS }}/${{ vars.REGISTRY_NAMESPACE }}/${{ vars.IMAGE_NAME }}:${{ steps.meta.outputs.tags }} packages/frontend
