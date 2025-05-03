@@ -1,6 +1,6 @@
-import type { Component, Ref } from 'vue';
-import { createInjectionState } from '@vueuse/core';
-import { ref, watch } from 'vue';
+import type { Component, Ref } from "vue";
+import { createInjectionState } from "@vueuse/core";
+import { ref, watch } from "vue";
 
 export interface ModalProps {
   enableTransformer?: boolean;

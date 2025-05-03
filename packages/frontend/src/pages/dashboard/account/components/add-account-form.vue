@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { useRole } from '@/composables';
-import { useAccount } from '@/composables/useAccount';
-import { TinyForm, TinyFormItem, TinyInput, TinySelect } from '@opentiny/vue';
-import { computed, onMounted, useTemplateRef } from 'vue';
+import { useRole } from "@/composables";
+import { useAccount } from "@/composables/useAccount";
+import { TinyForm, TinyFormItem, TinyInput, TinySelect } from "@opentiny/vue";
+import { computed, onMounted, useTemplateRef } from "vue";
 
 const { formData, formRules, createAccount } = useAccount();
 
@@ -17,7 +17,7 @@ const roleOptions = computed(() => {
   });
 });
 
-const form = useTemplateRef<any>('form');
+const form = useTemplateRef<any>("form");
 
 onMounted(() => {
   getRoleList();

@@ -1,13 +1,13 @@
 <script lang="ts" setup>
-import type { MininalAccount } from '@/composables';
-import type { Ref } from 'vue';
-import { Modal, ModalContent, ModalHeader } from '@/components/ui/modal';
-import { useAccountList } from '@/composables';
-import { Grid, GridColumn, TinyButton, TinyPager } from '@opentiny/vue';
-import { useToggle } from '@vueuse/core';
-import { onMounted, ref } from 'vue';
-import addAccountForm from './components/add-account-form.vue';
-import updateAccountForm from './components/update-account-form.vue';
+import type { MininalAccount } from "@/composables";
+import type { Ref } from "vue";
+import { Modal, ModalContent, ModalHeader } from "@/components/ui/modal";
+import { useAccountList } from "@/composables";
+import { Grid, GridColumn, TinyButton, TinyPager } from "@opentiny/vue";
+import { useToggle } from "@vueuse/core";
+import { onMounted, ref } from "vue";
+import addAccountForm from "./components/add-account-form.vue";
+import updateAccountForm from "./components/update-account-form.vue";
 
 const {
   data,
@@ -29,13 +29,13 @@ const onSelect = ({ selection }: { selection: MininalAccount[] }) => {
   datas.value = selection;
 };
 const removeAccount = () => {
-  const stacks = datas.value.map(account => remove(BigInt(account.id)));
+  const stacks = datas.value.map((account) => remove(BigInt(account.id)));
   return Promise.allSettled(stacks);
 };
 
 const reopen = () => {
-  datas.value = datas.value.filter(data => !data.active);
-  const handles = datas.value.map(account =>
+  datas.value = datas.value.filter((data) => !data.active);
+  const handles = datas.value.map((account) =>
     update(BigInt(account.id), { ...account, active: true }),
   );
   return Promise.allSettled(handles);
@@ -99,9 +99,7 @@ onMounted(() => {
     <modal v-model="showUpdateModal">
       <modal-content>
         <modal-header class="mb-4">
-          <p class="text-2xl">
-            修改账号
-          </p>
+          <p class="text-2xl">修改账号</p>
         </modal-header>
         <update-account-form :id="datas[0].id" />
       </modal-content>
@@ -109,9 +107,7 @@ onMounted(() => {
     <modal v-model="showModal">
       <modal-content>
         <modal-header class="mb-4">
-          <p class="text-2xl">
-            添加账号
-          </p>
+          <p class="text-2xl">添加账号</p>
         </modal-header>
         <add-account-form />
       </modal-content>

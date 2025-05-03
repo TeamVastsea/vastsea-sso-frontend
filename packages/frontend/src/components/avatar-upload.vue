@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import { ref, useTemplateRef } from 'vue';
+import { ref, useTemplateRef } from "vue";
 
 const modelValue = defineModel<string>({ required: true });
-const fileModelValue = defineModel<File | null>('file', { required: true });
-const trigger = useTemplateRef('trigger');
+const fileModelValue = defineModel<File | null>("file", { required: true });
+const trigger = useTemplateRef("trigger");
 let file: File | null = null;
 
 const isError = ref(false);
@@ -29,7 +29,7 @@ const onTriggerChange = () => {
           :src="modelValue"
           class="size-100px object-cover"
           @error="() => (isError = true)"
-        >
+        />
         <div
           v-else
           class="i-material-symbols:account-circle-full text-zinc-700 rounded-full size-100px dark:text-zinc-300"
@@ -46,7 +46,7 @@ const onTriggerChange = () => {
         class="hidden"
         type="file"
         @change="onTriggerChange"
-      >
+      />
     </div>
     <div class="text-sm text-zinc-700 text-center dark:text-zinc-300">
       <p>上传头像</p>

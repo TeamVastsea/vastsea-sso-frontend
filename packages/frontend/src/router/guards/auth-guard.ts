@@ -1,5 +1,5 @@
-import type { Router } from 'vue-router';
-import { useAccountStore } from '@/store';
+import type { Router } from "vue-router";
+import { useAccountStore } from "@/store";
 
 export default (router: Router) => {
   router.beforeEach(async (to, _, next) => {
@@ -10,7 +10,7 @@ export default (router: Router) => {
     const accountStore = useAccountStore();
     if (!accountStore.accessToken) {
       next({
-        name: 'Login',
+        name: "Login",
         replace: true,
         query: { clientId: __AUTH_SERVER__ },
       });
