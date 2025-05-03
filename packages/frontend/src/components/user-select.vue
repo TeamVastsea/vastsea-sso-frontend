@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { useInfiniteAccountList } from "@/composables";
-import { TinyOption, TinySelect } from "@opentiny/vue";
-import InfiniteScroll from "@opentiny/vue-renderless/common/deps/infinite-scroll";
-import { onMounted, ref, watch } from "vue";
+import { useInfiniteAccountList } from '@/composables';
+import { TinyOption, TinySelect } from '@opentiny/vue';
+import InfiniteScroll from '@opentiny/vue-renderless/common/deps/infinite-scroll';
+import { onMounted, ref, watch } from 'vue';
 
 const { data, load, loadMore, isLoading } = useInfiniteAccountList();
 const vInfiniteScroll = InfiniteScroll;

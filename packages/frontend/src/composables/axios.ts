@@ -1,10 +1,10 @@
-import { useAccountStore } from "@/store";
-import { Modal } from "@opentiny/vue";
-import axios from "axios";
-import { unref } from "vue";
+import { useAccountStore } from '@/store';
+import { Modal } from '@opentiny/vue';
+import axios from 'axios';
+import { unref } from 'vue';
 
 const instance = axios.create({
-  baseURL: "/api",
+  baseURL: '/api',
 });
 
 instance.interceptors.request.use((config) => {
@@ -20,7 +20,7 @@ instance.interceptors.response.use(
     const account = useAccountStore();
     Modal.message({
       message: err.response.data.message,
-      status: "error",
+      status: 'error',
     });
     if (err.status === 401) {
       history.go(0);

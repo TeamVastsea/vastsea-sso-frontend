@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { useRouter } from "vue-router";
+import { useRouter } from 'vue-router';
 
 defineProps<{ tips: string[] }>();
 const router = useRouter();
@@ -8,7 +8,7 @@ const router = useRouter();
 <template>
   <div class="py-16 flex flex-col gap-8 items-center">
     <div class="size-20 h-full aspect-square">
-      <img src="/logo.svg" class="mx-auto size-full" />
+      <img src="/logo.svg" class="mx-auto size-full">
     </div>
     <div
       class="text-zinc-800 text-zinc-900 text-center h-fit min-h-16 space-y-1 dark:text-zinc-200"

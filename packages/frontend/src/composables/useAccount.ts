@@ -1,8 +1,8 @@
-import type { CommonComposablesProps } from "@/types/common-composables";
-import type { Ref } from "vue";
-import SuperJSON from "superjson";
-import { reactive, ref } from "vue";
-import instance from "./axios";
+import type { CommonComposablesProps } from '@/types/common-composables';
+import type { Ref } from 'vue';
+import SuperJSON from 'superjson';
+import { reactive, ref } from 'vue';
+import instance from './axios';
 
 export interface CreateAccountMininalDto {
   email: string;
@@ -21,7 +21,7 @@ export interface MininalRoleInfo {
   id: bigint;
 }
 
-type AccountType = Omit<CreateAccountMininalDto, "role"> & {
+type AccountType = Omit<CreateAccountMininalDto, 'role'> & {
   role: MininalRoleInfo[];
 };
 
@@ -33,30 +33,30 @@ export function useAccount(
   { fetcher }: CommonComposablesProps = { fetcher: instance },
 ) {
   const formData: CreateAccountMininalDto = reactive({
-    email: "",
-    password: "",
+    email: '',
+    password: '',
     profile: {
-      nick: "",
-      desc: "",
-      avatar: "",
+      nick: '',
+      desc: '',
+      avatar: '',
     },
     role: [],
   });
   const account: Ref<Account> = ref({
-    email: "",
-    password: "",
+    email: '',
+    password: '',
     profile: {
-      nick: "",
-      avatar: "",
-      desc: "",
+      nick: '',
+      avatar: '',
+      desc: '',
     },
     role: [],
     active: false,
   });
   const formRules = {
     email: [
-      { required: true, message: "必填", trigger: "change" },
-      { type: "email", trigger: "change" },
+      { required: true, message: '必填', trigger: 'change' },
+      { type: 'email', trigger: 'change' },
     ],
     password: [{ required: true }],
     profile: {
@@ -71,7 +71,7 @@ export function useAccount(
         if (!ok) {
           return;
         }
-        return fetcher.post("/account", formData);
+        return fetcher.post('/account', formData);
       })
       .catch(() => {});
   };
@@ -96,7 +96,7 @@ export function useAccount(
   const fetchAccount = (id: bigint) => {
     return fetcher
       .get<unknown, Account>(`/account/${id}`)
-      .then((data) => (account.value = data));
+      .then(data => (account.value = data));
   };
   return {
     formData,

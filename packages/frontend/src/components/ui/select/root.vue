@@ -1,18 +1,18 @@
 <script lang="ts" setup generic="T extends AcceptableValue">
-import type { AcceptableValue } from "reka-ui";
-import type { Ref } from "vue";
-import type { OptionProps, SelectProps } from "./select.options";
-import { vInfiniteScroll } from "@vueuse/components";
+import type { AcceptableValue } from 'reka-ui';
+import type { Ref } from 'vue';
+import type { OptionProps, SelectProps } from './select.options';
+import { vInfiniteScroll } from '@vueuse/components';
 import {
   ComboboxAnchor,
   ComboboxContent,
   ComboboxRoot,
   ComboboxTrigger,
   ComboboxViewport,
-} from "reka-ui";
-import { ref, toRefs, watch } from "vue";
-import SelectOption from "./option.vue";
-import { useProvide } from "./select.options";
+} from 'reka-ui';
+import { ref, toRefs, watch } from 'vue';
+import SelectOption from './option.vue';
+import { useProvide } from './select.options';
 
 type FinalSelectOption = {
   multiple?: boolean;
@@ -61,7 +61,7 @@ const onRemove = (value: AcceptableValue) => {
   }
 };
 const onScrollBottom = () => {
-  emits("scrollBottom");
+  emits('scrollBottom');
 };
 
 useProvide({
@@ -78,7 +78,7 @@ watch(
 watch(
   values,
   () => {
-    modelValue.value = values.value.filter((val) => val !== undefined);
+    modelValue.value = values.value.filter(val => val !== undefined);
   },
   { deep: true },
 );
@@ -112,8 +112,7 @@ watch(
             <span
               v-if="!modelValue?.length"
               class="text-sm text-zinc-700 dark:text-zinc-300"
-              >{{ props.placeholder }}</span
-            >
+            >{{ props.placeholder }}</span>
           </div>
         </slot>
       </combobox-trigger>

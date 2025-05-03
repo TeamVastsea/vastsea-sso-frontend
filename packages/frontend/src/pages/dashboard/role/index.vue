@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { CreateRole, MininalRole } from "@/composables";
-import ClientSelect from "@/components/client-select.vue";
-import { GeneralLayout, useModal } from "@/components/ui";
-import { useRole } from "@/composables";
-import { TinyGrid, TinyGridColumn, TinyPager } from "@opentiny/vue";
-import { h, onMounted, ref, watch } from "vue";
-import AddRoleForm from "./components/add-role-form.vue";
-import RoleForm from "./components/role-form.vue";
+import type { CreateRole, MininalRole } from '@/composables';
+import ClientSelect from '@/components/client-select.vue';
+import { GeneralLayout, useModal } from '@/components/ui';
+import { useRole } from '@/composables';
+import { TinyGrid, TinyGridColumn, TinyPager } from '@opentiny/vue';
+import { h, onMounted, ref, watch } from 'vue';
+import AddRoleForm from './components/add-role-form.vue';
+import RoleForm from './components/role-form.vue';
 
 const { createModal, removeCurrent } = useModal();
 const values = ref<{ clientId: string; name: string }[]>([]);
@@ -36,7 +36,7 @@ const showCreateRoleModal = () => {
 };
 const renderModal = <C extends new (...args: any) => any>(
   comp: C,
-  props?: InstanceType<C>["$props"],
+  props?: InstanceType<C>['$props'],
 ) => {
   createModal({
     content: h(comp, props),
