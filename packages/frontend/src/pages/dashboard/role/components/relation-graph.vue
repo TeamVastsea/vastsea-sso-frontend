@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { bezierEdge, relationNode } from '@/components/ui';
-import { useRoleRelationGraph } from '@/composables/useRoleRelationGraph';
-import { VueFlow } from '@vue-flow/core';
-import { onMounted } from 'vue';
+import { bezierEdge, relationNode } from "@/components/ui";
+import { useRoleRelationGraph } from "@/composables/useRoleRelationGraph";
+import { VueFlow } from "@vue-flow/core";
+import { onMounted } from "vue";
 
 export interface RelationNode {
   id: string;
@@ -35,8 +35,8 @@ onMounted(() => {
 
 <style>
 /* import the necessary styles for Vue Flow to work */
-@import '@vue-flow/core/dist/style.css';
+@import "@vue-flow/core/dist/style.css";
 
 /* import the default theme, this is optional but generally recommended */
-@import '@vue-flow/core/dist/theme-default.css';
+@import "@vue-flow/core/dist/theme-default.css";
 </style>

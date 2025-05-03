@@ -1,19 +1,19 @@
 <script lang="ts" setup>
-import type { Profile } from '@/composables';
-import avatarUpload from '@/components/avatar-upload.vue';
-import generalLayout from '@/components/ui/layout/general-layout.vue';
-import { useProfile } from '@/composables';
-import { useAccountStore } from '@/store';
+import type { Profile } from "@/composables";
+import avatarUpload from "@/components/avatar-upload.vue";
+import generalLayout from "@/components/ui/layout/general-layout.vue";
+import { useProfile } from "@/composables";
+import { useAccountStore } from "@/store";
 import {
   Modal,
   TinyButton,
   TinyForm,
   TinyFormItem,
   TinyInput,
-} from '@opentiny/vue';
-import { useJwt } from '@vueuse/integrations/useJwt';
-import { storeToRefs } from 'pinia';
-import { computed, ref, useTemplateRef, watch } from 'vue';
+} from "@opentiny/vue";
+import { useJwt } from "@vueuse/integrations/useJwt";
+import { storeToRefs } from "pinia";
+import { computed, ref, useTemplateRef, watch } from "vue";
 
 const { fetchProfile, uploadAvatar, updateProfile } = useProfile();
 const { accessToken } = storeToRefs(useAccountStore());
@@ -21,10 +21,10 @@ const { payload } = useJwt<AccessTokenPayload>(
   computed(() => accessToken.value),
 );
 const profile = ref<Profile | null>(null);
-const url = ref('');
+const url = ref("");
 const avatar = ref<File | null>(null);
 
-const form = useTemplateRef<any>('form');
+const form = useTemplateRef<any>("form");
 const onClickUpdate = () => {
   form.value
     .validate()
@@ -36,8 +36,8 @@ const onClickUpdate = () => {
     })
     .then(() => {
       Modal.message({
-        message: '修改成功',
-        status: 'success',
+        message: "修改成功",
+        status: "success",
       });
     })
     .catch(() => {});
@@ -49,7 +49,7 @@ watch(avatar, () => {
   }
   const reader = new FileReader();
   reader.onload = () => {
-    url.value = reader.result?.toString() ?? '';
+    url.value = reader.result?.toString() ?? "";
     if (avatar.value) {
       uploadAvatar(avatar.value);
     }
@@ -76,9 +76,7 @@ watch(
   <general-layout class="gap-2">
     <div class="mx-auto max-w-2xl w-full">
       <div>
-        <h2 class="text-2xl my-4">
-          基本信息
-        </h2>
+        <h2 class="text-2xl my-4">基本信息</h2>
       </div>
       <div class="flex flex-wrap-reverse gap-4 justify-center">
         <div class="flex-shrink-0 flex-grow">
@@ -100,14 +98,10 @@ watch(
               </tiny-button>
               <div class="ml-4 inline-flex gap-2">
                 <router-link :to="{ name: 'update-password' }">
-                  <tiny-button type="text">
-                    修改密码
-                  </tiny-button>
+                  <tiny-button type="text"> 修改密码 </tiny-button>
                 </router-link>
                 <router-link :to="{ name: 'forget-password' }">
-                  <tiny-button type="text">
-                    忘记密码
-                  </tiny-button>
+                  <tiny-button type="text"> 忘记密码 </tiny-button>
                 </router-link>
               </div>
             </tiny-form-item>

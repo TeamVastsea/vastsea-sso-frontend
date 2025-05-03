@@ -1,5 +1,5 @@
-import { useMediaQuery } from '@vueuse/core';
-import { ref } from 'vue';
+import { useMediaQuery } from "@vueuse/core";
+import { ref } from "vue";
 
 export function useSidebar() {
   const isMobile = useMediaQuery(`(max-width: ${MOBILE_WIDTH}px)`);

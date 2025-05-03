@@ -1,7 +1,7 @@
-import type { CommonComposablesProps } from '@/types/common-composables';
-import type { MaybeRef } from 'vue';
-import { readonly, ref, unref, watch } from 'vue';
-import instance from './axios';
+import type { CommonComposablesProps } from "@/types/common-composables";
+import type { MaybeRef } from "vue";
+import { readonly, ref, unref, watch } from "vue";
+import instance from "./axios";
 
 export interface Permission {
   name: string;
@@ -20,7 +20,7 @@ export interface CreatePermission {
 export type PermissionList = List<Permission>;
 export interface UsePermission {
   size: number;
-  type: MaybeRef<'page' | 'scroll'>;
+  type: MaybeRef<"page" | "scroll">;
 }
 export function usePermission(
   {
@@ -30,12 +30,12 @@ export function usePermission(
   }: Partial<CommonComposablesProps<UsePermission>> = {
     fetcher: instance,
     size: 10,
-    type: 'page',
+    type: "page",
   },
 ) {
   const fetcher = _fetcher ?? instance;
   const permissionListPageSize = ref(_size ?? 20);
-  const permissionTotal = ref<string>('0');
+  const permissionTotal = ref<string>("0");
   const permissionList = ref<Permission[] | null>(null);
   const type = ref(unref(_type));
   const loading = ref(false);
@@ -52,7 +52,7 @@ export function usePermission(
   ) => {
     loading.value = true;
     return fetcher
-      .get<never, PermissionList>('/permission', {
+      .get<never, PermissionList>("/permission", {
         params: {
           clientId,
           preId,
@@ -62,17 +62,16 @@ export function usePermission(
       .then((resp) => {
         if (!permissionList.value) {
           permissionList.value = resp.data;
-        }
-        else {
-          if (unref(type) === 'page') {
+        } else {
+          if (unref(type) === "page") {
             permissionList.value = resp.data;
           }
-          if (unref(type) === 'scroll') {
+          if (unref(type) === "scroll") {
             permissionList.value.push(
               ...resp.data.filter(
-                permission =>
+                (permission) =>
                   !permissionList.value
-                    ?.map(permission => permission.id)
+                    ?.map((permission) => permission.id)
                     .includes(permission.id),
               ),
             );
@@ -87,8 +86,8 @@ export function usePermission(
 
   const search = (name: string, clientId: string) => {
     return fetcher
-      .get<never, PermissionList>('/permission', { params: { name, clientId } })
-      .then(resp => resp.data);
+      .get<never, PermissionList>("/permission", { params: { name, clientId } })
+      .then((resp) => resp.data);
   };
 
   const fetchPermissionInfo = (id: string) => {
