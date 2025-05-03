@@ -3,12 +3,6 @@ import { ConfigurableModuleBuilder } from '@nestjs/common';
 type Keys<T> = keyof T;
 type Values<T> = T[Keys<T>];
 
-type C = {
-  captcha: {
-    map: Record<string, any>;
-  };
-};
-
 export type ConfigTemplate<
   T = Configure,
   A = {
