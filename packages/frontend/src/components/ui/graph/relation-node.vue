@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import type { NodeProps } from '@vue-flow/core';
-import type { VNode } from 'vue';
-import { Handle, Position } from '@vue-flow/core';
-import { isVNode } from 'vue';
+import type { NodeProps } from "@vue-flow/core";
+import type { VNode } from "vue";
+import { Handle, Position } from "@vue-flow/core";
+import { isVNode } from "vue";
 
-const { data }
-  = defineProps<
+const { data } =
+  defineProps<
     NodeProps<{ id: string; label: string | VNode; showExpand: boolean }>
   >();
 

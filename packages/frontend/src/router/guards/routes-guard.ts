@@ -1,13 +1,13 @@
-import type { Router } from 'vue-router';
-import { useAccountStore } from '@/store';
-import { nextTick } from 'vue';
+import type { Router } from "vue-router";
+import { useAccountStore } from "@/store";
+import { nextTick } from "vue";
 
 export default (router: Router) => {
   router.beforeEach(async (_to, _from, next) => {
     await nextTick();
     const routes = router.getRoutes();
     const accounts = useAccountStore();
-    if (accounts.permissionList.includes('*')) {
+    if (accounts.permissionList.includes("*")) {
       return next();
     }
     for (const route of routes) {
@@ -15,11 +15,11 @@ export default (router: Router) => {
       if (!system || !system.length) {
         continue;
       }
-      const canVisit
-        = accounts.permissionList.length > 0
-          && accounts.permissionList.every((permission) => {
-            return system.some(sys => permission.toUpperCase().startsWith(sys));
-          });
+      const canVisit =
+        accounts.permissionList.length > 0 &&
+        accounts.permissionList.every((permission) => {
+          return system.some((sys) => permission.toUpperCase().startsWith(sys));
+        });
       if (!canVisit && route.name && router.hasRoute(route.name)) {
         router.removeRoute(route.name);
       }

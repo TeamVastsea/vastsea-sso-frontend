@@ -1,9 +1,9 @@
-import type { CommonComposablesProps } from '@/types/common-composables';
-import type { Ref } from 'vue';
-import type { Client } from './useClient';
-import SuperJSON from 'superjson';
-import { ref } from 'vue';
-import instance from './axios';
+import type { CommonComposablesProps } from "@/types/common-composables";
+import type { Ref } from "vue";
+import type { Client } from "./useClient";
+import SuperJSON from "superjson";
+import { ref } from "vue";
+import instance from "./axios";
 
 export interface ClientManagerProfile {
   id: string;
@@ -18,7 +18,7 @@ export interface ClientInfo extends Client {
 }
 export interface UseClientListProps {
   size: number;
-  type?: 'scroll' | 'page';
+  type?: "scroll" | "page";
 }
 export function useClientList(
   {
@@ -28,7 +28,7 @@ export function useClientList(
   }: Partial<CommonComposablesProps> & UseClientListProps = {
     fetcher: instance,
     size: 20,
-    type: 'page',
+    type: "page",
   },
 ) {
   const fetcher = _fecther ?? instance;
@@ -45,17 +45,17 @@ export function useClientList(
   const getList = () => {
     loading.value = true;
     return fetcher
-      .get<unknown, List<ClientInfo>>('/client', {
+      .get<unknown, List<ClientInfo>>("/client", {
         params: SuperJSON.serialize({
           preId: preId.value,
           size: size.value,
         }).json,
       })
       .then((resp) => {
-        if (type === 'page') {
+        if (type === "page") {
           data.value = resp.data;
         }
-        if (type === 'scroll') {
+        if (type === "scroll") {
           data.value.push(...resp.data);
         }
         total.value = Number.parseInt(resp.total.toString());

@@ -1,3 +1,3 @@
-import CountDown from './count-down.vue';
+import CountDown from "./count-down.vue";
 
 export { CountDown };

@@ -1,14 +1,14 @@
 <script lang="ts" setup>
-import type { CreatePermission } from '@/composables';
-import clientSelect from '@/components/client-select.vue';
+import type { CreatePermission } from "@/composables";
+import clientSelect from "@/components/client-select.vue";
 import {
   TinyButton,
   TinyCheckbox,
   TinyForm,
   TinyFormItem,
   TinyInput,
-} from '@opentiny/vue';
-import { computed, reactive, ref, useTemplateRef } from 'vue';
+} from "@opentiny/vue";
+import { computed, reactive, ref, useTemplateRef } from "vue";
 
 const {
   permission,
@@ -26,7 +26,7 @@ const {
   hiddenField?: (keyof CreatePermission)[];
 }>();
 
-const form = useTemplateRef<Form>('form');
+const form = useTemplateRef<Form>("form");
 
 const clients = ref<{ clientId: string; name: string }[]>([]);
 
@@ -39,8 +39,8 @@ const rules = {
 
 const data: CreatePermission = reactive(
   permission ?? {
-    name: '',
-    desc: '',
+    name: "",
+    desc: "",
     clientId: computed(() => clients.value[0]?.clientId ?? null),
     active: true,
   },
@@ -116,9 +116,7 @@ const beforeSubmit = () => {
         </tiny-checkbox>
       </tiny-form-item>
       <tiny-form-item>
-        <tiny-button @click="beforeSubmit">
-          提交
-        </tiny-button>
+        <tiny-button @click="beforeSubmit"> 提交 </tiny-button>
       </tiny-form-item>
     </tiny-form>
   </div>

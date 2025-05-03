@@ -1,9 +1,9 @@
-import type { CommonComposablesProps } from '@/types/common-composables';
-import type { MaybeRef, Ref } from 'vue';
-import type { CreateAccountMininalDto } from './useAccount';
-import SuperJSON from 'superjson';
-import { ref, unref, watch } from 'vue';
-import instance from './axios';
+import type { CommonComposablesProps } from "@/types/common-composables";
+import type { MaybeRef, Ref } from "vue";
+import type { CreateAccountMininalDto } from "./useAccount";
+import SuperJSON from "superjson";
+import { ref, unref, watch } from "vue";
+import instance from "./axios";
 
 export type UseAccountList = CommonComposablesProps & {
   preId?: MaybeRef<bigint>;
@@ -45,7 +45,7 @@ export function useAccountList(
   };
   const getAccountList = () => {
     fetcher
-      .get<unknown, List<MininalAccount>>('/account', {
+      .get<unknown, List<MininalAccount>>("/account", {
         params: {
           preId: unref(preId),
           size: unref(size),
@@ -86,9 +86,9 @@ export function useAccountList(
   ) => {
     fetcher
       .patch<
-      unknown,
-      MininalAccount
-    >(`/account/${id.toString()}`, SuperJSON.serialize(body).json)
+        unknown,
+        MininalAccount
+      >(`/account/${id.toString()}`, SuperJSON.serialize(body).json)
       .then((account) => {
         if (!data.value) {
           return;
@@ -104,7 +104,7 @@ export function useAccountList(
   const onClickNext = (page: number) => {
     const len = data.value?.data.length ?? 0;
     const id = data.value?.data[Math.max(0, len - 1)].id;
-    idMaps.set(page, BigInt(id ?? '0'));
+    idMaps.set(page, BigInt(id ?? "0"));
     preId.value = id ? BigInt(id) : undefined;
   };
   const onClickPrev = (page: number) => {

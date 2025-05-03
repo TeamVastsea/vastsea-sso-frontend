@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { TinyButton } from '@opentiny/vue';
-import { computed, unref, watch } from 'vue';
+import { TinyButton } from "@opentiny/vue";
+import { computed, unref, watch } from "vue";
 
 const { interval, endValue, onTrigger, showBehavior } = defineProps<{
   endValue: number;
@@ -18,13 +18,13 @@ const modelValue = defineModel<number>({ required: true });
 let timer: number | undefined;
 
 const _onTrigger = onTrigger || ((val: number) => val - 1);
-const _showBehavior
-  = showBehavior || ((val: number) => Number.parseInt(val.toString()));
+const _showBehavior =
+  showBehavior || ((val: number) => Number.parseInt(val.toString()));
 
 const showValue = computed(() => _showBehavior(unref(modelValue)));
 
 const stop = () => {
-  emits('onStop', modelValue.value);
+  emits("onStop", modelValue.value);
   clearInterval(timer);
   timer = undefined;
 };

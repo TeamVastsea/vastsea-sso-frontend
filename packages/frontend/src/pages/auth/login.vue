@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import type { PublicClientInfo } from '@/composables';
-import { useAxios, useClient } from '@/composables';
-import { TinyButton, TinyForm, TinyFormItem, TinyInput } from '@opentiny/vue';
-import { useCookies } from '@vueuse/integrations/useCookies';
-import { reactive, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import type { PublicClientInfo } from "@/composables";
+import { useAxios, useClient } from "@/composables";
+import { TinyButton, TinyForm, TinyFormItem, TinyInput } from "@opentiny/vue";
+import { useCookies } from "@vueuse/integrations/useCookies";
+import { reactive, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 const route = useRoute();
 const router = useRouter();
@@ -15,29 +15,29 @@ const { axios } = useAxios();
 const publicInfo = ref<PublicClientInfo | null>(null);
 
 const loginDto = reactive({
-  email: '',
-  password: '',
+  email: "",
+  password: "",
 });
-if (cookie.get('session-state')) {
+if (cookie.get("session-state")) {
   axios
     .post<unknown, { code: string }>(`/auth/session?clientId=${clientId.value}`)
     .then((resp) => {
       const code = resp.code;
-      router.replace({ name: 'redirect', query: { ok: 'true', code } });
+      router.replace({ name: "redirect", query: { ok: "true", code } });
     })
     .catch(() => {
-      cookie.remove('session-state');
+      cookie.remove("session-state");
     });
 }
 
-if (clientId.value && clientId.value === 'undefined') {
+if (clientId.value && clientId.value === "undefined") {
   router.push({
-    name: 'AuthError',
+    name: "AuthError",
     query: {
       reason: [
-        'AuthServer 出现异常',
-        '这可能不是你的问题',
-        '请尽快向站点管理员反馈该问题',
+        "AuthServer 出现异常",
+        "这可能不是你的问题",
+        "请尽快向站点管理员反馈该问题",
       ],
     },
   });
@@ -46,18 +46,18 @@ if (clientId.value && clientId.value === 'undefined') {
 if (!clientId.value) {
   if (!__AUTH_SERVER__) {
     router.push({
-      name: 'AuthError',
+      name: "AuthError",
       query: {
         reason: [
-          'AuthServer 出现异常',
-          '这可能不是你的问题',
-          '请尽快向站点管理员反馈该问题',
+          "AuthServer 出现异常",
+          "这可能不是你的问题",
+          "请尽快向站点管理员反馈该问题",
         ],
       },
     });
   } else {
     router.push({
-      name: 'Login',
+      name: "Login",
       query: {
         clientId: __AUTH_SERVER__,
       },
@@ -79,8 +79,8 @@ watch(
       .catch((err) => {
         if (err.statusCode === 404) {
           router.replace({
-            name: 'AuthError',
-            query: { reason: '客户端不存在' },
+            name: "AuthError",
+            query: { reason: "客户端不存在" },
           });
         }
       });
@@ -101,7 +101,7 @@ watch(
             class="text-zinc-900 flex flex-col flex-wrap gap-2 dark:text-zinc-100"
           >
             <div class="mx-auto w-fit">
-              <img v-if="publicInfo?.avatar" :src="publicInfo.avatar" alt="">
+              <img v-if="publicInfo?.avatar" :src="publicInfo.avatar" alt="" />
               <div
                 v-else
                 class="i-material-symbols:person-shield-outline-rounded dark:i-material-symbols:person-shield-rounded size-16 dark:size-16"

@@ -1,14 +1,14 @@
 <script lang="ts" setup>
-import type { CreatePermission } from '@/composables';
-import ClientSelect from '@/components/client-select.vue';
-import { useModal } from '@/components/ui';
-import GeneralLayout from '@/components/ui/layout/general-layout.vue';
-import { usePermission } from '@/composables';
-import { TinyButton, TinyGrid, TinyGridColumn, TinyPager } from '@opentiny/vue';
-import { watchDebounced } from '@vueuse/core';
-import { h, onMounted, ref, unref } from 'vue';
-import { useRouter } from 'vue-router';
-import AddPermissionForm from './components/permission-form.vue';
+import type { CreatePermission } from "@/composables";
+import ClientSelect from "@/components/client-select.vue";
+import { useModal } from "@/components/ui";
+import GeneralLayout from "@/components/ui/layout/general-layout.vue";
+import { usePermission } from "@/composables";
+import { TinyButton, TinyGrid, TinyGridColumn, TinyPager } from "@opentiny/vue";
+import { watchDebounced } from "@vueuse/core";
+import { h, onMounted, ref, unref } from "vue";
+import { useRouter } from "vue-router";
+import AddPermissionForm from "./components/permission-form.vue";
 
 const values = ref<{ clientId: string; name: string }[]>([]);
 
@@ -34,7 +34,7 @@ const { createModal, removeCurrent } = useModal();
 
 const renderModal = <C extends new (...args: any) => any>(
   comp: C,
-  props?: InstanceType<C>['$props'],
+  props?: InstanceType<C>["$props"],
 ) => {
   createModal({
     content: h(comp, props),
@@ -58,8 +58,8 @@ const updatePermission = (
 const openUpdateModal = (id: string) => {
   fetchPermissionInfo(id).then((permission) => {
     renderModal(AddPermissionForm, {
-      title: '修改权限',
-      submitBehavior: data => updatePermission(id, data),
+      title: "修改权限",
+      submitBehavior: (data) => updatePermission(id, data),
       permission,
     });
   });
@@ -132,9 +132,7 @@ onMounted(() => {
         </tiny-grid-column>
         <tiny-grid-column title="action">
           <template #default="{ row }">
-            <tiny-button @click="openUpdateModal(row.id)">
-              修改
-            </tiny-button>
+            <tiny-button @click="openUpdateModal(row.id)"> 修改 </tiny-button>
           </template>
         </tiny-grid-column>
       </tiny-grid>
