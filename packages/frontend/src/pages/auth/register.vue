@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { GeeTest } from '@/components/ui';
 import { useAxios } from '@/composables';
 import {
   Modal,
