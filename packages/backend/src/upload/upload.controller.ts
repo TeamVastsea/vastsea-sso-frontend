@@ -47,7 +47,7 @@ export class UploadController {
       throw new HttpException('用户不存在', HttpStatus.NOT_FOUND);
     }
     if (oldProfile.avatar && !oldProfile.avatar?.endsWith(hash)) {
-      await this.uploadService.unrefFile(oldProfile.avatar.split('/').at(-1)!);
+      await this.uploadService.unrefFile(oldProfile.avatar.split('/').at(-1));
     }
     await this.uploadService.storageFile(
       this.uploadService.resolveStorageParam(file, filePath, hash),

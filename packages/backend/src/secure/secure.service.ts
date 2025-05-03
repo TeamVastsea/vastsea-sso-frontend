@@ -90,9 +90,9 @@ export class SecureService {
     return this.redis.get(`SECURE::${type}::${email}`);
   }
   async sendCode(email: string, type: 'forget') {
-    const account = (await this.account.findAccountByEmail(email, {
+    const account = await this.account.findAccountByEmail(email, {
       profile: true,
-    })) as (Account & { profile?: Profile }) | null;
+    });
     if (!account || !account.profile) {
       throw new HttpException('用户不存在', HttpStatus.NOT_FOUND);
     }

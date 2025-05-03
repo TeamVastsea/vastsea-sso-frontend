@@ -207,7 +207,7 @@ export class AppModule implements OnModuleInit {
           active: true,
           clientId: client.clientId,
         },
-        dbAdminId!,
+        dbAdminId,
         true,
       );
       this.logger.log(`创建权限 ${p} 成功`);
