@@ -47,5 +47,17 @@
     "scss",
     "pcss",
     "postcss"
+  ],
+  "tailwindCSS.classAttributes": [
+    "class",
+    "className",
+    "ngClass",
+    "class:list",
+    "enter-active-class",
+    
+  ],
+  "tailwindCSS.experimental.classRegex": [
+    "*-active-class",
+    "*-leave-class"
   ]
 }
