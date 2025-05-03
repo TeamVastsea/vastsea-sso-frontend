@@ -105,7 +105,7 @@ jobs:
           password: "${{ secrets.REGISTRY_PASSWORD }}"
       - name: Build and push
         run: |
-          docker build -t ${{ vars.REGISTRY_ADDRESS }}/${{ vars.REGISTRY_NAMESPACE }}/${{ vars.IMAGE_NAME }}:${{ steps.meta.outputs.tags }} packages/frontend
+          docker build -t ${{ vars.REGISTRY_ADDRESS }}/${{ vars.REGISTRY_NAMESPACE }}/${{ vars.IMAGE_NAME }}:${{ steps.meta.outputs.tags }} packages/frontend/dockerfile
           docker push ${{ vars.REGISTRY_ADDRESS }}/${{ vars.REGISTRY_NAMESPACE }}/${{ vars.IMAGE_NAME }}:${{ steps.meta.outputs.tags }}
 
   build_docker_backend_acr:
@@ -131,7 +131,7 @@ jobs:
           password: "${{ secrets.REGISTRY_PASSWORD }}"
       - name: Build and push
         run: |
-          docker build -t ${{ vars.REGISTRY_ADDRESS }}/${{ vars.REGISTRY_NAMESPACE }}/${{ vars.IMAGE_NAME }}:${{ steps.meta.outputs.tags }} packages/backend
+          docker build -t ${{ vars.REGISTRY_ADDRESS }}/${{ vars.REGISTRY_NAMESPACE }}/${{ vars.IMAGE_NAME }}:${{ steps.meta.outputs.tags }} packages/backend/dockerfile
           docker push ${{ vars.REGISTRY_ADDRESS }}/${{ vars.REGISTRY_NAMESPACE }}/${{ vars.IMAGE_NAME }}:${{ steps.meta.outputs.tags }}
 
   deploy:
