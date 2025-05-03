@@ -25,11 +25,7 @@ renderOptions.value.push(opt);
   <combobox-item :value="value" class="group" :data-active="isActive">
     <div class="p-2">
       <div
-        class="px-2 py-1 rounded cursor-pointer transition
-        hover:bg-blue-500/30 hover:text-blue-900 dark:hover:text-blue-100 dark:text-zinc-200
-        group-data-[active='true']:bg-blue-500/30 group-data-[active='true']:bg-blue-500/30
-        dark:group-data-[active='true']:text-blue-100 group-data-[active='true']:text-blue-900
-        "
+        class="px-2 py-1 rounded cursor-pointer transition dark:text-zinc-200 hover:text-blue-900 hover:bg-blue-500/30 dark:hover:text-blue-100 group-data-[active='true']:text-blue-900 group-data-[active='true']:bg-blue-500/30 group-data-[active='true']:bg-blue-500/30 dark:group-data-[active='true']:text-blue-100"
       >
         {{ label }}
       </div>

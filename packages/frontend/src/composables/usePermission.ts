@@ -53,7 +53,7 @@ export function usePermission(
             permissionList.value = resp.data;
           }
           if (unref(type) === 'scroll') {
-            permissionList.value.push(...resp.data.filter((permission) => !permissionList.value?.map(permission => permission.id).includes(permission.id)));
+            permissionList.value.push(...resp.data.filter(permission => !permissionList.value?.map(permission => permission.id).includes(permission.id)));
           }
         }
         permissionTotal.value = resp.total.toString();

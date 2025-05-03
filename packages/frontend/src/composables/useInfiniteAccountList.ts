@@ -18,7 +18,7 @@ export function useInfiniteAccountList(
       size: 20,
     } })
       .then((resp) => {
-        const newData = resp.data.filter((account) => data.value.every((data) => data.id.toString() !== account.id.toString()));
+        const newData = resp.data.filter(account => data.value.every(data => data.id.toString() !== account.id.toString()));
         data.value.push(...newData);
         total.value = resp.total.toString();
       })
