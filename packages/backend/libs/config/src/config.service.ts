@@ -1,8 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
-import {
+import GetTypeByTemplate, {
   ConfigOptions,
   ConfigTemplate,
-  GetTypeByTemplate,
   MODULE_OPTIONS_TOKEN,
 } from './config.option';
 

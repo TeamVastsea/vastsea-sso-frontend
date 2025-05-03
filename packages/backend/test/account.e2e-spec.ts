@@ -24,14 +24,12 @@ describe('Auth E2E test', () => {
     app = moduleFixture.createNestApplication();
 
     redis = app.get(getRedisToken(DEFAULT_REDIS_NAMESPACE));
+    await redis.flushall();
     await clear('sqlite');
     await app.init();
     expect(redis).toBeDefined();
     const u = await createUser(app, redis, 'test@no-reply.com', 'test');
     id = u.id.toString();
-  });
-  afterEach(async () => {
-    await redis.flushall();
   });
   describe('Register', () => {
     it('Fail, invalid code', async () => {
@@ -80,7 +78,7 @@ describe('Auth E2E test', () => {
             nick: 'This is Nick',
           },
           usa: true,
-        });
+        } as RegisterAccount);
       expect(statusCode).toBe(HttpStatus.CREATED);
     });
   });

@@ -25,6 +25,13 @@ declare global {
       idLen: number;
       secretLen: number;
     };
+    captcha: {
+      geeTest: {
+        gtId: string;
+        key: string;
+      };
+      map: object;
+    };
     file: {
       avatar: {
         profile: {

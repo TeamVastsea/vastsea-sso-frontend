@@ -3,13 +3,19 @@ import { ConfigurableModuleBuilder } from '@nestjs/common';
 type Keys<T> = keyof T;
 type Values<T> = T[Keys<T>];
 
+type C = {
+  captcha: {
+    map: Record<string, any>;
+  };
+};
+
 export type ConfigTemplate<
   T = Configure,
   A = {
     [key in keyof T]: T[key];
   },
   B = {
-    [key in keyof A]: A[key] extends object
+    [key in keyof A]: A[key] extends object | Array<unknown>
       ?
           | `${Extract<key, string>}.${Exclude<
               Extract<keyof A[key], string>,
@@ -22,7 +28,7 @@ export type ConfigTemplate<
   },
 > = Exclude<keyof A, keyof any[]> | Values<B>;
 
-export type GetTypeByTemplate<
+type GetTypeByTemplate<
   K extends string,
   obj = Configure,
 > = K extends `${infer L}.${infer R}`
@@ -32,6 +38,7 @@ export type GetTypeByTemplate<
   : K extends keyof obj
     ? obj[K]
     : never;
+export default GetTypeByTemplate;
 
 export type ConfigLoader = () => Configure;
 

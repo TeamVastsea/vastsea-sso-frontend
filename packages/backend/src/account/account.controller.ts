@@ -22,6 +22,7 @@ import {
   Permission,
   PermissionJudge,
   RequireClientPair,
+  RequriedCaptcha,
 } from '@app/decorator';
 import { ApiException } from '@nanogiants/nestjs-swagger-api-exception-decorator';
 import { ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
@@ -49,6 +50,7 @@ export class AccountController {
       .then((ttl) => ({ ttl }));
   }
 
+  @RequriedCaptcha('geetest')
   @Post('/register')
   async register(@Body() body: RegisterAccount) {
     if (!body.usa) {

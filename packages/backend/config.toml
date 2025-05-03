@@ -34,3 +34,11 @@ refresh=604800000
 [client]
 idLen=16
 secretLen=64
+
+[captcha]
+[captcha.geeTest]
+gtId=""
+key=""
+
+[captcha.map]
+"/account/register" = true
