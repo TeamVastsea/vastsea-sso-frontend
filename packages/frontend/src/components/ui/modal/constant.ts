@@ -1,6 +1,6 @@
-import type { Component, Ref } from 'vue';
-import { createInjectionState } from '@vueuse/core';
-import { ref, watch } from 'vue';
+import type { Component, Ref } from "vue";
+import { createInjectionState } from "@vueuse/core";
+import { ref, watch } from "vue";
 
 export interface ModalProps {
   enableTransformer?: boolean;
@@ -21,13 +21,18 @@ export interface Context {
   toggle: () => void;
 }
 
-export const [useProvideModalContext, useModalContext] = createInjectionState((context: Context) => {
-  const isOpen = ref(context.isOpen);
-  watch(() => context, () => {
-    isOpen.value = context.isOpen.value;
-  });
-  return {
-    ...context,
-    isOpen,
-  };
-});
+export const [useProvideModalContext, useModalContext] = createInjectionState(
+  (context: Context) => {
+    const isOpen = ref(context.isOpen);
+    watch(
+      () => context,
+      () => {
+        isOpen.value = context.isOpen.value;
+      },
+    );
+    return {
+      ...context,
+      isOpen,
+    };
+  },
+);

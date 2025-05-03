@@ -1,27 +1,25 @@
 <script lang="ts" setup>
-import type { Client } from '@/composables/useClient';
-import UserSelect from '@/components/user-select.vue';
-import { useClient } from '@/composables/useClient';
-import { TinyButton, TinyForm, TinyFormItem, TinyInput } from '@opentiny/vue';
-import { useTemplateRef } from 'vue';
+import type { Client } from "@/composables/useClient";
+import UserSelect from "@/components/user-select.vue";
+import { useClient } from "@/composables/useClient";
+import { TinyButton, TinyForm, TinyFormItem, TinyInput } from "@opentiny/vue";
+import { useTemplateRef } from "vue";
 
 const emits = defineEmits<{
   ok: [Client];
 }>();
 const { formData, rules, create } = useClient();
-const form = useTemplateRef<any>('form');
+const form = useTemplateRef<any>("form");
 
 const onSubmit = () => {
-  form.value.validate()
-    .then((ok: boolean) => {
-      if (!ok) {
-        return;
-      }
-      create()
-        .then((client) => {
-          emits('ok', client);
-        });
+  form.value.validate().then((ok: boolean) => {
+    if (!ok) {
+      return;
+    }
+    create().then((client) => {
+      emits("ok", client);
     });
+  });
 };
 </script>
 
@@ -40,9 +38,7 @@ const onSubmit = () => {
       <user-select v-model="formData.administrator" />
     </tiny-form-item>
     <tiny-form-item>
-      <tiny-button type="primary" @click="onSubmit">
-        提交
-      </tiny-button>
+      <tiny-button type="primary" @click="onSubmit"> 提交 </tiny-button>
     </tiny-form-item>
   </tiny-form>
 </template>

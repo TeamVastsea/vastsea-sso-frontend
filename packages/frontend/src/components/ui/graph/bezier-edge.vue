@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { EdgeProps } from '@vue-flow/core';
-import { BezierEdge } from '@vue-flow/core';
-import { computed } from 'vue';
-import ArrowMarker from './arrow-marker.vue';
+import type { EdgeProps } from "@vue-flow/core";
+import { BezierEdge } from "@vue-flow/core";
+import { computed } from "vue";
+import ArrowMarker from "./arrow-marker.vue";
 
 const props = defineProps<EdgeProps>();
 
@@ -11,7 +11,7 @@ const markerId = computed(() => `${props.id}-marker`);
 
 <script lang="ts">
 export default {
-  name: 'CustomEdge',
+  name: "CustomEdge",
 };
 </script>
 

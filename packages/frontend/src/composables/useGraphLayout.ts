@@ -1,25 +1,29 @@
-import type { Edge, Node } from '@vue-flow/core';
-import dagre from '@dagrejs/dagre';
-import { Position, useVueFlow } from '@vue-flow/core';
-import { ref } from 'vue';
+import type { Edge, Node } from "@vue-flow/core";
+import dagre from "@dagrejs/dagre";
+import { Position, useVueFlow } from "@vue-flow/core";
+import { ref } from "vue";
 
-export type GraphDirection = 'LR' | 'TB';
+export type GraphDirection = "LR" | "TB";
 
 export function useGraphLayout() {
   const { findNode } = useVueFlow();
 
   const graph = ref(new dagre.graphlib.Graph());
 
-  const previousDirection = ref('LR');
+  const previousDirection = ref("LR");
 
-  function layout(nodes: Node[], edges: Edge[], direction: GraphDirection): Node[] {
+  function layout(
+    nodes: Node[],
+    edges: Edge[],
+    direction: GraphDirection,
+  ): Node[] {
     const dagreGraph = new dagre.graphlib.Graph();
 
     graph.value = dagreGraph;
 
     dagreGraph.setDefaultEdgeLabel(() => ({}));
 
-    const isHorizontal = direction === 'LR';
+    const isHorizontal = direction === "LR";
     dagreGraph.setGraph({ rankdir: direction });
 
     previousDirection.value = direction;
@@ -29,7 +33,10 @@ export function useGraphLayout() {
       if (!graphNode) {
         return [];
       }
-      dagreGraph.setNode(node.id, { width: graphNode.dimensions.width || 150, height: graphNode.dimensions.height || 50 });
+      dagreGraph.setNode(node.id, {
+        width: graphNode.dimensions.width || 150,
+        height: graphNode.dimensions.height || 50,
+      });
     }
 
     for (const edge of edges) {

@@ -1,108 +1,108 @@
-import type { RouteRecordRaw } from 'vue-router';
-import Home from '@/pages/index.vue';
-import { createRouter, createWebHistory } from 'vue-router';
-import { setupGuard } from './guards';
+import type { RouteRecordRaw } from "vue-router";
+import Home from "@/pages/index.vue";
+import { createRouter, createWebHistory } from "vue-router";
+import { setupGuard } from "./guards";
 
 const AuthChildren: RouteRecordRaw[] = [
   {
-    name: 'AuthError',
-    path: 'error',
-    component: () => import('@/pages/auth/error.vue'),
+    name: "AuthError",
+    path: "error",
+    component: () => import("@/pages/auth/error.vue"),
     meta: {
       auth: false,
-      title: '出错了',
+      title: "出错了",
     },
   },
   {
-    name: 'Login',
-    path: 'login',
-    component: () => import('@/pages/auth/login.vue'),
+    name: "Login",
+    path: "login",
+    component: () => import("@/pages/auth/login.vue"),
     meta: {
       auth: false,
-      title: '登录',
+      title: "登录",
     },
   },
   {
-    name: 'Reg',
-    path: 'register',
-    component: () => import('@/pages/auth/register.vue'),
+    name: "Reg",
+    path: "register",
+    component: () => import("@/pages/auth/register.vue"),
     meta: {
       auth: false,
-      title: '注册',
+      title: "注册",
     },
   },
   {
-    name: 'forget-password',
-    path: 'forget-password',
-    component: () => import('@/pages/auth/forget-password.vue'),
+    name: "forget-password",
+    path: "forget-password",
+    component: () => import("@/pages/auth/forget-password.vue"),
     meta: {
       auth: false,
-      title: '忘记密码',
+      title: "忘记密码",
     },
   },
   {
-    name: 'update-password',
-    path: 'update-password',
-    component: () => import('@/pages/auth/update-password.vue'),
+    name: "update-password",
+    path: "update-password",
+    component: () => import("@/pages/auth/update-password.vue"),
     meta: {
       auth: true,
-      title: '修改密码',
+      title: "修改密码",
     },
   },
 ];
 
 export const dashboardHomeChildren: RouteRecordRaw[] = [
   {
-    name: 'AccountManage',
-    path: 'account',
-    component: () => import('@/pages/dashboard/account/index.vue'),
+    name: "AccountManage",
+    path: "account",
+    component: () => import("@/pages/dashboard/account/index.vue"),
     meta: {
       auth: true,
-      title: '账号管理',
-      system: ['ACCOUNT'],
+      title: "账号管理",
+      system: ["ACCOUNT"],
       sideBar: true,
     },
   },
   {
-    name: 'ClientManage',
-    path: 'client',
-    component: () => import('@/pages/dashboard/client/index.vue'),
+    name: "ClientManage",
+    path: "client",
+    component: () => import("@/pages/dashboard/client/index.vue"),
     meta: {
       auth: true,
-      title: '客户端管理',
-      system: ['CLIENT'],
+      title: "客户端管理",
+      system: ["CLIENT"],
       sideBar: true,
     },
   },
   {
-    name: 'PermissionManage',
-    path: 'permission',
-    component: () => import('@/pages/dashboard/permission/index.vue'),
+    name: "PermissionManage",
+    path: "permission",
+    component: () => import("@/pages/dashboard/permission/index.vue"),
     meta: {
       auth: true,
-      title: '权限管理',
-      system: ['PERMISSION'],
+      title: "权限管理",
+      system: ["PERMISSION"],
       sideBar: true,
     },
   },
   {
-    name: 'RoleManage',
-    path: 'role',
-    component: () => import('@/pages/dashboard/role/index.vue'),
+    name: "RoleManage",
+    path: "role",
+    component: () => import("@/pages/dashboard/role/index.vue"),
     meta: {
       auth: true,
-      title: '角色管理',
-      system: ['ROLE'],
+      title: "角色管理",
+      system: ["ROLE"],
       sideBar: true,
     },
   },
   {
-    name: 'Profile',
-    path: 'profile',
-    component: () => import('@/pages/dashboard/profile/index.vue'),
+    name: "Profile",
+    path: "profile",
+    component: () => import("@/pages/dashboard/profile/index.vue"),
     meta: {
       auth: true,
-      title: '个人空间',
+      title: "个人空间",
       system: [],
       sideBar: true,
     },
@@ -111,22 +111,22 @@ export const dashboardHomeChildren: RouteRecordRaw[] = [
 
 const routes: RouteRecordRaw[] = [
   {
-    path: '/',
+    path: "/",
     component: Home,
     redirect: `/auth/login?clientId=${__AUTH_SERVER__}`,
     children: [
       {
-        name: 'redirect',
-        path: 'redirect',
-        component: () => import('@/pages/redirect.vue'),
+        name: "redirect",
+        path: "redirect",
+        component: () => import("@/pages/redirect.vue"),
       },
       {
-        path: 'dashboard',
+        path: "dashboard",
         children: [
           {
-            name: 'DashBoardHome',
-            path: 'home',
-            component: () => import('@/pages/dashboard/home.vue'),
+            name: "DashBoardHome",
+            path: "home",
+            component: () => import("@/pages/dashboard/home.vue"),
             meta: {
               auth: true,
             },
@@ -135,13 +135,13 @@ const routes: RouteRecordRaw[] = [
         ],
       },
       {
-        path: 'auth',
+        path: "auth",
         children: [...AuthChildren],
       },
     ],
   },
   {
-    path: '/:pathMatch(.*)',
+    path: "/:pathMatch(.*)",
     redirect: `/auth/login?clientId=${__AUTH_SERVER__}`,
   },
 ];

@@ -1,9 +1,9 @@
-import type { CommonComposablesProps } from '@/types/common-composables';
-import type { MaybeRef, Ref } from 'vue';
-import type { CreateAccountMininalDto } from './useAccount';
-import SuperJSON from 'superjson';
-import { ref, unref, watch } from 'vue';
-import instance from './axios';
+import type { CommonComposablesProps } from "@/types/common-composables";
+import type { MaybeRef, Ref } from "vue";
+import type { CreateAccountMininalDto } from "./useAccount";
+import SuperJSON from "superjson";
+import { ref, unref, watch } from "vue";
+import instance from "./axios";
 
 export type UseAccountList = CommonComposablesProps & {
   preId?: MaybeRef<bigint>;
@@ -24,7 +24,12 @@ export interface MininalAccount {
   active: boolean;
 }
 
-export function useAccountList({ fetcher, preId: _preId, size: _size }: UseAccountList = { fetcher: instance, size: 10 }) {
+export function useAccountList(
+  { fetcher, preId: _preId, size: _size }: UseAccountList = {
+    fetcher: instance,
+    size: 10,
+  },
+) {
   const preId = ref(unref(_preId));
   const size = ref(unref(_size ?? 10));
   const idMaps = new Map<number, bigint>();
@@ -39,12 +44,13 @@ export function useAccountList({ fetcher, preId: _preId, size: _size }: UseAccou
     });
   };
   const getAccountList = () => {
-    fetcher.get<unknown, List<MininalAccount>>('/account', {
-      params: {
-        preId: unref(preId),
-        size: unref(size),
-      },
-    })
+    fetcher
+      .get<unknown, List<MininalAccount>>("/account", {
+        params: {
+          preId: unref(preId),
+          size: unref(size),
+        },
+      })
       .then((resp) => {
         if (!data.value) {
           data.value = resp;
@@ -56,7 +62,8 @@ export function useAccountList({ fetcher, preId: _preId, size: _size }: UseAccou
       });
   };
   const remove = (id: bigint) => {
-    return fetcher.delete<never, MininalAccount>(`/account/${id}`)
+    return fetcher
+      .delete<never, MininalAccount>(`/account/${id}`)
       .then((account) => {
         if (!data.value?.data) {
           return;
@@ -73,8 +80,15 @@ export function useAccountList({ fetcher, preId: _preId, size: _size }: UseAccou
         return account;
       });
   };
-  const update = (id: bigint, body: Partial<CreateAccountMininalDto & { active: boolean }>) => {
-    fetcher.patch<unknown, MininalAccount>(`/account/${id.toString()}`, SuperJSON.serialize(body).json)
+  const update = (
+    id: bigint,
+    body: Partial<CreateAccountMininalDto & { active: boolean }>,
+  ) => {
+    fetcher
+      .patch<
+        unknown,
+        MininalAccount
+      >(`/account/${id.toString()}`, SuperJSON.serialize(body).json)
       .then((account) => {
         if (!data.value) {
           return;
@@ -90,7 +104,7 @@ export function useAccountList({ fetcher, preId: _preId, size: _size }: UseAccou
   const onClickNext = (page: number) => {
     const len = data.value?.data.length ?? 0;
     const id = data.value?.data[Math.max(0, len - 1)].id;
-    idMaps.set(page, BigInt(id ?? '0'));
+    idMaps.set(page, BigInt(id ?? "0"));
     preId.value = id ? BigInt(id) : undefined;
   };
   const onClickPrev = (page: number) => {
@@ -107,14 +121,32 @@ export function useAccountList({ fetcher, preId: _preId, size: _size }: UseAccou
     getAccountList();
   };
 
-  watch(() => preId, () => {
-    getAccountList();
-  }, { deep: true });
-  watch(() => _preId, () => {
-    preId.value = unref(_preId);
-  });
-  watch(() => _size, () => {
-    size.value = unref(_size ?? 20);
-  });
-  return { data, getAccountList, onClickNext, onClickPrev, setSize, remove, update };
+  watch(
+    () => preId,
+    () => {
+      getAccountList();
+    },
+    { deep: true },
+  );
+  watch(
+    () => _preId,
+    () => {
+      preId.value = unref(_preId);
+    },
+  );
+  watch(
+    () => _size,
+    () => {
+      size.value = unref(_size ?? 20);
+    },
+  );
+  return {
+    data,
+    getAccountList,
+    onClickNext,
+    onClickPrev,
+    setSize,
+    remove,
+    update,
+  };
 }

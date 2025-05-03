@@ -1,6 +1,6 @@
-import type { CommonComposablesProps } from '@/types/common-composables';
-import { reactive } from 'vue';
-import instance from './axios';
+import type { CommonComposablesProps } from "@/types/common-composables";
+import { reactive } from "vue";
+import instance from "./axios";
 
 export interface PublicClientInfo {
   clientId: string;
@@ -30,15 +30,13 @@ export interface Client {
   active: boolean;
 }
 export function useClient(
-  {
-    fetcher,
-  }: CommonComposablesProps = { fetcher: instance },
+  { fetcher }: CommonComposablesProps = { fetcher: instance },
 ) {
   const formData: CreateClientData = reactive({
-    name: '',
-    desc: '',
-    avatar: '',
-    redirect: '',
+    name: "",
+    desc: "",
+    avatar: "",
+    redirect: "",
     administrator: [],
   });
   const rules = {
@@ -48,7 +46,7 @@ export function useClient(
   };
 
   const create = () => {
-    return fetcher.post<unknown, Client>('/client', {
+    return fetcher.post<unknown, Client>("/client", {
       ...formData,
     });
   };

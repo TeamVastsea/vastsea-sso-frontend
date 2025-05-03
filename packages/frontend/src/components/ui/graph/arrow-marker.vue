@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { MarkerProps } from '@vue-flow/core';
+import type { MarkerProps } from "@vue-flow/core";
 
 defineProps<MarkerProps & { id: string }>();
 </script>

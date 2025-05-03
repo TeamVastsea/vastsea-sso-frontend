@@ -1,16 +1,27 @@
 <script setup lang="ts">
-import type { CreateRole, MininalRole } from '@/composables';
-import ClientSelect from '@/components/client-select.vue';
-import { GeneralLayout, useModal } from '@/components/ui';
-import { useRole } from '@/composables';
-import { TinyGrid, TinyGridColumn, TinyPager } from '@opentiny/vue';
-import { h, onMounted, ref, watch } from 'vue';
-import AddRoleForm from './components/add-role-form.vue';
-import RoleForm from './components/role-form.vue';
+import type { CreateRole, MininalRole } from "@/composables";
+import ClientSelect from "@/components/client-select.vue";
+import { GeneralLayout, useModal } from "@/components/ui";
+import { useRole } from "@/composables";
+import { TinyGrid, TinyGridColumn, TinyPager } from "@opentiny/vue";
+import { h, onMounted, ref, watch } from "vue";
+import AddRoleForm from "./components/add-role-form.vue";
+import RoleForm from "./components/role-form.vue";
 
 const { createModal, removeCurrent } = useModal();
 const values = ref<{ clientId: string; name: string }[]>([]);
-const { setClientId, setPage, setSize, getRoleList, updateRole, roleList, roleListPageSize, curPage, roleTotal, preId } = useRole();
+const {
+  setClientId,
+  setPage,
+  setSize,
+  getRoleList,
+  updateRole,
+  roleList,
+  roleListPageSize,
+  curPage,
+  roleTotal,
+  preId,
+} = useRole();
 const onCreateSuccess = (roles: MininalRole[]) => {
   roleList.value.push(...roles);
   // removeCurrent();
@@ -25,47 +36,49 @@ const showCreateRoleModal = () => {
 };
 const renderModal = <C extends new (...args: any) => any>(
   comp: C,
-  props?: InstanceType<C>['$props'],
+  props?: InstanceType<C>["$props"],
 ) => {
   createModal({
     content: h(comp, props),
   });
 };
 const onUpdate = (id: string, info: Partial<CreateRole>) => {
-  updateRole(id, info)
-    .then((resp) => {
-      roleList.value = roleList.value.map((role) => {
-        if (role.id !== resp.id) {
-          return role;
-        }
-        return {
-          ...role,
-          ...resp,
-        };
-      });
+  updateRole(id, info).then((resp) => {
+    roleList.value = roleList.value.map((role) => {
+      if (role.id !== resp.id) {
+        return role;
+      }
+      return {
+        ...role,
+        ...resp,
+      };
     });
+  });
 };
 
 const updateActive = (id: string, clientId: string, active: boolean) => {
-  updateRole(id, { active, clientId })
-    .then((resp) => {
-      roleList.value = roleList.value.map((role) => {
-        if (role.id !== resp.id) {
-          return role;
-        }
-        return {
-          ...role,
-          ...resp,
-        };
-      });
+  updateRole(id, { active, clientId }).then((resp) => {
+    roleList.value = roleList.value.map((role) => {
+      if (role.id !== resp.id) {
+        return role;
+      }
+      return {
+        ...role,
+        ...resp,
+      };
     });
+  });
 };
-watch(values, () => {
-  curPage.value = 1;
-  roleList.value = [];
-  preId.value = undefined;
-  setClientId(values.value[0]?.clientId);
-}, { deep: true });
+watch(
+  values,
+  () => {
+    curPage.value = 1;
+    roleList.value = [];
+    preId.value = undefined;
+    setClientId(values.value[0]?.clientId);
+  },
+  { deep: true },
+);
 
 onMounted(() => {
   getRoleList();
@@ -94,19 +107,36 @@ onMounted(() => {
         <tiny-grid-column field="desc" title="desc" />
         <tiny-grid-column field="active" title="actvie">
           <template #default="{ row }">
-            {{ row.active ? '正常' : '被禁用' }}
+            {{ row.active ? "正常" : "被禁用" }}
           </template>
         </tiny-grid-column>
         <tiny-grid-column title="action">
           <template #default="{ row }">
-            <tiny-button @click="() => renderModal(RoleForm, { roleId: row.id, readonlyAll: true })">
+            <tiny-button
+              @click="
+                () =>
+                  renderModal(RoleForm, { roleId: row.id, readonlyAll: true })
+              "
+            >
               详情
             </tiny-button>
-            <tiny-button @click="() => renderModal(RoleForm, { roleId: row.id, readonlyAll: false, readonlyField: ['id'], submitBehavior: onUpdate })">
+            <tiny-button
+              @click="
+                () =>
+                  renderModal(RoleForm, {
+                    roleId: row.id,
+                    readonlyAll: false,
+                    readonlyField: ['id'],
+                    submitBehavior: onUpdate,
+                  })
+              "
+            >
               修改
             </tiny-button>
-            <tiny-button @click="() => updateActive(row.id, row.clientId, !row.active)">
-              {{ row.active ? '禁用' : '启用' }}
+            <tiny-button
+              @click="() => updateActive(row.id, row.clientId, !row.active)"
+            >
+              {{ row.active ? "禁用" : "启用" }}
             </tiny-button>
           </template>
         </tiny-grid-column>

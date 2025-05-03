@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import { useRoute } from 'vue-router';
-import error from './components/error.vue';
+import { useRoute } from "vue-router";
+import error from "./components/error.vue";
 
 const route = useRoute();
-const reason = route.query.reason?.toString().split(',') ?? [];
+const reason = route.query.reason?.toString().split(",") ?? [];
 </script>
 
 <template>
