@@ -31,7 +31,7 @@ export class PermissionGuard implements CanActivate {
     }
     const req: AuthReq = context.switchToHttp().getRequest();
     const {
-      user: { id, permissions, super: isSuper },
+      user: { permissions, super: isSuper },
     } = req;
     if (isSuper) {
       return true;
