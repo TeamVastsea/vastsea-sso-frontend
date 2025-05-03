@@ -25,14 +25,13 @@ describe('Auth E2E test', () => {
 
     redis = app.get(getRedisToken(DEFAULT_REDIS_NAMESPACE));
     await clear('sqlite');
+    await redis.flushall();
     await app.init();
     expect(redis).toBeDefined();
     const u = await createUser(app, redis, 'test@no-reply.com', 'test');
     id = u.id.toString();
   });
-  afterEach(async () => {
-    await redis.flushall();
-  });
+  afterEach(async () => {});
   describe('Register', () => {
     it('Fail, invalid code', async () => {
       await request(app.getHttpServer()).post(
@@ -70,7 +69,7 @@ describe('Auth E2E test', () => {
         '/account/mail-code?email=test2@no-reply.com',
       );
       const code = await redis.get(AUTH_EMAIL_CODE(`test2@no-reply.com`));
-      const { statusCode } = await request(app.getHttpServer())
+      const { statusCode, body } = await request(app.getHttpServer())
         .post('/account/register')
         .send({
           email: 'test2@no-reply.com',
@@ -80,7 +79,8 @@ describe('Auth E2E test', () => {
             nick: 'This is Nick',
           },
           usa: true,
-        });
+        } as RegisterAccount);
+      console.log(body);
       expect(statusCode).toBe(HttpStatus.CREATED);
     });
   });

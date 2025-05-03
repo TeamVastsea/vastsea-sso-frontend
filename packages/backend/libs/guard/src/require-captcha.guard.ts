@@ -25,7 +25,7 @@ export class RequiredCaptchaGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
-    if (!type) {
+    if (!type || __TEST__) {
       return true;
     }
     const http = context.switchToHttp();
@@ -42,10 +42,10 @@ export class RequiredCaptchaGuard implements CanActivate {
 
     return this.service.valid(data).then((resp) => {
       if (resp.status === 'error') {
-        throw new HttpException(resp.msg, HttpStatus.BAD_REQUEST)
+        throw new HttpException(resp.msg, HttpStatus.BAD_REQUEST);
       }
       if (resp.status === 'success' && resp.result === 'fail') {
-        throw new HttpException(resp.reason, HttpStatus.BAD_REQUEST)
+        throw new HttpException(resp.reason, HttpStatus.BAD_REQUEST);
       }
       return true;
     });

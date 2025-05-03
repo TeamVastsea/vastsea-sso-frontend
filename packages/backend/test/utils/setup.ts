@@ -25,10 +25,10 @@ const clearPostgres = async () => {
   ]);
 };
 
-const clearDefault = async () =>
-  execPromisify(
-    'npx prisma migrate reset --force --skip-seed --schema=prisma/schema.dev.prisma',
-  );
+const clearDefault = async () => {};
+execPromisify(
+  `pnpm prisma migrate reset --force --skip-seed --schema=prisma/schema.dev.prisma`,
+);
 
 export const clear = async (provider: string) => {
   const executeClear = {
