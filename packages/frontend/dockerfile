@@ -8,6 +8,7 @@ ENV AUTH_SERVER_CLIENT_ID ""
 
 RUN npm i -g pnpm && \
     cd packages/frontend && \
+    pnpm i && \
     pnpm build
 
 FROM nginx AS runner
