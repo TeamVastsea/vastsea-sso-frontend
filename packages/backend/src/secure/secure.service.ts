@@ -10,6 +10,7 @@ import { ForgetPassword } from './dto/forget-password';
 import { MailService } from '@app/mail';
 import { ConfigService } from '@app/config';
 import { FORGET_PASSWORD, UPDATE_PASSWORD } from '@app/mail/templates';
+import { Account, Profile } from '@prisma/client';
 
 @Injectable()
 export class SecureService {
@@ -89,9 +90,9 @@ export class SecureService {
     return this.redis.get(`SECURE::${type}::${email}`);
   }
   async sendCode(email: string, type: 'forget') {
-    const account = await this.account.findAccountByEmail(email, {
+    const account = (await this.account.findAccountByEmail(email, {
       profile: true,
-    });
+    })) as unknown as (Account & { profile: Profile }) | null;
     if (!account || !account.profile) {
       throw new HttpException('用户不存在', HttpStatus.NOT_FOUND);
     }
@@ -114,7 +115,7 @@ export class SecureService {
           html: template,
         });
       })
-      .then((ok) => {
+      .then(() => {
         return { ttl: expire };
       });
   }

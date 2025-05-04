@@ -16,7 +16,6 @@ import { Client, Permission } from '@prisma/client';
 import { createPermission } from './utils/create-permission';
 import { UpdatePermission } from 'src/permission/dto/update-permission';
 import { CreateRole } from 'src/role/dto/create-role.dto';
-import { RoleService } from '../src/role/role.service';
 import { CreateClient } from 'src/client/dto/create-client';
 import { removePermission } from './utils/remove-permission';
 
@@ -26,7 +25,6 @@ import { removePermission } from './utils/remove-permission';
 describe('Role And Permission end to end test', () => {
   let app: INestApplication;
   let redis: Redis;
-  let service: RoleService;
   const createTestClient = async (
     name: string,
     administrator: bigint[] = [],
@@ -48,7 +46,6 @@ describe('Role And Permission end to end test', () => {
     }).compile();
     app = moduleFixture.createNestApplication();
     redis = app.get(getRedisToken(DEFAULT_REDIS_NAMESPACE));
-    service = app.get(RoleService);
     await clear('sqlite');
     await redis.flushdb();
     await app.init();
@@ -144,7 +141,7 @@ describe('Role And Permission end to end test', () => {
           await createTestClient('test-b'),
         ];
         for (const client of clients) {
-          const { statusCode, body } = await request(app.getHttpServer())
+          const { statusCode } = await request(app.getHttpServer())
             .post('/permission')
             .auth(tokenPair.admin.access, { type: 'bearer' })
             .send({
@@ -152,7 +149,6 @@ describe('Role And Permission end to end test', () => {
               desc: 'TEST::2::PERMISSION',
               clientId: client.clientId,
             } as CreatePermission);
-          const p = body as Permission;
           expect(statusCode).toBe(HttpStatus.CREATED);
         }
       });
@@ -260,7 +256,7 @@ describe('Role And Permission end to end test', () => {
         expect(statusCode).toBe(HttpStatus.FORBIDDEN);
       });
       it('Should return 404, because permission not found', async () => {
-        const { statusCode, body } = await request(app.getHttpServer())
+        const { statusCode } = await request(app.getHttpServer())
           .get(`/permission/800`)
           .query({ clientId: process.env.CLIENT_ID })
           .auth(tokenPair.admin.access, { type: 'bearer' });
@@ -357,7 +353,7 @@ describe('Role And Permission end to end test', () => {
       });
       it('Fail, Not a client administrator', async () => {
         await removePermission('test@no-reply.com');
-        const { statusCode, body } = await request(app.getHttpServer())
+        const { statusCode } = await request(app.getHttpServer())
           .post('/role')
           .auth(tokens.a, { type: 'bearer' })
           .send({

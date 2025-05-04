@@ -8,8 +8,6 @@ import {
   getRedisToken,
 } from '@liaoliaots/nestjs-redis';
 import { createUser } from './utils/create-user';
-import { ClientService } from '../src/client/client.service';
-import { createClient } from './utils/create-client';
 import { Client, PrismaClient } from '@prisma/client';
 import request from 'supertest';
 import { GlobalCounterService } from '@app/global-counter';
@@ -20,7 +18,6 @@ import cookieParser from 'cookie-parser';
 describe('Auth E2E test', () => {
   let app: INestApplication;
   let redis: Redis;
-  let clientService: ClientService;
   let prisma: PrismaClient;
   let cnt: GlobalCounterService;
   const clients: Client[] = [];
@@ -31,7 +28,6 @@ describe('Auth E2E test', () => {
     app = moduleFixture.createNestApplication();
     app.use(cookieParser());
     redis = app.get(getRedisToken(DEFAULT_REDIS_NAMESPACE));
-    clientService = app.get(ClientService);
     cnt = app.get(GlobalCounterService);
     await clear('sqlite');
     await redis.flushdb();
@@ -92,12 +88,12 @@ describe('Auth E2E test', () => {
         clientId: process.env.CLIENT_ID,
         client: {
           connect: {
-            id: authClient.id,
+            id: authClient!.id,
           },
         },
         permission: {
           connect: {
-            id: permission.id,
+            id: permission!.id,
           },
         },
       },

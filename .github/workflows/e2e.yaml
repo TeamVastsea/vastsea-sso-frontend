@@ -2,6 +2,8 @@ name: End to End test
 
 on:
   pull_request:
+    paths:
+      - packages/backend/{libs,src,prisma}/**/*.*
   workflow_dispatch:
 
 env:
@@ -48,6 +50,6 @@ jobs:
              rm -rf prisma/migrations && rm -rf prisma/dev.db && mv prisma/dev_migrations prisma/migrations &&
              pnpm prisma migrate deploy --schema=prisma/schema.dev.prisma &&
              pnpm prisma migrate reset -f --schema=prisma/schema.dev.prisma && pnpm test:e2e client &&
-             pnpm prisma migrate reset -f --schema=prisma/schema.dev.prisma && pnpm test:e2e role && 
-             pnpm prisma migrate reset -f --schema=prisma/schema.dev.prisma && pnpm test:e2e auth && 
+             pnpm prisma migrate reset -f --schema=prisma/schema.dev.prisma && pnpm test:e2e role &&
+             pnpm prisma migrate reset -f --schema=prisma/schema.dev.prisma && pnpm test:e2e auth &&
              pnpm prisma migrate reset -f --schema=prisma/schema.dev.prisma && pnpm test:e2e account

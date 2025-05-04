@@ -1,7 +1,7 @@
 export const FORGET_PASSWORD = (name: string, code: string, expire: string) =>
   `
 
-尊敬的 ${name}: 
+尊敬的 ${name}:
 
 您正在执行忘记密码操作, 验证码为 <span class="code">${code}</span>. 过期时间: ${expire} 分钟
 
@@ -12,7 +12,7 @@ export const FORGET_PASSWORD = (name: string, code: string, expire: string) =>
 export const UPDATE_PASSWORD = (name: string, code: string, expire: string) =>
   `
 
-尊敬的 ${name}: 
+尊敬的 ${name}:
 
 您正在执行修改密码操作, 验证码为 <span class="code">${code}</span>. 过期时间: ${expire} 分钟
 

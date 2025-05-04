@@ -44,7 +44,7 @@ model Profile {
 }
 
 model Client {
-  id            BigInt  @id 
+  id            BigInt  @id
   name          String
   desc          String?
   avatar        String?

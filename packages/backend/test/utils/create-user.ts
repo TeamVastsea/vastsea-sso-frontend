@@ -1,8 +1,5 @@
-import { AUTH_EMAIL_CODE } from '@app/constant';
-import { HttpStatus, INestApplication } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import Redis from 'ioredis';
-import { CreateAccount } from '../../src/account/dto/create-account';
-import request from 'supertest';
 import { AccountService } from '../../src/account/account.service';
 
 export const createUser = async (

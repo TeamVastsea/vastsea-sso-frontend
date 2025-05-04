@@ -1,24 +1,23 @@
 FROM node:23-alpine AS base
 
-FROM base as builder
+FROM base AS builder
 WORKDIR /app
 
 ADD . .
 
 RUN npm i -g pnpm &&  \
     pnpm i --frozen-lockfile --prefer-offline && \
+    cd packages/backend && \
     pnpm prisma generate --schema=prisma/schema.prisma && \
     pnpm build
 
 FROM base AS runner
 WORKDIR /app
 
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/prisma .
+COPY --from=builder /app .
 
-RUN rm -rf ./prisma/migrations && \
+RUN cd packages/backend/ && \
+    rm -rf ./prisma/migrations && \
     npm i -g pnpm && \
     apk add --no-cache openssl
 
