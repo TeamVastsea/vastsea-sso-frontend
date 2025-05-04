@@ -5,9 +5,8 @@ WORKDIR /app
 
 ADD . .
 
-RUN npm i -g pnpm &&  \
+RUN npm i -g pnpm && \
     pnpm i --frozen-lockfile --prefer-offline && \
-    cd packages/backend && \
     pnpm prisma generate --schema=prisma/schema.prisma && \
     pnpm build
 
@@ -16,11 +15,10 @@ WORKDIR /app
 
 COPY --from=builder /app .
 
-RUN cd packages/backend/ && \
-    rm -rf ./prisma/migrations && \
+RUN rm -rf ./prisma/migrations && \
     npm i -g pnpm && \
     apk add --no-cache openssl
 
 EXPOSE 3000
 
-CMD ["sh","-c", "pnpm prisma migrate deploy; node dist/main.js"]
+CMD ["sh", "-c", "pnpm prisma migrate deploy && node dist/main.js"]

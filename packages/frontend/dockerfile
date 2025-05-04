@@ -13,6 +13,6 @@ RUN npm i -g pnpm && \
 
 FROM nginx AS runner
 
-COPY --from=builder /app/packages/frontend/dist /usr/share/nginx/html
+COPY --from=builder /app/dist /usr/share/nginx/html
 
 EXPOSE 80
