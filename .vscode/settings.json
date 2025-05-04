@@ -53,8 +53,7 @@
     "className",
     "ngClass",
     "class:list",
-    "enter-active-class",
-    
+    "enter-active-class"
   ],
   "tailwindCSS.experimental.classRegex": [
     "*-active-class",

@@ -13,7 +13,7 @@ export const createPermission = z.object({
       例如:
       client-a 中 存在 test::permission
       client-b 可以继续创建 test::permission
-      但是如果在 client-a 中继续创建 test::permission 则会抛出 409 错误. 
+      但是如果在 client-a 中继续创建 test::permission 则会抛出 409 错误.
       `,
   ),
   active: z.boolean().default(true).describe('是否启用该权限'),

@@ -1,18 +1,18 @@
-FROM node:23-alpine as base
+FROM node:23-alpine AS builder
 WORKDIR /app
 
-ADD . . 
+ADD . .
 
 ENV BASE_URL "/api"
 ENV AUTH_SERVER_CLIENT_ID ""
 
 RUN npm i -g pnpm && \
     cd packages/frontend && \
-    pnpm i && \
+    pnpm i --frozen-lockfile && \
     pnpm build
 
 FROM nginx AS runner
 
-COPY --from=base /app/packages/frontend/dist /usr/share/nginx/html
+COPY --from=builder /app/packages/frontend/dist /usr/share/nginx/html
 
 EXPOSE 80

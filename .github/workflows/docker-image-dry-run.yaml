@@ -1,6 +1,6 @@
 name: CI/CD Dry Run
 
-on: 
+on:
   pull_request:
     paths:
       - packages/{frontend,backend}/dockerfile
@@ -74,6 +74,3 @@ jobs:
           push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-        
-
-
