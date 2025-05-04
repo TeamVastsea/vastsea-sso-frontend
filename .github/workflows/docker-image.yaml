@@ -8,104 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build_docker_backend_dry_run:
-    name: Build Docker Backend Dry Run
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 23
-          cache: 'pnpm'
-      - name: Install dependencies
-        run: pnpm i --frozen-lockfile
-      - name: Build
-        run: pnpm build
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            vastsea/vastsea-sso-backend
-          tags: |
-            type=semver,pattern={{version}}
-            type=raw,value=latest,enable=${{ github.event_name != 'pull_request' }}
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Login to Docker Hub
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@v3
-        with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          file: packages/backend/dockerfile
-          push: false
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-  build_docker_frontend_dry_run:
-    name: Build Docker Frontend (Dry Run)
-    runs-on: ubuntu-latest
-    env:
-      BASE_URL: /api
-      AUTH_SERVER_CLIENT_ID: ${{secrets.AUTH_SERVER_CLIENT_ID}}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 23
-          cache: 'pnpm'
-      - name: Install dependencies
-        run: pnpm i --frozen-lockfile
-      - name: Build
-        run: pnpm build
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            vastsea/vastsea-sso-frontend
-          tags: |
-            type=semver,pattern={{version}}
-            type=raw,value=latest,enable=${{ github.event_name != 'pull_request' }}
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Login to Docker Hub
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@v3
-        with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          file: packages/frontend/dockerfile
-          push: false
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-        
-
   build_docker_frontend:
-    needs: [build_docker_frontend_dry_run]
     name: Build Docker Frontend
     runs-on: ubuntu-latest
     env:
@@ -155,7 +58,6 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   build_docker_backend:
-    needs: [build_docker_backend_dry_run]
     name: Build Docker Backend
     runs-on: ubuntu-latest
     steps:
