@@ -30,7 +30,7 @@ const clearDefault = async () =>
     `pnpm prisma migrate reset --force --skip-seed --schema=prisma/schema.dev.prisma`,
   );
 
-export const clear = async (provider: string) => {
+export const clear = (provider: string) => {
   const executeClear = {
     mysql: clearMysql,
     postgres: clearPostgres,
