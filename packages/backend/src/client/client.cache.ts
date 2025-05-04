@@ -23,11 +23,11 @@ export class ClientCache {
     multi.set(CLIENT_PK__ID(client.id), client.clientId);
     multi.expire(
       CLIENT_INFO(client.clientId),
-      this.config.get('cache.ttl.client.info'),
+      this.config.get('cache.ttl.client.info')!,
     );
     multi.expire(
       CLIENT_PK__ID(client.id),
-      this.config.get('cache.ttl.client.info'),
+      this.config.get('cache.ttl.client.info')!,
     );
     return multi.exec();
   }
@@ -40,9 +40,9 @@ export class ClientCache {
     return this.redis.get(CLIENT_PK__ID(pk)).then((clientID) => {
       return !clientID
         ? null
-        : (this.redis.hgetall(
-            CLIENT_INFO(clientID),
-          ) as unknown as Promise<Client>);
+        : (this.redis.hgetall(CLIENT_INFO(clientID)) as unknown as
+            | Promise<Client>
+            | Promise<null>);
     });
   }
 

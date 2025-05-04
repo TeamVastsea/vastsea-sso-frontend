@@ -119,7 +119,7 @@ export class AccountController {
   @Auth()
   @Permission(['ACCOUNT::QUERY::INFO'])
   @Get(':id')
-  async getAccountInfo(@Param('id', BigIntPipe) id: bigint) {
+  getAccountInfo(@Param('id', BigIntPipe) id: bigint) {
     const account = this.accountService.getAccountInfo(id);
     return account.then((account) => {
       if (!account) {
