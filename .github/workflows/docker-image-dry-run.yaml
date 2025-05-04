@@ -1,6 +1,9 @@
 name: CI/CD Dry Run
 
-on: [pull_request]
+on: 
+  pull_request:
+    paths:
+      - packages/{frontend,backend}/dockerfile
 
 jobs:
   build_docker_backend_dry_run:
