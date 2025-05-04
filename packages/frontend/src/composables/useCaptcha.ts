@@ -4,7 +4,7 @@ import { useAxios } from './axios';
 export type CaptchaBehavior<T> = (fetcher: AxiosInstance, opts: T) => void;
 
 export const geeTest: CaptchaBehavior<InitGeeTest4Opts & { onSuccess?: (resp: GetValidateRet) => void }> = (
-  fetcher: AxiosInstance,
+  _fetcher: AxiosInstance,
   opts: InitGeeTest4Opts & { onSuccess?: (resp: GetValidateRet) => void },
 ) => {
   const { onSuccess } = opts;
