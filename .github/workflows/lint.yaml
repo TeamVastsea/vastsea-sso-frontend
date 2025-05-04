@@ -55,7 +55,7 @@ jobs:
           cache: 'pnpm'
       - name: Install dependencies
         working-directory: packages/backend
-        run: pnpm prisma generate && pnpm i --frozen-lockfile --prefer-offline
+        run: pnpm i --frozen-lockfile --prefer-offline && pnpm prisma generate
       - name: Run linter
         uses: wearerequired/lint-action@v2
         with:
@@ -80,7 +80,7 @@ jobs:
           cache: 'pnpm'
       - name: Install dependencies
         working-directory: packages/backend
-        run: pnpm prisma generate && pnpm i --frozen-lockfile --prefer-offline
+        run: pnpm i --frozen-lockfile --prefer-offline && pnpm prisma generate
       - name: Run linter
         uses: wearerequired/lint-action@v2
         with:
@@ -105,7 +105,7 @@ jobs:
           cache: 'pnpm'
       - name: Install dependencies
         working-directory: packages/backend/
-        run: pnpm prisma generate && pnpm i --frozen-lockfile --prefer-offline
+        run: pnpm i --frozen-lockfile --prefer-offline && pnpm prisma generate
       - name: Run linter
         uses: wearerequired/lint-action@v2
         with:
