@@ -34,7 +34,7 @@ import { z } from 'zod';
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}
   @Post('mail-code')
-  async getMailCode(@Query('email') email: string) {
+  getMailCode(@Query('email') email: string) {
     const parser = z.string().email();
     return parser
       .safeParseAsync(email)
@@ -93,7 +93,7 @@ export class AccountController {
   @Auth()
   @Permission(['ACCOUNT::REMOVE'])
   @Delete(':id')
-  async removeAccount(@Param('id', BigIntPipe) id: bigint) {
+  removeAccount(@Param('id', BigIntPipe) id: bigint) {
     return this.accountService.removeAccount(id);
   }
 
@@ -132,7 +132,7 @@ export class AccountController {
   @Auth()
   @Permission(['ACCOUNT::QUERY::LIST'])
   @Get('')
-  async getAccountList(
+  getAccountList(
     @Query('preId', new BigIntPipe({ optional: true })) preId: bigint,
     @Query('size', new DefaultValuePipe(20), ParseIntPipe) size: number,
   ) {
