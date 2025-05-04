@@ -1,5 +1,17 @@
+FROM node:23-alpine as base
+WORKDIR /app
+
+ADD . . 
+
+ENV BASE_URL "/api"
+ENV AUTH_SERVER_CLIENT_ID ""
+
+RUN npm i -g pnpm && \
+    cd packages/frontend && \
+    pnpm build
+
 FROM nginx AS runner
 
-ADD ./packages/frontend/dist /usr/share/nginx/html
+COPY --from=base /app/packages/frontend/dist /usr/share/nginx/html
 
 EXPOSE 80
