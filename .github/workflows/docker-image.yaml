@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Deployment Environment'
+        description: 'Development Environment'
         required: true
         default: 'test'
         type: choice
@@ -26,14 +26,13 @@ jobs:
         app: [frontend, backend]
         include:
           - app: frontend
-            env:
-              BASE_URL: /api
-              AUTH_SERVER_CLIENT_ID: ${{secrets.AUTH_SERVER_CLIENT_ID}}
             context: ./packages/frontend
             file: ./packages/frontend/dockerfile
+            needs_auth_client_id: true
           - app: backend
             context: ./packages/backend
             file: ./packages/backend/dockerfile
+            needs_auth_client_id: false
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,6 +43,7 @@ jobs:
         with:
           images: |
             vastsea/vastsea-sso-${{ matrix.app }}
+            ${{ vars.REGISTRY_ADDRESS }}/${{ vars.REGISTRY_NAMESPACE }}/${{ vars.IMAGE_NAME }}-${{ matrix.app }}
           tags: |
             type=semver,pattern={{version}}
             type=raw,value=latest,enable=${{ github.event_name != 'pull_request' }}
@@ -61,8 +61,16 @@ jobs:
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      
-      - name: Build and push
+
+      - name: Login to ACR
+        uses: aliyun/acr-login@v1
+        with:
+          login-server: https://${{ vars.REGISTRY_ADDRESS }}
+          username: "${{ vars.REGISTRY_USERNAME }}"
+          password: "${{ secrets.REGISTRY_PASSWORD }}"
+
+      - name: Build and push frontend
+        if: matrix.app == 'frontend'
         uses: docker/build-push-action@v5
         with:
           context: ${{ matrix.context }}
@@ -70,61 +78,23 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: ${{ matrix.env }}
-
-  build_docker_acr:
-    name: Build Docker ACR
-    runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' || github.event.inputs.environment != '' }}
-    strategy:
-      matrix:
-        app: [frontend, backend]
-        include:
-          - app: frontend
-            env:
-              BASE_URL: /api
-              AUTH_SERVER_CLIENT_ID: ${{secrets.AUTH_SERVER_CLIENT_ID}}
-            context: ./packages/frontend
-            file: ./packages/frontend/dockerfile
-          - app: backend
-            context: ./packages/backend
-            file: ./packages/backend/dockerfile
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+          build-args: |
+            BASE_URL=/api
+            AUTH_SERVER_CLIENT_ID=${{ secrets.AUTH_SERVER_CLIENT_ID }}
       
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            vastsea/vastsea-sso-${{ matrix.app }}
-          tags: |
-            type=semver,pattern={{version}}
-            type=raw,value=latest,enable=${{ github.event_name != 'pull_request' }}
-            type=raw,value=test,enable=${{ github.event.inputs.environment == 'test' }}
-      
-      - name: Login to ACR
-        uses: aliyun/acr-login@v1
-        with:
-          login-server: https://${{ vars.REGISTRY_ADDRESS }}
-          username: "${{ vars.REGISTRY_USERNAME }}"
-          password: "${{ secrets.REGISTRY_PASSWORD }}"
-      
-      - name: Build and push to ACR
+      - name: Build and push backend
+        if: matrix.app == 'backend'
         uses: docker/build-push-action@v5
         with:
           context: ${{ matrix.context }}
           file: ${{ matrix.file }}
-          push: true
-          tags: |
-            ${{ vars.REGISTRY_ADDRESS }}/${{ vars.REGISTRY_NAMESPACE }}/vastsea-sso-${{ matrix.app }}:${{ github.event.inputs.environment == 'test' && 'test' || steps.meta.outputs.version }}
-            ${{ github.event.inputs.environment != 'test' && format('{0}/{1}/vastsea-sso-{2}:latest', vars.REGISTRY_ADDRESS, vars.REGISTRY_NAMESPACE, matrix.app) || '' }}
-          build-args: ${{ matrix.env }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
   deploy:
     name: Deploy
-    needs: [build_docker, build_docker_acr]
+    needs: build_docker
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' || github.event.inputs.environment != '' }}
     steps:
