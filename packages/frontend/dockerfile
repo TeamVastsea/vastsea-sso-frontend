@@ -1,18 +1,20 @@
 FROM node:23-alpine AS builder
 WORKDIR /app
 
-ADD . .
+COPY . .
 
-ENV BASE_URL="/api"
-ENV AUTH_SERVER_CLIENT_ID=""
+ARG BASE_URL="/api"
+ARG AUTH_SERVER_CLIENT_ID=""
+
+ENV BASE_URL=${BASE_URL}
+ENV AUTH_SERVER_CLIENT_ID=${AUTH_SERVER_CLIENT_ID}
 
 RUN npm i -g pnpm && \
-    cd packages/frontend && \
     pnpm i --frozen-lockfile && \
     pnpm build
 
 FROM nginx AS runner
 
-COPY --from=builder /app/packages/frontend/dist /usr/share/nginx/html
+COPY --from=builder /app/dist /usr/share/nginx/html
 
 EXPOSE 80
