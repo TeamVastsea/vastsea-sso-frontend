@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Devlopment Environment'
+        description: 'Development Environment'
         required: true
         default: 'test'
         type: choice
@@ -43,7 +43,7 @@ jobs:
         with:
           images: |
             vastsea/vastsea-sso-${{ matrix.app }}
-            ${{ vars.REGISTRY_ADDRESS }}/${{ vars.REGISTRY_NAMESPACE }}/${{ vars.IMAGE_NAME }}}-${{ matrix.app }}
+            ${{ vars.REGISTRY_ADDRESS }}/${{ vars.REGISTRY_NAMESPACE }}/${{ vars.IMAGE_NAME }}-${{ matrix.app }}
           tags: |
             type=semver,pattern={{version}}
             type=raw,value=latest,enable=${{ github.event_name != 'pull_request' }}
