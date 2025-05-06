@@ -30,7 +30,7 @@ declare global {
         gtId: string;
         key: string;
       };
-      map: object;
+      show: string[];
     };
     file: {
       avatar: {
