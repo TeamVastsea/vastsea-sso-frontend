@@ -36,7 +36,7 @@ instance.interceptors.request.use((config) => {
             },
           });
         },
-        captchaId: __GT_ID__,
+        captchaId: import.meta.env.VITE_GT_ID,
       });
       shouldShowCaptcha(config.url!)
         .then((show) => {

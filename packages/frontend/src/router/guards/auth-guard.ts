@@ -12,7 +12,7 @@ export default (router: Router) => {
       next({
         name: 'Login',
         replace: true,
-        query: { clientId: __AUTH_SERVER__ },
+        query: { clientId: import.meta.env.VITE_AUTH_SERVER_CLIENT_ID },
       });
       return;
     }
