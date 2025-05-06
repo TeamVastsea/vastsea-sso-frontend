@@ -22,6 +22,7 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: packages/backend/pnpm-lock.yaml
       - name: Install dependencies
+        working-directory: packages/backend
         run: pnpm i
       - name: Build
         working-directory: packages/backend
