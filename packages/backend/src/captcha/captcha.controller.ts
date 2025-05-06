@@ -30,14 +30,20 @@ export class CaptchaController {
   }
   @Get('should-show')
   shouldShow(@Query('url') url: string) {
-    const map: Record<string, boolean> = this.config.get('captcha.map' as any);
+    if (!url) {
+      return {
+        should: false,
+      };
+    }
+    const map = this.config.get('captcha.show');
     if (!map) {
       return {
         should: false,
       };
     }
-    for (const [key] of Object.keys(map)) {
-      if (new RegExp(key).test(url)) {
+    for (const path of map) {
+      const reg = new RegExp(path);
+      if (reg.test(url)) {
         return {
           should: true,
         };
