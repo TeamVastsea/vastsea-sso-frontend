@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - packages/{frontend,backend}/dockerfile
+      - packages/{frontend,backend}/pnpm-lock.yaml
+      - pnpm-lock.yaml
 
 jobs:
   build_docker_backend_dry_run:
