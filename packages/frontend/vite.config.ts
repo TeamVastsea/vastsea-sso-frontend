@@ -12,7 +12,6 @@ export default defineConfig(({ mode }) => {
     'process.env': { TINY_MODE: 'pc' },
     'BASE_URL': JSON.stringify(env.BASE_URL ?? '/api'),
     'MOBILE_WIDTH': 648,
-    '__AUTH_SERVER__': JSON.stringify(env.VITE_AUTH_SERVER_CLIENT_ID),
     '__GT_ID__': JSON.stringify(env.VITE_GT_ID),
   };
 

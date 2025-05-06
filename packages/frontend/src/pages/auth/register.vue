@@ -30,7 +30,7 @@ const clientId = route.query.clientId?.toString();
 
 if (!clientId) {
   router.replace({
-    query: { clientId: __AUTH_SERVER__ },
+    query: { clientId: import.meta.env.VITE_AUTH_SERVER_CLIENT_ID },
   });
 }
 

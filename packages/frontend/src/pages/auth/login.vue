@@ -40,7 +40,7 @@ if (clientId.value && clientId.value === 'undefined') {
 }
 
 if (!clientId.value) {
-  if (!__AUTH_SERVER__) {
+  if (!import.meta.env.VITE_AUTH_SERVER_CLIENT_ID) {
     router.push({
       name: 'AuthError',
       query: {
@@ -51,11 +51,11 @@ if (!clientId.value) {
     router.push({
       name: 'Login',
       query: {
-        clientId: __AUTH_SERVER__,
+        clientId: import.meta.env.VITE_AUTH_SERVER_CLIENT_ID,
       },
       force: true,
     });
-    clientId.value = __AUTH_SERVER__;
+    clientId.value = import.meta.env.VITE_AUTH_SERVER_CLIENT_ID;
   }
 }
 watch(

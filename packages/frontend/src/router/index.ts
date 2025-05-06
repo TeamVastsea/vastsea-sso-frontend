@@ -113,7 +113,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     component: Home,
-    redirect: `/auth/login?clientId=${__AUTH_SERVER__}`,
+    redirect: `/auth/login?clientId=${import.meta.env.VITE_AUTH_SERVER_CLIENT_ID}`,
     children: [
       {
         name: 'redirect',
@@ -142,7 +142,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/:pathMatch(.*)',
-    redirect: `/auth/login?clientId=${__AUTH_SERVER__}`,
+    redirect: `/auth/login?clientId=${import.meta.env.VITE_AUTH_SERVER_CLIENT_ID}`,
   },
 ];
 
