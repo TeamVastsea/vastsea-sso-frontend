@@ -23,11 +23,13 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           run_install: false
+          version: 10.10.0
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 23
           cache: 'pnpm'
+          cache-dependency-path: packages/frontend/pnpm-lock.yaml
       - name: Install dependencies
         working-directory: packages/frontend
         run: pnpm i --frozen-lockfile --prefer-offline
@@ -48,11 +50,13 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           run_install: false
+          version: 10.10.0
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 23
           cache: 'pnpm'
+          cache-dependency-path: packages/backend/pnpm-lock.yaml
       - name: Install dependencies
         working-directory: packages/backend
         run: pnpm i --frozen-lockfile --prefer-offline && pnpm prisma generate
@@ -73,11 +77,13 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           run_install: false
+          version: 10.10.0
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 23
           cache: 'pnpm'
+          cache-dependency-path: packages/backend/pnpm-lock.yaml
       - name: Install dependencies
         working-directory: packages/backend
         run: pnpm i --frozen-lockfile --prefer-offline && pnpm prisma generate
@@ -98,11 +104,13 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           run_install: false
+          version: 10.10.0
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 23
           cache: 'pnpm'
+          cache-dependency-path: packages/backend/pnpm-lock.yaml
       - name: Install dependencies
         working-directory: packages/backend/
         run: pnpm i --frozen-lockfile --prefer-offline && pnpm prisma generate
