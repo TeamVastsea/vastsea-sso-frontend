@@ -20,6 +20,7 @@ jobs:
         with:
           node-version: 23
           cache: 'pnpm'
+          cache-dependency-path: packagees/backend/pnpm-lock.yaml
       - name: Install dependencies
         run: pnpm i
       - name: Build
