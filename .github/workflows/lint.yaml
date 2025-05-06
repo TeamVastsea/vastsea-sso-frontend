@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: 23
           cache: 'pnpm'
-          cache-dependency-path: packagees/frontend/pnpm-lock.yaml
+          cache-dependency-path: packages/frontend/pnpm-lock.yaml
       - name: Install dependencies
         working-directory: packages/frontend
         run: pnpm i --frozen-lockfile --prefer-offline
@@ -56,7 +56,7 @@ jobs:
         with:
           node-version: 23
           cache: 'pnpm'
-          cache-dependency-path: packagees/backend/pnpm-lock.yaml
+          cache-dependency-path: packages/backend/pnpm-lock.yaml
       - name: Install dependencies
         working-directory: packages/backend
         run: pnpm i --frozen-lockfile --prefer-offline && pnpm prisma generate
@@ -83,7 +83,7 @@ jobs:
         with:
           node-version: 23
           cache: 'pnpm'
-          cache-dependency-path: packagees/backend/pnpm-lock.yaml
+          cache-dependency-path: packages/backend/pnpm-lock.yaml
       - name: Install dependencies
         working-directory: packages/backend
         run: pnpm i --frozen-lockfile --prefer-offline && pnpm prisma generate
@@ -110,7 +110,7 @@ jobs:
         with:
           node-version: 23
           cache: 'pnpm'
-          cache-dependency-path: packagees/backend/pnpm-lock.yaml
+          cache-dependency-path: packages/backend/pnpm-lock.yaml
       - name: Install dependencies
         working-directory: packages/backend/
         run: pnpm i --frozen-lockfile --prefer-offline && pnpm prisma generate
