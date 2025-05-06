@@ -1,6 +1,7 @@
 name: CI/CD Dry Run
 
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - packages/{frontend,backend}/dockerfile
