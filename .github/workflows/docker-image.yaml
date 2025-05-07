@@ -71,8 +71,10 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BASE_URL=/api
+            BASE_URL=${{ vars.BASE_URL }}
             AUTH_SERVER_CLIENT_ID=${{ secrets.AUTH_SERVER_CLIENT_ID }}
+            VITE_AUTH_SERVER_CLIENT_ID=${{ vars.VITE_AUTH_SERVER_CLIENT_ID }}
+            VITE_GT_ID=${{ vars.VITE_GT_ID }}
 
       - name: Build and push backend
         if: matrix.app == 'backend'
