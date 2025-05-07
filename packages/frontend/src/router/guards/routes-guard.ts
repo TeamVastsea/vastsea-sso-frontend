@@ -7,6 +7,9 @@ export default (router: Router) => {
     await nextTick();
     const routes = router.getRoutes();
     const accounts = useAccountStore();
+    if (!accounts.accessToken) {
+      return next();
+    }
     if (accounts.permissionList.includes('*')) {
       return next();
     }
