@@ -8,8 +8,6 @@ import { join } from 'path';
 import 'winston-daily-rotate-file';
 import * as winston from 'winston';
 import { utilities, WinstonModule } from 'nest-winston';
-import { windowTime } from 'rxjs';
-import { FileTypeValidator } from '@nestjs/common';
 
 const CONSOLE_TRANSPORT = new winston.transports.Console({
   format: winston.format.combine(
