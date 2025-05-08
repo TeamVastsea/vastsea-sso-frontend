@@ -14,7 +14,7 @@ declare global {
       transport: {
         host: string;
         port: number;
-        secure: boolean;
+        secure: string;
         auth: {
           user: string;
           pass: string;
