@@ -1,11 +1,14 @@
 <script lang="ts" setup>
 import type { PublicClientInfo } from '@/composables';
+import type { TokenPayload } from '@/store';
 import { useAxios, useClient } from '@/composables';
+import { useAccountStore } from '@/store';
 import { TinyButton, TinyForm, TinyFormItem, TinyInput } from '@opentiny/vue';
 import { useCookies } from '@vueuse/integrations/useCookies';
 import { reactive, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+const account = useAccountStore();
 const route = useRoute();
 const router = useRouter();
 const clientId = ref(route.query.clientId?.toString());
