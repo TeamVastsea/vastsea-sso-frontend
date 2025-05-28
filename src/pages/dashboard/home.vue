@@ -2,9 +2,9 @@
 import colorSwitch from '@/components/color-switch.vue';
 import { useAccount, useSidebar } from '@/composables';
 import { useAccountStore } from '@/store';
+import { Modal } from '@opentiny/vue';
 import { useCookies } from '@vueuse/integrations/useCookies.mjs';
 import { useRouter } from 'vue-router';
-import { Modal } from '@opentiny/vue';
 
 const { isOpen, toggleSidebar, isMobile } = useSidebar();
 
@@ -18,19 +18,17 @@ const cookie = useCookies();
 const onClickLogout = () => {
   logout()
     .then(() => {
+      cookie.remove('session-state');
       return clearTokenPair();
     })
     .then(() => {
-      cookie.remove('session-state');
-    })
-    .then(()=>{
       Modal.message({
-        message: '登出成功'
+        message: '登出成功',
       });
       router.push({
-        path:'/'
+        path: '/',
       });
-    })
+    });
 };
 </script>
 
@@ -72,7 +70,7 @@ const onClickLogout = () => {
         class="mb-0 px-2 border-t border-t-zinc-300 flex gap-2 h-fit w-full items-center justify-center dark:border-t-zinc-600"
       >
         <color-switch class="ml-auto mr-0" />
-        <div @click="onClickLogout" class="i-material-symbols:exit-to-app-rounded size-6 dark:text-white cursor-pointer" />
+        <div class="i-material-symbols:exit-to-app-rounded size-6 cursor-pointer dark:text-white" @click="onClickLogout" />
       </div>
     </div>
     <div
