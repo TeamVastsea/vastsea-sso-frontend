@@ -19,6 +19,7 @@ const cookie = useCookies();
 const onClickLogout = () => {
   logout()
     .then(() => {
+      cookie.remove('session-state');
       return clearTokenPair();
     })
     .then(() => {
