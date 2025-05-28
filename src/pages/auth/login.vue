@@ -1,11 +1,14 @@
 <script lang="ts" setup>
 import type { PublicClientInfo } from '@/composables';
+import type { TokenPayload } from '@/store';
 import { useAxios, useClient } from '@/composables';
+import { useAccountStore } from '@/store';
 import { TinyButton, TinyForm, TinyFormItem, TinyInput } from '@opentiny/vue';
 import { useCookies } from '@vueuse/integrations/useCookies';
 import { reactive, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+const account = useAccountStore();
 const route = useRoute();
 const router = useRouter();
 const clientId = ref(route.query.clientId?.toString());
@@ -20,10 +23,10 @@ const loginDto = reactive({
 });
 if (cookie.get('session-state')) {
   axios
-    .post<unknown, { code: string }>(`/auth/session?clientId=${clientId.value}`)
+    .get<unknown, TokenPayload>(`/v2/auth/session`)
     .then((resp) => {
-      const code = resp.code;
-      router.replace({ name: 'redirect', query: { ok: 'true', code } });
+      account.setTokenPair(resp);
+      router.replace({ name: 'Profile' });
     })
     .catch(() => {
       cookie.remove('session-state');
@@ -110,7 +113,7 @@ watch(
         <div class="shrink-0 flex-grow h-full">
           <tiny-form label-position="top" :model="loginDto">
             <form
-              :action="`/api/auth/code?clientId=${clientId}&state=asdiofadsg`"
+              :action="`/api/v2/auth/code?clientId=${clientId}`"
               method="post"
             >
               <tiny-form-item label="邮箱" required prop="email">

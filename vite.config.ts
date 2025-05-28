@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         '^/api': {
-          target: 'http://47.245.42.239:3000',
+          target: 'http://localhost:3000',
           rewrite(path) {
             return path.replace(/^\/api/, '');
           },
