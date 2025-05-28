@@ -23,9 +23,6 @@ const onClickLogout = () => {
       return clearTokenPair();
     })
     .then(() => {
-      cookie.remove('session-state');
-    })
-    .then(() => {
       Modal.message({
         message: '登出成功',
       });
