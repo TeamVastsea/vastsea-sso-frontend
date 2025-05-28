@@ -99,7 +99,7 @@ export function useAccount(
       .then(data => (account.value = data));
   };
   const logout = () => {
-    return fetcher.delete('/auth/token');
+    return fetcher.delete('/v2/auth/token');
   };
   return {
     formData,
