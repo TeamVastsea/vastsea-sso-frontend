@@ -1,14 +1,11 @@
 <script lang="ts" setup>
 import type { PublicClientInfo } from '@/composables';
-import type { TokenPayload } from '@/store';
 import { useAxios, useClient } from '@/composables';
-import { useAccountStore } from '@/store';
 import { TinyButton, TinyForm, TinyFormItem, TinyInput } from '@opentiny/vue';
 import { useCookies } from '@vueuse/integrations/useCookies';
 import { reactive, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-const account = useAccountStore();
 const route = useRoute();
 const router = useRouter();
 const clientId = ref(route.query.clientId?.toString());
@@ -23,10 +20,9 @@ const loginDto = reactive({
 });
 if (cookie.get('session-state')) {
   axios
-    .get<unknown, TokenPayload>(`/v2/auth/session`)
-    .then((resp) => {
-      account.setTokenPair(resp);
-      router.replace({ name: 'Profile' });
+    .get<unknown, { code: string }>(`/v2/auth/session`)
+    .then(({ code }) => {
+      router.replace({ name: 'redirect', query: { code } });
     })
     .catch(() => {
       cookie.remove('session-state');

@@ -27,8 +27,6 @@ if (code) {
     .get<unknown, TokenPayload>('/v2/auth/token', { params: { code } })
     .then((tokenPair) => {
       account.setTokenPair(tokenPair);
-    })
-    .then(() => {
       router.replace({ name: 'Profile' });
     })
     .catch((err) => {
