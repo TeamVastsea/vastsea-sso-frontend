@@ -59,7 +59,7 @@ jobs:
             VITE_GT_ID=${{ vars.VITE_GT_ID }}
   deploy:
     name: Deploy
-    needs: build_docker
+    needs: Build
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' || github.event.inputs.environment != '' }}
     steps:
