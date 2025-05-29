@@ -23,6 +23,9 @@ export const useAccountStore = defineStore(
     const permissionList = ref<string[]>([]);
     const { axios } = useAxios();
     const fetchPermissionList = () => {
+      if (!accessToken.value) {
+        return Promise.resolve();
+      }
       return axios.get<never, string[]>('/permission/list').then((resp) => {
         permissionList.value = resp;
       });

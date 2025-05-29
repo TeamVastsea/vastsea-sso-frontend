@@ -7,6 +7,9 @@ import { geeTest, useCaptcha } from './useCaptcha';
 
 const instance = axios.create({
   baseURL: '/api',
+  headers: {
+    'X-Auth-Version': '2',
+  },
 });
 
 function shouldShowCaptcha(url: string) {
