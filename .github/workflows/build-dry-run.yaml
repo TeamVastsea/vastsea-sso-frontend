@@ -16,5 +16,4 @@ jobs:
           run_install: true
           version: 10.10.0
       - name: Build
-        working-directory: packages/backend
         run: pnpm build
