@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import type { Reactive } from 'vue';
 import { useAxios } from '@/composables';
+import { useAccountStore } from '@/store';
 import { TinyButton, TinyForm, TinyFormItem, TinyInput } from '@opentiny/vue';
 import { reactive, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
@@ -17,6 +18,7 @@ const updatePassword: Reactive<UpdatePassword> = reactive({
 const { axios } = useAxios();
 const form = useTemplateRef<any>('form');
 const router = useRouter();
+const account = useAccountStore();
 const doUpdate = () => {
   form.value
     .validate()
@@ -25,7 +27,8 @@ const doUpdate = () => {
         return;
       }
       axios.patch('/secure/password', updatePassword).then(() => {
-        router.back();
+        account.clearTokenPair();
+        router.replace({ name: 'Login' });
       });
     })
     .catch(() => {});
