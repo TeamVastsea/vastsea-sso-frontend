@@ -96,17 +96,6 @@ export const dashboardHomeChildren: RouteRecordRaw[] = [
       sideBar: true,
     },
   },
-  {
-    name: 'Profile',
-    path: 'profile',
-    component: () => import('@/pages/dashboard/profile/index.vue'),
-    meta: {
-      auth: true,
-      title: '个人空间',
-      system: [],
-      sideBar: true,
-    },
-  },
 ];
 
 const routes: RouteRecordRaw[] = [
@@ -139,6 +128,15 @@ const routes: RouteRecordRaw[] = [
         children: [...AuthChildren],
       },
     ],
+  },
+  {
+    name: 'Profile',
+    path: '/profile',
+    component: () => import('@/pages/profile/index.vue'),
+    meta: {
+      auth: false,
+      title: '个人空间',
+    },
   },
   {
     path: '/:pathMatch(.*)',

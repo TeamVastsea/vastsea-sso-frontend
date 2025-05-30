@@ -7,6 +7,9 @@ export interface Profile {
   nick: string;
   desc: string | null;
   accountId: bigint;
+  account: {
+    createAt: string;
+  };
 }
 
 export function useProfile(
