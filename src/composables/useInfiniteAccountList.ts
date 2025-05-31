@@ -29,7 +29,7 @@ export function useInfiniteAccountList(
         );
         data.value.push(...newData);
         total.value = resp.total.toString();
-        canLoad.value = Boolean(resp.data.length);
+        canLoad.value = data.value.length < Number.parseInt(total.value);
       })
       .finally(() => {
         isLoading.value = false;
