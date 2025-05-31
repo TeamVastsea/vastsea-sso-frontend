@@ -1,28 +1,12 @@
 <script lang="ts" setup>
 import RoleSelect from '@/components/role-select.vue';
-import { useRole } from '@/composables';
 import { useAccount } from '@/composables/useAccount';
 import { TinyForm, TinyFormItem, TinyInput } from '@opentiny/vue';
-import { computed, onMounted, useTemplateRef } from 'vue';
+import { useTemplateRef } from 'vue';
 
 const { formData, formRules, createAccount } = useAccount();
 
-const { roleList, getRoleList } = useRole();
-
-const roleOptions = computed(() => {
-  return roleList.value.map((role) => {
-    return {
-      label: role.name,
-      value: role.id,
-    };
-  });
-});
-
 const form = useTemplateRef<any>('form');
-
-onMounted(() => {
-  getRoleList();
-});
 </script>
 
 <template>
@@ -46,7 +30,6 @@ onMounted(() => {
     </tiny-form-item>
     <tiny-form-item prop="profile.role" label="角色">
       <role-select v-model="formData.role" />
-      <!-- <tiny-select v-model="formData.role" :options="roleOptions" multiple /> -->
     </tiny-form-item>
     <tiny-form-item>
       <tiny-button type="primary" @click="createAccount(form.validate)">
