@@ -80,7 +80,7 @@ export function usePermission(
           }
         }
         permissionTotal.value = resp.total.toString();
-        canLoad.value = Boolean(resp.data.length);
+        canLoad.value = permissionList.value.length < Number.parseInt(permissionTotal.value);
       })
       .finally(() => {
         loading.value = false;
