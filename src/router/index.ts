@@ -40,15 +40,6 @@ const AuthChildren: RouteRecordRaw[] = [
       title: '忘记密码',
     },
   },
-  {
-    name: 'update-password',
-    path: 'update-password',
-    component: () => import('@/pages/auth/update-password.vue'),
-    meta: {
-      auth: true,
-      title: '修改密码',
-    },
-  },
 ];
 
 export const dashboardHomeChildren: RouteRecordRaw[] = [
@@ -96,17 +87,6 @@ export const dashboardHomeChildren: RouteRecordRaw[] = [
       sideBar: true,
     },
   },
-  {
-    name: 'Profile',
-    path: 'profile',
-    component: () => import('@/pages/dashboard/profile/index.vue'),
-    meta: {
-      auth: true,
-      title: '个人空间',
-      system: [],
-      sideBar: true,
-    },
-  },
 ];
 
 const routes: RouteRecordRaw[] = [
@@ -137,6 +117,37 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'auth',
         children: [...AuthChildren],
+      },
+    ],
+  },
+  {
+    name: 'Profile',
+    path: '/profile',
+    component: () => import('@/pages/profile/index.vue'),
+    meta: {
+      auth: false,
+      title: '个人空间',
+    },
+  },
+  {
+    name: 'Setting',
+    path: '/setting',
+    component: () => import('@/pages/setting/index.vue'),
+    meta: {
+      auth: true,
+      title: '个人设置',
+    },
+    redirect: '/setting/profile',
+    children: [
+      {
+        name: 'setting::profile',
+        path: 'profile',
+        component: () => import('@/pages/setting/profile.vue'),
+      },
+      {
+        name: 'setting::secure',
+        path: 'secure',
+        component: () => import('@/pages/setting/secure.vue'),
       },
     ],
   },

@@ -10,7 +10,7 @@ const { close, isOpen, transformer } = useModalContext()!;
     <overlay v-if="isOpen" class="mask" @click="close">
       <div
         :style="{ '--x': `${transformer.x}px`, '--y': `${transformer.y}px` }"
-        class="modal-body-content modal-body-content text-zinc-800 mx-auto p-4 rounded bg-white max-h-95% w-md position-absolute z-20 overflow-auto dark:text-zinc-200 dark:bg-zinc-900"
+        class="modal-body-content text-zinc-800 mx-auto p-4 rounded bg-white max-h-95% max-w-full w-md position-absolute z-20 overflow-auto dark:text-zinc-200 dark:bg-zinc-900"
         @click.stop
       >
         <slot />

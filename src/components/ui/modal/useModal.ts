@@ -21,8 +21,7 @@ let x: number = 0;
 let y: number = 0;
 export function useModal() {
   const appContext = getCurrentInstance()?.appContext;
-  const isAnchor = (el: Element): el is HTMLElement & { anchor: symbol } =>
-    Object.keys(el).includes('anchor') && (el as any).anchor === ANCHOR_SYMBOl;
+  const isAnchor = (el: Element): el is HTMLElement & { anchor: symbol } => Object.keys(el).includes('anchor') && (el as any).anchor === ANCHOR_SYMBOl;
   const createAnchor = () => {
     const bodyChildren = document.body.children;
     if (Array.from(bodyChildren).some(isAnchor)) {
@@ -36,7 +35,7 @@ export function useModal() {
     anchor.style.width = '100vw';
     anchor.style.height = '100vh';
     anchor.style.zIndex = '10';
-    Object.defineProperty(anchor, 'anchor', { value: ANCHOR_SYMBOl });
+    Object.defineProperty(anchor, 'anchor', { value: ANCHOR_SYMBOl, enumerable: true });
     return anchor;
   };
   const anchor = createAnchor();
@@ -70,6 +69,7 @@ export function useModal() {
     }
     render(null, cur.anchor);
     cur.anchor.style.display = 'none';
+    cur.anchor.remove();
   };
   const createModal = ({
     content,
@@ -103,7 +103,7 @@ export function useModal() {
           }, 200);
         },
       },
-      () => [h(ModalContent, {}, () => [content])],
+      () => [h(ModalContent, { }, () => [content])],
     );
     if (!appContext) {
       return;

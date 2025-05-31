@@ -1,10 +1,11 @@
 <script lang="ts" setup>
 import colorSwitch from '@/components/color-switch.vue';
+import { Link as UiLink } from '@/components/ui';
 import { useAccount, useSidebar } from '@/composables';
 import { useAccountStore } from '@/store';
+import { Modal } from '@opentiny/vue';
 import { useCookies } from '@vueuse/integrations/useCookies.mjs';
 import { useRouter } from 'vue-router';
-import { Modal } from '@opentiny/vue';
 
 const { isOpen, toggleSidebar, isMobile } = useSidebar();
 
@@ -18,19 +19,17 @@ const cookie = useCookies();
 const onClickLogout = () => {
   logout()
     .then(() => {
+      cookie.remove('session-state');
       return clearTokenPair();
     })
     .then(() => {
-      cookie.remove('session-state');
-    })
-    .then(()=>{
       Modal.message({
-        message: '登出成功'
+        message: '登出成功',
       });
       router.push({
-        path:'/'
+        path: '/',
       });
-    })
+    });
 };
 </script>
 
@@ -56,23 +55,21 @@ const onClickLogout = () => {
         />
       </div>
       <ul class="my-4 px-2 flex-auto space-y-3">
-        <router-link
+        <ui-link
           v-for="menu of menus"
           :key="menu.name"
           :to="{ name: menu.name }"
-          exact-active-class="bg-zinc-200 dark:bg-blue-500/20 dark:text-blue-200!"
-          class="text-zinc-800 rounded block cursor-pointer transition dark:text-zinc-200"
         >
           <li class="px-2 py-1.5">
             {{ menu.meta?.title }}
           </li>
-        </router-link>
+        </ui-link>
       </ul>
       <div
         class="mb-0 px-2 border-t border-t-zinc-300 flex gap-2 h-fit w-full items-center justify-center dark:border-t-zinc-600"
       >
         <color-switch class="ml-auto mr-0" />
-        <div @click="onClickLogout" class="i-material-symbols:exit-to-app-rounded size-6 dark:text-white cursor-pointer" />
+        <div class="i-material-symbols:exit-to-app-rounded size-6 cursor-pointer dark:text-white" @click="onClickLogout" />
       </div>
     </div>
     <div
