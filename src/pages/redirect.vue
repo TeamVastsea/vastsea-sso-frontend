@@ -24,12 +24,18 @@ if (!code) {
 
 if (code) {
   axios
-    .post<unknown, TokenPayload>('/auth/token', null, { params: { code } })
+    .get<unknown, TokenPayload>('/v2/auth/token', { params: { code } })
     .then((tokenPair) => {
       account.setTokenPair(tokenPair);
-    })
-    .then(() => {
       router.replace({ name: 'Profile' });
+    })
+    .catch((err) => {
+      router.replace({
+        name: 'AuthError',
+        query: {
+          reason: [err.message],
+        },
+      });
     });
 }
 </script>

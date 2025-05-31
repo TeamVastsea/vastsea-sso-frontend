@@ -19,10 +19,8 @@ const cookie = useCookies();
 const onClickLogout = () => {
   logout()
     .then(() => {
-      return clearTokenPair();
-    })
-    .then(() => {
       cookie.remove('session-state');
+      return clearTokenPair();
     })
     .then(() => {
       Modal.message({
