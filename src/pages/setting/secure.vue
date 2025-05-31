@@ -25,7 +25,6 @@ const onUpdateSuccess = () => {
       <span
         class="cursor-pointer"
         @click="() => createModal({
-          contentClass: 'max-w-90%',
           content: h(UpdatePassword, { onSuccess: onUpdateSuccess }),
         })"
       >修改</span>
