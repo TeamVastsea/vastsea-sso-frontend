@@ -1,6 +1,10 @@
 <script lang="ts" setup>
 import { ref, useTemplateRef } from 'vue';
 
+defineProps<{
+  readonly?: boolean;
+}>();
+
 const modelValue = defineModel<string>({ required: true });
 const fileModelValue = defineModel<File | null>('file', { required: true });
 const trigger = useTemplateRef('trigger');
@@ -21,13 +25,14 @@ const onTriggerChange = () => {
   <div class="flex flex-col gap-2 size-fit items-center justify-center">
     <div class="relative">
       <div
-        class="group/avatar rounded-full size-100px cursor-pointer relative overflow-hidden"
+        :data-readonly="readonly"
+        class="group/avatar rounded-full size-100px cursor-pointer relative overflow-hidden data-[readonly=true]:cursor-auto"
         @click="trigger?.click()"
       >
         <img
           v-if="modelValue && !isError"
           :src="modelValue"
-          class="size-100px object-cover"
+          class="max-size-100px object-cover"
           @error="() => (isError = true)"
         >
         <div
@@ -36,6 +41,7 @@ const onTriggerChange = () => {
           @click="trigger?.click()"
         />
         <div
+          v-if="!readonly"
           class="bg-black/50 opacity-0 flex size-full transition duration-300 items-center left-0 top-0 justify-center absolute group-hover/avatar:opacity-100"
         >
           <div class="i-material-symbols:upload-rounded text-white size-10" />
@@ -48,7 +54,7 @@ const onTriggerChange = () => {
         @change="onTriggerChange"
       >
     </div>
-    <div class="text-sm text-zinc-700 text-center dark:text-zinc-300">
+    <div v-if="!readonly" class="text-sm text-zinc-700 text-center dark:text-zinc-300">
       <p>上传头像</p>
       <p>请上传2M以内的头像</p>
       <p>支持PNG/GIF/WEBP/JPEG</p>

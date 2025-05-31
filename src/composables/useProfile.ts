@@ -7,6 +7,9 @@ export interface Profile {
   nick: string;
   desc: string | null;
   accountId: bigint;
+  account: {
+    createAt: string;
+  };
 }
 
 export function useProfile(
@@ -23,7 +26,7 @@ export function useProfile(
   const uploadAvatar = (file: File) => {
     const formData = new FormData();
     formData.set('profile', file);
-    return fetcher.postForm('/upload/profile/avatar', formData);
+    return fetcher.postForm<never, { path: string }>('/upload/profile/avatar', formData);
   };
   return { fetchProfile, uploadAvatar, updateProfile };
 }
