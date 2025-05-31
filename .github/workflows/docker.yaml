@@ -3,14 +3,14 @@ name: CI/CD
 on:
   push:
     tags:
-      - "*.*.*"
-      - "*.*.*-*.*"
+      - '*.*.*'
+      - '*.*.*-*.*'
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Development Environment'
+        description: Development Environment
         required: true
-        default: 'test'
+        default: test
         type: choice
         options:
           - test

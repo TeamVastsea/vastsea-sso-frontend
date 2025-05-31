@@ -2,7 +2,7 @@
 import { ref, useTemplateRef } from 'vue';
 
 defineProps<{
-  readonly?: boolean,
+  readonly?: boolean;
 }>();
 
 const modelValue = defineModel<string>({ required: true });
@@ -32,7 +32,7 @@ const onTriggerChange = () => {
         <img
           v-if="modelValue && !isError"
           :src="modelValue"
-          class="size-100px object-cover"
+          class="max-size-100px object-cover"
           @error="() => (isError = true)"
         >
         <div

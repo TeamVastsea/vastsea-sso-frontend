@@ -10,7 +10,6 @@ import {
   TinyFormItem,
   TinyInput,
 } from '@opentiny/vue';
-import { asyncComputed } from '@vueuse/core';
 import { useJwt } from '@vueuse/integrations/useJwt.mjs';
 import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
@@ -65,14 +64,14 @@ watch(avatarFile, () => {
 
 <template>
   <div class="p-4 flex flex-col gap-2 h-full w-full">
-    <h1 class="text-2xl text-zinc-900 dark:text-zinc-100">
+    <h1 class="text-2xl text-zinc-900 hidden dark:text-zinc-100 md:block">
       个人资料
     </h1>
     <ui-hr />
     <h2 class="text-xl text-zinc-800 dark:text-zinc-200">
       基本信息
     </h2>
-    <div class="flex grow h-full w-full">
+    <div class="flex grow flex-col-reverse gap-4 h-full w-full items-center sm:flex-row sm:gap-0 sm:items-unset">
       <div class="w-full space-y-3">
         <tiny-form v-if="profile" label-position="top" :model="profile">
           <tiny-form-item label="个人昵称" required>
@@ -88,7 +87,7 @@ watch(avatarFile, () => {
           </tiny-form-item>
         </tiny-form>
       </div>
-      <div class="px-12">
+      <div class="sm:px-12">
         <avatar-upload v-model="avatarUrl" v-model:file="avatarFile" />
       </div>
     </div>

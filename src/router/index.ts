@@ -40,15 +40,6 @@ const AuthChildren: RouteRecordRaw[] = [
       title: '忘记密码',
     },
   },
-  {
-    name: 'update-password',
-    path: 'update-password',
-    component: () => import('@/pages/auth/update-password.vue'),
-    meta: {
-      auth: true,
-      title: '修改密码',
-    },
-  },
 ];
 
 export const dashboardHomeChildren: RouteRecordRaw[] = [
@@ -152,6 +143,11 @@ const routes: RouteRecordRaw[] = [
         name: 'setting::profile',
         path: 'profile',
         component: () => import('@/pages/setting/profile.vue'),
+      },
+      {
+        name: 'setting::secure',
+        path: 'secure',
+        component: () => import('@/pages/setting/secure.vue'),
       },
     ],
   },
