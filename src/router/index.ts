@@ -139,6 +139,23 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    name: 'Setting',
+    path: '/setting',
+    component: () => import('@/pages/setting/index.vue'),
+    meta: {
+      auth: true,
+      title: '个人设置',
+    },
+    redirect: '/setting/profile',
+    children: [
+      {
+        name: 'setting::profile',
+        path: 'profile',
+        component: () => import('@/pages/setting/profile.vue'),
+      },
+    ],
+  },
+  {
     path: '/:pathMatch(.*)',
     redirect: `/auth/login?clientId=${import.meta.env.VITE_AUTH_SERVER_CLIENT_ID}`,
   },

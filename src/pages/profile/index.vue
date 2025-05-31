@@ -44,6 +44,10 @@ const getProfile = (id: string) => {
     });
 };
 
+const back = () => {
+  router.push({ path: '/' });
+};
+
 watch(id, () => {
   if (!id.value) {
     return;
@@ -96,7 +100,7 @@ onMounted(() => {
 <template>
   <div class="p-4 bg-zinc-200 flex flex-col gap-4 h-screen w-screen justify-center overflow-auto dark:bg-zinc-900">
     <div class="box-sizing mx-auto p-4 rounded bg-zinc-50 shrink-0 max-w-sm w-full shadow-dark space-y-2 dark:bg-zinc-800">
-      <div class="p-2 rounded size-fit transition hover:bg-zinc-300/50 hover:dark:bg-zinc-700">
+      <div class="p-2 rounded size-fit transition hover:bg-zinc-300/50 hover:dark:bg-zinc-700" @click="back">
         <div class="i-material-symbols:arrow-back-ios-new-rounded text-zinc-800 cursor-pointer dark:text-zinc-200" />
       </div>
       <div class="flex flex-col items-center">
