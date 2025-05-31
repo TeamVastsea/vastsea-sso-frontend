@@ -17,7 +17,7 @@ dayjs.extend(relativeTime);
 dayjs.locale('zh-cn');
 
 const { fetchProfile, uploadAvatar } = useProfile();
-const { accessToken } = storeToRefs(useAccountStore());
+const { accessToken, permissionList } = storeToRefs(useAccountStore());
 const { payload } = useJwt<AccessTokenPayload>(
   computed(() => accessToken.value),
 );
@@ -33,7 +33,18 @@ const toNow = computed(() => {
   const createAt = profile.value.account.createAt;
   return dayjs(createAt).fromNow();
 });
-
+const isSelf = computed(() => {
+  if (!payload.value) {
+    return;
+  }
+  if (!id.value) {
+    return true;
+  }
+  return id.value && id.value === payload.value.id;
+});
+const isStaff = computed(() => {
+  return permissionList.value.some(val => val.startsWith('AUTH::'));
+});
 const getProfile = (id: string) => {
   return fetchProfile({ id })
     .then((resp) => {
@@ -46,6 +57,12 @@ const getProfile = (id: string) => {
 
 const back = () => {
   router.push({ path: '/' });
+};
+const toSetting = () => {
+  router.push({ name: 'Setting' });
+};
+const toDashboard = () => {
+  router.push({ name: 'DashBoardHome' });
 };
 
 watch(id, () => {
@@ -100,8 +117,16 @@ onMounted(() => {
 <template>
   <div class="p-4 bg-zinc-200 flex flex-col gap-4 h-screen w-screen justify-center overflow-auto dark:bg-zinc-900">
     <div class="box-sizing mx-auto p-4 rounded bg-zinc-50 shrink-0 max-w-sm w-full shadow-dark space-y-2 dark:bg-zinc-800">
-      <div class="p-2 rounded size-fit transition hover:bg-zinc-300/50 hover:dark:bg-zinc-700" @click="back">
-        <div class="i-material-symbols:arrow-back-ios-new-rounded text-zinc-800 cursor-pointer dark:text-zinc-200" />
+      <div class="flex gap-2 w-full">
+        <div class="p-2 rounded size-fit transition hover:bg-zinc-300/50 hover:dark:bg-zinc-700" @click="back">
+          <div class="i-material-symbols:arrow-back-ios-new-rounded text-zinc-800 cursor-pointer dark:text-zinc-200" />
+        </div>
+        <div class="p-2 rounded size-fit transition hover:bg-zinc-300/50 hover:dark:bg-zinc-700" @click="toSetting">
+          <div v-if="isSelf" class="i-material-symbols:edit-outline-rounded text-zinc-800 cursor-pointer dark:text-zinc-200" />
+        </div>
+        <div class="p-2 rounded size-fit transition hover:bg-zinc-300/50 hover:dark:bg-zinc-700" @click="toDashboard">
+          <div v-if="isStaff" class="i-material-symbols:dashboard text-zinc-800 cursor-pointer dark:text-zinc-200" />
+        </div>
       </div>
       <div class="flex flex-col items-center">
         <avatar-upload v-model="url" v-model:file="avatar" readonly />

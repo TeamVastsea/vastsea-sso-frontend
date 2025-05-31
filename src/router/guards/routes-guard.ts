@@ -10,7 +10,7 @@ export default (router: Router) => {
     if (!accounts.accessToken) {
       return next();
     }
-    if (accounts.permissionList.includes('*')) {
+    if (accounts.permissionList.includes('AUTH::*')) {
       return next();
     }
     for (const route of routes) {
@@ -21,7 +21,7 @@ export default (router: Router) => {
       const canVisit
         = accounts.permissionList.length > 0
           && accounts.permissionList.every((permission) => {
-            return system.some(sys => permission.toUpperCase().startsWith(sys));
+            return system.some(sys => permission.toUpperCase().startsWith(`AUTH::${sys}`));
           });
       if (!canVisit && route.name && router.hasRoute(route.name)) {
         router.removeRoute(route.name);
