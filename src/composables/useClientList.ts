@@ -59,7 +59,7 @@ export function useClientList(
           data.value.push(...resp.data);
         }
         total.value = Number.parseInt(resp.total.toString());
-        canLoad.value = data.value.length < total.value;
+        canLoad.value = Boolean(resp.data.length);
         return resp;
       })
       .finally(() => {
@@ -76,7 +76,7 @@ export function useClientList(
     return getList();
   };
   const loadMore = () => {
-    if (!canLoad.value) {
+    if (!canLoad.value && !loading.value) {
       return;
     }
     curPage.value += 1;
