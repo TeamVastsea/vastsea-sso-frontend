@@ -10,7 +10,7 @@ export function useInfiniteAccountList(
   const data = ref<MininalAccount[]>([]);
   const total = ref<string>('-1');
   const isLoading = ref(true);
-  const canLoad = ref(false);
+  const canLoad = ref(true);
 
   const load = () => {
     isLoading.value = true;
@@ -29,7 +29,7 @@ export function useInfiniteAccountList(
         );
         data.value.push(...newData);
         total.value = resp.total.toString();
-        canLoad.value = data.value.length < Number.parseInt(total.value);
+        canLoad.value = data.value.length < Number.parseInt(total.value, 10);
       })
       .finally(() => {
         isLoading.value = false;
