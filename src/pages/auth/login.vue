@@ -20,10 +20,9 @@ const loginDto = reactive({
 });
 if (cookie.get('session-state')) {
   axios
-    .post<unknown, { code: string }>(`/auth/session?clientId=${clientId.value}`)
-    .then((resp) => {
-      const code = resp.code;
-      router.replace({ name: 'redirect', query: { ok: 'true', code } });
+    .get<unknown, { code: string }>(`/v2/auth/session`)
+    .then(({ code }) => {
+      router.replace({ name: 'redirect', query: { code } });
     })
     .catch(() => {
       cookie.remove('session-state');
@@ -110,7 +109,7 @@ watch(
         <div class="shrink-0 flex-grow h-full">
           <tiny-form label-position="top" :model="loginDto">
             <form
-              :action="`/api/auth/code?clientId=${clientId}&state=asdiofadsg`"
+              :action="`/api/v2/auth/code?clientId=${clientId}`"
               method="post"
             >
               <tiny-form-item label="邮箱" required prop="email">

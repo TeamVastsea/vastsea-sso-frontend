@@ -76,7 +76,7 @@ export function useClientList(
     return getList();
   };
   const loadMore = () => {
-    if (!canLoad.value) {
+    if (!canLoad.value || loading.value) {
       return;
     }
     curPage.value += 1;
