@@ -28,7 +28,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            vastsea/vastsea-sso-${{ matrix.app }}
+            vastsea/vastsea-sso-frontend
           tags: |
             ${{ github.event_name == 'push' && 'type=semver,pattern={{version}}' || '' }}
             ${{ github.event_name == 'push' && 'type=raw,value=latest' || '' }}
