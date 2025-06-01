@@ -104,6 +104,9 @@ export function useRole(
   const setPage = (page: number, type: 'next' | 'prev') => {
     curPage.value = page;
     if (type === 'next') {
+      if (!roleList.value[roleList.value.length-1]) {
+        return;
+      }
       const id = roleList.value[roleList.value.length - 1].id;
       pagePreid.set(page, id);
       preId.value = id;
@@ -122,7 +125,7 @@ export function useRole(
   const setClientId = (target?: string) => {
     clientId.value = target;
   };
-  const loadMore = (clientId: string) => {
+  const loadMore = (clientId?: string) => {
     if (loading.value || !canLoad.value) {
       return;
     }
