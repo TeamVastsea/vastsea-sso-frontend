@@ -25,6 +25,6 @@ onMounted(() => {
 <template>
   <tiny-select v-model="modelValue">
     <tiny-option v-for="opt in roleOptions" :key="opt.value" :value="opt.value" :label="opt.label" />
-    <div v-element-visibility="() => loadMore()" />
+    <div v-element-visibility="loadMore" />
   </tiny-select>
 </template>
