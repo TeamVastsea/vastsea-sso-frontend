@@ -55,10 +55,8 @@ export function useRole(
   const preId = ref<string | undefined>();
   const pagePreid = new Map<number, string | undefined>();
   const clientId = ref<string | undefined>();
-
-  const canLoad = ref(true);
+  const canLoad = ref(false);
   const loading = ref(false);
-
   const createRole = (data: MaybeRef<CreateRole>) => {
     return fetcher.post<never, MininalRole>('/role', unref(data));
   };

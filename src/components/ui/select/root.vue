@@ -124,7 +124,7 @@ watch(
     >
       <div
         v-infinite-scroll="[onScrollBottom, { distance: 10 }]"
-        class="bg-white h-fit w-full shadow overflow-auto dark:bg-zinc-800"
+        class="rounded bg-white h-fit w-full shadow overflow-auto dark:bg-zinc-700"
       >
         <combobox-viewport class="rounded flex flex-col gap-1 overflow-auto">
           <slot>

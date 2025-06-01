@@ -139,7 +139,7 @@ onMounted(() => {
             <span> | </span>
             <span>{{ toNow }} 加入瀚海工艺</span>
           </div>
-          <p class="fonr-sans text-zinc-700 dark:text-zinc-300">
+          <p class="font-sans text-zinc-700 dark:text-zinc-300">
             {{ profile?.desc ?? '该用户还暂时没有签名...' }}
           </p>
         </div>
