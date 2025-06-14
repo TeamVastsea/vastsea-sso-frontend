@@ -1,0 +1,50 @@
+{
+  "name": "vuejs-template",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 3100",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "test:unit": "vitest"
+  },
+  "dependencies": {
+    "@gaonengwww/eslint-config": "^1.0.4",
+    "@vueuse/core": "^13.3.0",
+    "axios": "^1.9.0",
+    "js-cookie": "^3.0.5",
+    "pinia": "^3.0.3",
+    "pinia-plugin-persistedstate": "^4.3.0",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.1"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@iconify-json/mdi": "^1.2.3",
+    "@types/js-cookie": "^3.0.6",
+    "@vitejs/plugin-vue": "^5.2.3",
+    "@vue/tsconfig": "^0.7.0",
+    "eslint": "^9.27.0",
+    "lint-staged": "^16.0.0",
+    "simple-git-hooks": "^2.13.0",
+    "typescript": "~5.8.3",
+    "unocss": "^66.1.2",
+    "vite": "^6.3.5",
+    "vitest": "^3.1.4",
+    "vue-tsc": "^2.2.8"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm lint:fix && pnpm lint-staged",
+    "commit-msg": "pnpm commitlint --edit .git/COMMIT_EDITMSG"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "pnpm test:unit",
+      "pnpm lint"
+    ]
+  }
+}
