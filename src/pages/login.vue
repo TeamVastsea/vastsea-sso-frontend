@@ -2,7 +2,7 @@
 import { onMounted } from 'vue';
 
 onMounted(() => {
-  window.location.href = `${import.meta.env.VITE_SSO_URL}/login/oauth/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&redirect_uri=${import.meta.env.VITE_CALLBACK}&response_type=code&scope=openid id email profile`;
+  window.location.href = `${import.meta.env.VITE_SSO_URL}/login/oauth/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&redirect_uri=${import.meta.env.VITE_CALLBACK}&response_type=code&scope=openid email profile`;
 });
 </script>
 

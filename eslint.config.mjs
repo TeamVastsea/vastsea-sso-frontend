@@ -1,7 +1,18 @@
-import { www } from '@gaonengwww/eslint-config';
+import antfu from '@antfu/eslint-config';
 
-export default www({
+export default antfu({
+  stylistic: {
+    semi: true,
+  },
   vue: {
-    enable: true,
+    overrides: {
+      'style/brace-style': ['warn', '1tbs'],
+      'antfu/top-level-function': 'off',
+    },
+  },
+  typescript: {
+    overrides: {
+      'antfu/top-level-function': 'off',
+    },
   },
 });

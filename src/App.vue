@@ -1,7 +1,13 @@
 <script lang="ts" setup>
 import { useDark } from '@vueuse/core';
+import dayjs from 'dayjs';
+import RelativeTime from 'dayjs/plugin/relativeTime';
+import 'dayjs/locale/zh-cn';
 
 useDark();
+dayjs.locale('zh-cn');
+
+dayjs.extend(RelativeTime);
 </script>
 
 <template>

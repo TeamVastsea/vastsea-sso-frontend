@@ -12,9 +12,10 @@
     "test:unit": "vitest"
   },
   "dependencies": {
-    "@gaonengwww/eslint-config": "^1.0.4",
+    "@antfu/eslint-config": "^4.14.1",
     "@vueuse/core": "^13.3.0",
     "axios": "^1.9.0",
+    "dayjs": "^1.11.13",
     "js-cookie": "^3.0.5",
     "pinia": "^3.0.3",
     "pinia-plugin-persistedstate": "^4.3.0",
