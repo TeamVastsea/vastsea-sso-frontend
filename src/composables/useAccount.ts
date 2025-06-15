@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia';
-import { ref, unref, type MaybeRef } from 'vue';
+import { type MaybeRef, ref, unref } from 'vue';
 import { useAxios } from './useAxios';
 
-type TokenPair = {
+interface TokenPair {
   localToken: string;
   id: string;
-};
+}
 
 export const useAccount = defineStore(
   'Account',
@@ -20,7 +20,7 @@ export const useAccount = defineStore(
     };
     const axios = useAxios();
     const getTokenByCode = (code: MaybeRef<string>) => {
-      return axios.get<unknown, TokenPair>('/api/auth/token', {
+      return axios.get<unknown, TokenPair>('/auth/token', {
         params: {
           code: unref(code),
         },

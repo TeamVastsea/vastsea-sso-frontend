@@ -1,3 +1,4 @@
+import { unref, type MaybeRef } from 'vue';
 import { useAxios } from './useAxios';
 
 export interface Profile {
@@ -12,7 +13,13 @@ export interface Profile {
 export function useProfile() {
   const axios = useAxios();
   const fetchProfile = (userId: string) => {
-    return axios.get<never, Profile>(`/api/profile/${userId}`);
+    return axios.get<never, Profile>(`/profile/${userId}`);
   };
-  return { fetchProfile };
+  const updateProfile = (profile: MaybeRef<Profile>) => {
+    return axios.patch('/profile', {
+      nick: unref(profile).nick,
+      bio: unref(profile).bio,
+    });
+  };
+  return { fetchProfile, updateProfile };
 }
