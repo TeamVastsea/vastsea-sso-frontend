@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { storeToRefs } from 'pinia';
+import { useRouter } from 'vue-router';
 import { useAccount } from './useAccount';
 
 const _axios = axios.create({
@@ -7,6 +8,13 @@ const _axios = axios.create({
 });
 
 _axios.interceptors.response.use((value) => {
+  if (value.status === 401) {
+    const router = useRouter();
+    const { clear } = useAccount();
+    clear();
+    router.replace({ name: 'Login' });
+    return value.data;
+  }
   if (value.status < 399) {
     return value.data;
   }

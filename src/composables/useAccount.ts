@@ -18,6 +18,10 @@ export const useAccount = defineStore(
     const setId = (userId: string) => {
       id.value = userId;
     };
+    const clear = () => {
+      accessToken.value = '';
+      id.value = '';
+    }
     const axios = useAxios();
     const getTokenByCode = (code: MaybeRef<string>) => {
       return axios.get<unknown, TokenPair>('/auth/token', {
@@ -26,7 +30,7 @@ export const useAccount = defineStore(
         },
       });
     };
-    return { accessToken, id, setAccessToken, getTokenByCode, setId };
+    return { accessToken, id, setAccessToken, getTokenByCode, setId, clear };
   },
   {
     persist: true,
